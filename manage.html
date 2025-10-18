@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý mẫu Word</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-container">
+    <h1>📄 Quản lý mẫu Word</h1>
+    <button class="back-btn" onclick="location.href='index.html'">⬅ Trang chính</button>
+
+    <div class="section">
+      <button id="btnAddTemplate">➕ CREAT WORD</button>
+      <button id="btnReload">🔁 UPDATE</button>
+    </div>
+
+    <div class="template-list">
+      <h3>📂 Danh sách hiện có</h3>
+      <ul id="templateList"></ul>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer, shell } = require("electron");
+    const path = require("path");
+
+    async function loadTemplates() {
+      const templates = await ipcRenderer.invoke("get-templates");
+      const list = document.getElementById("templateList");
+      list.innerHTML = "";
+
+      templates.forEach(file => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span>${file}</span>
+          <div class="actions">
+            <button class="open-btn" data-file="${file}">✏️ OPEN</button>
+            <button class="refresh-btn" data-file="${file}">🔁 UPDATE</button>
+            <button class="delete-btn" data-file="${file}">🗑️ DELETE</button>
+          </div>`;
+        list.appendChild(li);
+      });
+
+      document.querySelectorAll(".open-btn").forEach(btn => {
+        btn.addEventListener("click", e => {
+          shell.openPath(path.join(__dirname, "templates", e.target.dataset.file));
+        });
+      });
+      document.querySelectorAll(".refresh-btn").forEach(btn => {
+        btn.addEventListener("click", async e => {
+          const ph = await ipcRenderer.invoke("get-placeholders", e.target.dataset.file);
+          alert(`Placeholder trong "${e.target.dataset.file}":\n${ph.join(", ")}`);
+        });
+      });
+      document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", async e => {
+          if (confirm(`Xóa mẫu "${e.target.dataset.file}"?`)) {
+            await ipcRenderer.invoke("delete-template", e.target.dataset.file);
+            loadTemplates();
+          }
+        });
+      });
+    }
+
+    document.getElementById("btnAddTemplate").addEventListener("click", async () => {
+      await ipcRenderer.invoke("add-template");
+      loadTemplates();
+    });
+    document.getElementById("btnReload").addEventListener("click", loadTemplates);
+
+    loadTemplates();
+  </script>
+</body>
+</html>

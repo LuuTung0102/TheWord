@@ -1,0 +1,7 @@
+node_modules/
+*.zip
+*.exe
+*.docx
+*.pdf
+*.tmp
+node_modules/

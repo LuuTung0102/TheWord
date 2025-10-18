@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Xuất file Word</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./node_modules/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+  <div class="page-container">
+    <h1>🖋️ Điền thông tin & Xuất file</h1>
+    <button class="back-btn" onclick="location.href='index.html'">⬅ Trang chính</button>
+    
+    <!-- Template Selector -->
+    <div class="template-card">
+      <div class="template-card-header">Chọn mẫu Word</div>
+      <div class="template-selector">
+        <div class="template-controls">
+          <button id="btnOpenLeft">📂 Mẫu có sẵn</button>
+          <button id="btnOpenRight">✅ Đã chọn</button>
+        </div>
+        <div class="table-container template-popover left-popover" style="display:none;">
+          <div class="search-bar">
+            <input type="text" id="searchLeft" placeholder="Tìm kiếm mẫu...">
+          </div>
+          <table id="leftTable">
+            <thead>
+              <tr>
+                <th>Mẫu có sẵn</th>
+                <th>Chọn</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="table-container template-popover right-popover" style="display:none;">
+          <div class="search-bar">
+            <input type="text" id="searchRight" placeholder="Tìm kiếm mẫu đã chọn...">
+          </div>
+          <table id="rightTable">
+            <thead>
+              <tr>
+                <th>Đã chọn</th>
+                <th>🗑️</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="taskbar-container">
+      <div class="taskbar">
+        <button class="taskbar-btn active" data-section="BCN">
+          <span class="taskbar-icon">👤</span>
+          <span class="taskbar-label">Bên chuyển nhượng</span>
+          <span class="taskbar-count" id="bcn-count">0</span>
+        </button>
+        <button class="taskbar-btn" data-section="NCN">
+          <span class="taskbar-icon">👥</span>
+          <span class="taskbar-label">Bên nhận chuyển nhượng</span>
+          <span class="taskbar-count" id="ncn-count">0</span>
+        </button>
+        <button class="taskbar-btn" data-section="LAND">
+          <span class="taskbar-icon">🏠</span>
+          <span class="taskbar-label">Thông tin thửa đất</span>
+          <span class="taskbar-count" id="land-count">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Form Content -->
+    <div class="form-content">
+      <h2>🧾 Nhập thông tin</h2>
+      <div id="formArea"></div>
+    </div>
+
+    <button id="btnExport">📤 Xuất file</button>
+  </div>
+
+  <script src="./node_modules/flatpickr/dist/flatpickr.min.js"></script>
+  <script src="renderer/electron-imports.js"></script>
+  <script src="renderer/constants.js"></script>
+  <script src="renderer/utils.js"></script>
+  <script src="renderer/templateManager.js"></script>
+  <script src="renderer/formHandler.js"></script>
+  <script src="renderer/exportHandler.js"></script>
+  <script src="renderer/export.js"></script>
+</body>
+</html>
