@@ -54,13 +54,17 @@ function numberToVietnameseWords(number) {
     "chín",
   ];
 
-  function readThreeDigits(n) {
+  function readThreeDigits(n, isHighestOrder = false) {
     n = Number(n);
     let hundred = Math.floor(n / 100);
     let ten = Math.floor((n % 100) / 10);
     let unit = n % 10;
     let str = "";
+    
+    // Explicitly handle hundreds place (including zero)
     if (hundred) str += words[hundred] + " trăm";
+    else if (n >= 10 && !isHighestOrder) str += "không trăm"; // Add 'không trăm' only for middle chunks
+    
     if (ten > 1) {
       str += (str ? " " : "") + words[ten] + " mươi";
       if (unit) {
@@ -86,14 +90,15 @@ function numberToVietnameseWords(number) {
   while (number > 0) {
     const chunk = number % 1000;
     if (chunk) {
-      const chunkWords = readThreeDigits(chunk);
+      // Check if this is the highest order chunk (will be the last one processed)
+      const isHighestOrder = Math.floor(number / 1000) === 0;
+      const chunkWords = readThreeDigits(chunk, isHighestOrder);
       result.unshift((chunkWords + (units[i] ? " " + units[i] : "")).trim());
     }
     number = Math.floor(number / 1000);
     i++;
   }
   return (result.join(" ").replace(/ +/g, " ").trim() + " đồng chẵn")
-    .replace(/(^| )không( |$)/g, " ")
     .replace(/ +/g, " ")
     .trim();
 }

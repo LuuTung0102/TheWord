@@ -70,11 +70,11 @@ function generateDocx(templatePath, data, outputPath) {
         
         // Đánh dấu để xóa hoàn toàn với marker đặc biệt
         const index = group.replace('MEN', '');
-        data[`MEN${index}_L1`] = "{{=<% %>=}}<%={{ }}=%>";  // Marker đặc biệt cho Docxtemplater
-        data[`MEN${index}_L1_Before`] = "{{=<% %>=}}<%={{ }}=%>";
+        data[`MEN${index}_L1`] = "___DELETE_THIS___";  // Marker đặc biệt cho xóa dòng
+        data[`MEN${index}_L1_Before`] = "___DELETE_THIS___";
         data[`MEN${index}_L1_Name`] = "";
         data[`MEN${index}_L1_After`] = "";
-        data[`MEN${index}_L2`] = "{{=<% %>=}}<%={{ }}=%>";
+        data[`MEN${index}_L2`] = "___DELETE_THIS___";
         
         console.log(`🗑️ Removed empty group: ${group}`);
       } else {
@@ -111,11 +111,11 @@ function generateDocx(templatePath, data, outputPath) {
 
       if (!hasAny) {
        
-        data[`MEN${index}_L1`] = "{{=<% %>=}}<%={{ }}=%>";  
-        data[`MEN${index}_L1_Before`] = "{{=<% %>=}}<%={{ }}=%>";
+        data[`MEN${index}_L1`] = "___DELETE_THIS___";
+        data[`MEN${index}_L1_Before`] = "___DELETE_THIS___";
         data[`MEN${index}_L1_Name`] = "";
         data[`MEN${index}_L1_After`] = "";
-        data[`MEN${index}_L2`] = "{{=<% %>=}}<%={{ }}=%>";
+        data[`MEN${index}_L2`] = "___DELETE_THIS___";
         return;
       }
 
@@ -171,7 +171,7 @@ function generateDocx(templatePath, data, outputPath) {
             .join('')
             .trim();
         
-          if (allText === '' || allText.includes('{{=<% %>=}}<%={{ }}=%>')) {
+          if (allText === '' || allText.includes('___DELETE_THIS___')) {
             return '';
           }
           

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chuyển Đổi Số</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input {
+            padding: 5px;
+            width: 300px;
+        }
+        button {
+            padding: 5px 10px;
+            margin-left: 5px;
+        }
+        .test-cases {
+            margin-top: 30px;
+        }
+        .test-case {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #eee;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kiểm tra chuyển đổi số thành chữ</h1>
+    
+    <div>
+        <input type="text" id="numberInput" placeholder="Nhập số (vd: 4077010000)" value="4077010000">
+        <button onclick="convert()">Chuyển đổi</button>
+    </div>
+    
+    <div class="result" id="result"></div>
+
+    <div class="test-cases">
+        <h2>Trường hợp kiểm tra</h2>
+        <div id="testCasesContainer"></div>
+    </div>
+
+    <script src="renderer/utils.js"></script>
+    <script>
+        // Test cases
+        const testCases = [
+            { number: 4077010000, expected: "bốn tỷ không trăm bảy mươi bảy triệu không trăm mười nghìn đồng chẵn" },
+            { number: 12050000, expected: "mười hai triệu không trăm năm mươi nghìn đồng chẵn" },
+            { number: 100000000, expected: "một trăm triệu đồng chẵn" },
+            { number: 1005000, expected: "một triệu không trăm năm nghìn đồng chẵn" },
+            { number: 1000000, expected: "một triệu đồng chẵn" },
+            { number: 10000, expected: "mười nghìn đồng chẵn" }
+        ];
+
+        function convert() {
+            const number = document.getElementById('numberInput').value;
+            const text = window.numberToVietnameseWords(number);
+            document.getElementById('result').innerHTML = `
+                <p><strong>Số:</strong> ${number}</p>
+                <p><strong>Bằng chữ:</strong> ${text}</p>
+            `;
+        }
+
+        function runTestCases() {
+            const container = document.getElementById('testCasesContainer');
+            container.innerHTML = '';
+            
+            testCases.forEach(test => {
+                const actual = window.numberToVietnameseWords(test.number);
+                const isCorrect = actual === test.expected;
+                
+                const testCase = document.createElement('div');
+                testCase.className = 'test-case';
+                testCase.innerHTML = `
+                    <p><strong>Số:</strong> ${test.number}</p>
+                    <p><strong>Kết quả:</strong> ${actual}</p>
+                    <p><strong>Mong đợi:</strong> ${test.expected}</p>
+                    <p><strong>Trạng thái:</strong> <span style="color:${isCorrect ? 'green' : 'red'}">${isCorrect ? 'Đúng' : 'Sai'}</span></p>
+                `;
+                container.appendChild(testCase);
+            });
+        }
+
+        // Run conversion and test cases on page load
+        window.onload = function() {
+            convert();
+            runTestCases();
+        };
+    </script>
+</body>
+</html>
