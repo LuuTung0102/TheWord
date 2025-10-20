@@ -2,91 +2,248 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Xuất file Word</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tạo tài liệu - TheWord</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="./node_modules/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
-  <div class="page-container">
-    <h1>🖋️ Điền thông tin & Xuất file</h1>
-    <button class="back-btn" onclick="location.href='index.html'">⬅ Trang chính</button>
-    
-    <!-- Template Selector -->
-    <div class="template-card">
-      <div class="template-card-header">Chọn mẫu Word</div>
-      <div class="template-selector">
-        <div class="template-controls">
-          <button id="btnOpenLeft">📂 Mẫu có sẵn</button>
-          <button id="btnOpenRight">✅ Đã chọn</button>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <button class="back-btn" onclick="location.href='index.html'">
+          <i class="fas fa-arrow-left"></i>
+          <span>Trang chính</span>
+        </button>
+        <div class="header-title">
+          <i class="fas fa-file-export"></i>
+          <h1>Tạo tài liệu</h1>
         </div>
-        <div class="table-container template-popover left-popover" style="display:none;">
-          <div class="search-bar">
-            <input type="text" id="searchLeft" placeholder="Tìm kiếm mẫu...">
-          </div>
-          <table id="leftTable">
-            <thead>
-              <tr>
-                <th>Mẫu có sẵn</th>
-                <th>Chọn</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-
-        <div class="table-container template-popover right-popover" style="display:none;">
-          <div class="search-bar">
-            <input type="text" id="searchRight" placeholder="Tìm kiếm mẫu đã chọn...">
-          </div>
-          <table id="rightTable">
-            <thead>
-              <tr>
-                <th>Đã chọn</th>
-                <th>🗑️</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+        <div class="header-actions">
+          <button class="help-btn" onclick="showHelp()" title="Trợ giúp">
+            <i class="fas fa-question-circle"></i>
+          </button>
         </div>
       </div>
-    </div>
+    </header>
 
-    <div class="taskbar-container">
-      <div class="taskbar">
-        <button class="taskbar-btn active" data-section="BCN">
-          <span class="taskbar-icon">👤</span>
-          <span class="taskbar-label">Bên chuyển nhượng</span>
-          <span class="taskbar-count" id="bcn-count">0</span>
-        </button>
-        <button class="taskbar-btn" data-section="NCN">
-          <span class="taskbar-icon">👥</span>
-          <span class="taskbar-label">Bên nhận chuyển nhượng</span>
-          <span class="taskbar-count" id="ncn-count">0</span>
-        </button>
-        <button class="taskbar-btn" data-section="LAND">
-          <span class="taskbar-icon">🏠</span>
-          <span class="taskbar-label">Thông tin thửa đất</span>
-          <span class="taskbar-count" id="land-count">0</span>
-        </button>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Floating Template Selector -->
+      <div class="floating-template-selector" id="templateSelector">
+        <div class="floating-header">
+          <div class="floating-title">
+            <i class="fas fa-file-alt"></i>
+            <span>Chọn mẫu Word</span>
+          </div>
+          <button class="floating-toggle" id="templateToggle">
+            <i class="fas fa-chevron-down"></i>
+          </button>
+        </div>
+        
+        <div class="floating-content" id="templateContent" style="display: none;">
+          <div class="template-grid">
+            <div class="template-column">
+              <div class="column-header">
+                <i class="fas fa-folder-open"></i>
+                <span>Mẫu có sẵn</span>
+                <span class="template-count" id="availableCount">0</span>
+              </div>
+              <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchLeft" placeholder="Tìm kiếm mẫu...">
+              </div>
+              <div class="template-list" id="leftTable">
+                <!-- Templates will be loaded here -->
+              </div>
+            </div>
+
+            <div class="template-column">
+              <div class="column-header">
+                <i class="fas fa-check-circle"></i>
+                <span>Đã chọn</span>
+                <span class="template-count" id="selectedCount">0</span>
+              </div>
+              <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchRight" placeholder="Tìm kiếm mẫu đã chọn...">
+              </div>
+              <div class="template-list" id="rightTable">
+                <!-- Selected templates will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Taskbar -->
+      <section class="taskbar-section" id="taskbarContainer" style="display: none;">
+        <div class="taskbar" id="taskbar">
+          <!-- Taskbar buttons will be created dynamically -->
+        </div>
+      </section>
+
+      <!-- Form Content -->
+      <section class="form-panel">
+        <div class="section-header">
+          <h2><i class="fas fa-edit"></i> Nhập thông tin</h2>
+          <p>Điền thông tin vào các trường bên dưới</p>
+        </div>
+        <div class="form-content">
+          <div id="formArea">
+            <div class="empty-state">
+              <i class="fas fa-file-plus"></i>
+              <h3>Chưa có mẫu nào được chọn</h3>
+              <p>Vui lòng chọn ít nhất một mẫu Word để bắt đầu</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Export Section -->
+      <section class="export-section">
+        <div class="export-card">
+          <div class="export-info">
+            <i class="fas fa-download"></i>
+            <div class="export-details">
+              <h3>Sẵn sàng xuất file</h3>
+              <p>Nhấn nút bên dưới để tạo tài liệu Word</p>
+            </div>
+          </div>
+          <button id="btnExport" class="export-btn" disabled>
+            <i class="fas fa-file-export"></i>
+            <span>Xuất file</span>
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <h3>Đang tạo tài liệu...</h3>
+      <p>Vui lòng chờ trong giây lát</p>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal-overlay" id="successModal" style="display: none;">
+    <div class="modal-content success">
+      <div class="modal-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h3>Xuất file thành công!</h3>
+      <p id="successMessage">Tài liệu đã được tạo thành công</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeSuccessModal()">Đóng</button>
+        <button class="btn-primary" onclick="openFileLocation()">Mở thư mục</button>
       </div>
     </div>
+  </div>
 
-    <!-- Form Content -->
-    <div class="form-content">
-      <h2>🧾 Nhập thông tin</h2>
-      <div id="formArea"></div>
+  <!-- Error Modal -->
+  <div class="modal-overlay" id="errorModal" style="display: none;">
+    <div class="modal-content error">
+      <div class="modal-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h3>Xuất file thất bại!</h3>
+      <p id="errorMessage">Có lỗi xảy ra khi tạo tài liệu</p>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="closeErrorModal()">Đóng</button>
+      </div>
     </div>
-
-    <button id="btnExport">📤 Xuất file</button>
   </div>
 
   <script src="./node_modules/flatpickr/dist/flatpickr.min.js"></script>
   <script src="renderer/electron-imports.js"></script>
   <script src="renderer/constants.js"></script>
   <script src="renderer/utils.js"></script>
+  <script src="renderer/bdMapping.js"></script>
   <script src="renderer/templateManager.js"></script>
   <script src="renderer/formHandler.js"></script>
   <script src="renderer/exportHandler.js"></script>
   <script src="renderer/export.js"></script>
+
+  <script>
+    // Floating template selector toggle
+    function setupFloatingTemplateSelector() {
+      const toggle = document.getElementById('templateToggle');
+      const content = document.getElementById('templateContent');
+      
+      if (toggle && content) {
+        toggle.addEventListener('click', () => {
+          const isExpanded = content.style.display !== 'none';
+          
+          if (isExpanded) {
+            content.style.display = 'none';
+            toggle.classList.remove('expanded');
+          } else {
+            content.style.display = 'block';
+            toggle.classList.add('expanded');
+          }
+        });
+      }
+    }
+
+    // Show help
+    function showHelp() {
+      alert('Hướng dẫn sử dụng:\n\n1. Chọn mẫu Word từ danh sách bên trái\n2. Điền thông tin vào form\n3. Nhấn "Xuất file" để tạo tài liệu\n\nLưu ý: Có thể chọn nhiều mẫu cùng lúc');
+    }
+
+    // Close success modal
+    function closeSuccessModal() {
+      document.getElementById('successModal').style.display = 'none';
+    }
+
+    // Close error modal
+    function closeErrorModal() {
+      document.getElementById('errorModal').style.display = 'none';
+    }
+
+    // Open file location
+    function openFileLocation() {
+      // This would open the file location in the file explorer
+      alert('Tính năng mở thư mục sẽ được thêm vào phiên bản sau');
+    }
+
+    // Show loading overlay
+    function showLoading() {
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    // Hide loading overlay
+    function hideLoading() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    // Show success modal
+    function showSuccess(message) {
+      document.getElementById('successMessage').textContent = message;
+      document.getElementById('successModal').style.display = 'flex';
+    }
+
+    // Show error modal
+    function showError(message) {
+      document.getElementById('errorMessage').textContent = message;
+      document.getElementById('errorModal').style.display = 'flex';
+    }
+
+    // Make functions globally available
+    window.showLoading = showLoading;
+    window.hideLoading = hideLoading;
+    window.showSuccess = showSuccess;
+    window.showError = showError;
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      setupFloatingTemplateSelector();
+    });
+  </script>
 </body>
 </html>

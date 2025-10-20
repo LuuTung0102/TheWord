@@ -19,6 +19,11 @@ function formatCCCD(number) {
   )}.${number.slice(9, 12)}`;
 }
 
+function formatPhoneNumber(phoneNumber) {
+  if (!phoneNumber || phoneNumber.length !== 10 || !/^\d{10}$/.test(phoneNumber)) return "";
+  return `${phoneNumber.slice(0, 4)}.${phoneNumber.slice(4, 7)}.${phoneNumber.slice(7, 10)}`;
+}
+
 function formatDate(isoDate) {
   if (!isoDate) return "";
   const date = new Date(isoDate);
@@ -90,7 +95,6 @@ function numberToVietnameseWords(number) {
   while (number > 0) {
     const chunk = number % 1000;
     if (chunk) {
-      // Check if this is the highest order chunk (will be the last one processed)
       const isHighestOrder = Math.floor(number / 1000) === 0;
       const chunkWords = readThreeDigits(chunk, isHighestOrder);
       result.unshift((chunkWords + (units[i] ? " " + units[i] : "")).trim());
@@ -106,6 +110,7 @@ function numberToVietnameseWords(number) {
 // Make utility functions available globally
 window.expandLandType = expandLandType;
 window.formatCCCD = formatCCCD;
+window.formatPhoneNumber = formatPhoneNumber;
 window.formatDate = formatDate;
 window.formatWithCommas = formatWithCommas;
 window.numberToVietnameseWords = numberToVietnameseWords;

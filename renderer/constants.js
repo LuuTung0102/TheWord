@@ -108,6 +108,12 @@ const phMapping = {
     subgroup: "MEN7",
   },
   Name1: { label: "Họ và tên", type: "text", group: "BCN", subgroup: "MEN1" },
+  MST1: { label: "Mã số thuế", type: "number", group: "BCN", subgroup: "MEN1" },
+  MST7: { label: "Mã số thuế", type: "number", group: "NCN", subgroup: "MEN7" },
+  SDT_MEN1: { label: "Số điện thoại", type: "number", group: "BCN", subgroup: "MEN1" },
+  EMAIL_MEN1: { label: "Hộp thư điện tử", type: "text", group: "BCN", subgroup: "MEN1" },
+  SDT_MEN7: { label: "Số điện thoại", type: "number", group: "NCN", subgroup: "MEN7" },
+  EMAIL_MEN7: { label: "Hộp thư điện tử", type: "text", group: "NCN", subgroup: "MEN7" },
   Name2: { label: "Họ và tên", type: "text", group: "BCN", subgroup: "MEN2" },
   Name3: { label: "Họ và tên", type: "text", group: "BCN", subgroup: "MEN3" },
   Name4: { label: "Họ và tên", type: "text", group: "BCN", subgroup: "MEN4" },
@@ -308,12 +314,63 @@ const phMapping = {
     group: "LAND",
     subgroup: "INFO",
   },
+  // BD Group - Thông tin đăng ký biến động đất đai
+  BD_Gender: {
+    label: "Giới tính",
+    type: "select",
+    options: ["Ông", "Bà"],
+    group: "BD",
+    subgroup: "INFO",
+  },
+  BD_Name: {
+    label: "Họ và tên",
+    type: "text",
+    group: "BD",
+    subgroup: "INFO",
+  },
+  BD_CCCD: {
+    label: "Số CCCD",
+    type: "number",
+    group: "BD",
+    subgroup: "INFO",
+  },
+  BD_Date: {
+    label: "Ngày sinh",
+    type: "date",
+    group: "BD",
+    subgroup: "INFO",
+  },
+  BD_Noi_Cap: {
+    label: "Nơi cấp",
+    type: "text",
+    group: "BD",
+    subgroup: "INFO",
+  },
+  BD_Ngay_Cap: {
+    label: "Ngày cấp",
+    type: "date",
+    group: "BD",
+    subgroup: "INFO",
+  },
+  BD_SDT: {
+    label: "Số điện thoại",
+    type: "number",
+    group: "BD",
+    subgroup: "INFO",
+  },
+  BD_Email: {
+    label: "Hộp thư điện tử",
+    type: "text",
+    group: "BD",
+    subgroup: "INFO",
+  },
 };
 
 const groupLabels = {
-  BCN: "Thông tin Bên chuyển nhượng",
-  NCN: "Thông tin Bên nhận chuyển nhượng",
+  BCN: "Thông tin bên A",
+  NCN: "Thông tin bên B",
   LAND: "Thông tin thửa đất",
+  BD: "Thông tin đăng ký biến động đất đai",
 };
 
 const subgroupLabels = {

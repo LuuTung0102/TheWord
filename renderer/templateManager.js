@@ -3,7 +3,9 @@ let selectedTemplates = window.selectedTemplates || [];
 
 async function loadTemplates() {
   try {
+    console.log('🔍 TemplateManager: Loading templates...');
     allTemplates = await window.ipcRenderer.invoke("get-templates");
+    console.log('🔍 TemplateManager: Templates loaded:', allTemplates);
     window.allTemplates = allTemplates;
     renderLeftTable(allTemplates);
     selectedTemplates = [];
@@ -11,44 +13,67 @@ async function loadTemplates() {
     renderRightTable([]);
     document.getElementById("formArea").innerHTML = "";
     updateTemplateCounts();
+    setupTemplateEventListeners();
   } catch (err) {
-   
+    console.error('❌ TemplateManager: Error loading templates:', err);
   }
 }
 
 function renderLeftTable(templates) {
-  const tbody = document.querySelector("#leftTable tbody");
-  if (!tbody) {
-    
+  const container = document.querySelector("#leftTable");
+  if (!container) {
+    console.error("❌ TemplateManager: #leftTable not found");
     return;
   }
-  tbody.innerHTML = "";
+  container.innerHTML = "";
  
   templates.forEach((file) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${file}</td>
-      <td><button class="select-btn" onclick="selectTemplate('${file}')">Chọn</button></td>
+    const item = document.createElement("div");
+    item.className = "template-item";
+    item.innerHTML = `
+      <div class="template-icon">
+        <i class="fas fa-file-word"></i>
+      </div>
+      <div class="template-info">
+        <h4 class="template-name">${file}</h4>
+        <p class="template-meta">File Word</p>
+      </div>
+      <div class="template-actions">
+        <button class="action-btn add" data-file="${file}" title="Thêm">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
     `;
-    tbody.appendChild(tr);
+    container.appendChild(item);
   });
 }
 
 function renderRightTable(templates) {
-  const tbody = document.querySelector("#rightTable tbody");
-  if (!tbody) {
-    
+  const container = document.querySelector("#rightTable");
+  if (!container) {
+    console.error("❌ TemplateManager: #rightTable not found");
     return;
   }
-  tbody.innerHTML = "";
+  container.innerHTML = "";
  
   templates.forEach((file) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${file}</td>
-      <td><button class="remove-btn" onclick="removeTemplate('${file}')">🗑️</button></td>
+    const item = document.createElement("div");
+    item.className = "template-item";
+    item.innerHTML = `
+      <div class="template-icon">
+        <i class="fas fa-file-word"></i>
+      </div>
+      <div class="template-info">
+        <h4 class="template-name">${file}</h4>
+        <p class="template-meta">File Word</p>
+      </div>
+      <div class="template-actions">
+        <button class="action-btn remove" data-file="${file}" title="Xóa">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
     `;
-    tbody.appendChild(tr);
+    container.appendChild(item);
   });
   updateTemplateCounts();
 }
@@ -64,6 +89,11 @@ window.selectTemplate = (file) => {
     renderRightTable(selectedTemplates);
     updateForm();
     updateTemplateCounts();
+    
+    // Update export button state
+    if (typeof updateExportButtonState === 'function') {
+      updateExportButtonState();
+    }
   }
 };
 
@@ -76,11 +106,42 @@ window.removeTemplate = (file) => {
   renderRightTable(selectedTemplates);
   updateForm();
   updateTemplateCounts();
+  
+  // Update export button state
+  if (typeof updateExportButtonState === 'function') {
+    updateExportButtonState();
+  }
 };
+
+// Setup event listeners for new button structure
+function setupTemplateEventListeners() {
+  // Add event listeners for add buttons
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.action-btn.add')) {
+      const button = e.target.closest('.action-btn.add');
+      const file = button.dataset.file;
+      if (file) {
+        selectTemplate(file);
+      }
+    }
+    
+    if (e.target.closest('.action-btn.remove')) {
+      const button = e.target.closest('.action-btn.remove');
+      const file = button.dataset.file;
+      if (file) {
+        removeTemplate(file);
+      }
+    }
+  });
+}
 
 async function updateForm() {
   if (!selectedTemplates.length) {
     document.getElementById("formArea").innerHTML = "";
+    // Ẩn tất cả taskbar buttons khi không có template nào được chọn
+    if (typeof updateDynamicTaskbar === 'function') {
+      updateDynamicTaskbar();
+    }
     return;
   }
 

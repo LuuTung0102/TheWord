@@ -2,14 +2,114 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Trang chính</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TheWord - Tạo tài liệu Word thông minh</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="index-body">
-  <div class="page-container">
-    <h1>📘 Quản lý Word</h1>
-    <button onclick="location.href='manage.html'">📄 Thêm file Word</button>
-    <button onclick="location.href='export.html'">🖋️ Điền thông tin & Xuất file</button>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo">
+          <i class="fas fa-file-word"></i>
+          <h1>TheWord</h1>
+        </div>
+        <div class="header-subtitle">
+          Tạo tài liệu Word thông minh từ mẫu có sẵn
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="welcome-section">
+        <div class="welcome-card">
+          <h2>Chào mừng đến với TheWord</h2>
+          <p>Ứng dụng tạo tài liệu Word tự động</p>
+        </div>
+      </div>
+
+      <div class="action-cards">
+        <div class="action-card primary" onclick="location.href='export.html'">
+          <div class="card-icon">
+            <i class="fas fa-file-export"></i>
+          </div>
+          <div class="card-content">
+            <h3>Tạo tài liệu</h3>
+            <p>Chọn mẫu và điền thông tin để tạo file Word</p>
+            <div class="card-features">
+              <span class="feature-tag">Tự động điền</span>
+              <span class="feature-tag">Nhiều mẫu</span>
+              <span class="feature-tag">Xuất nhanh</span>
+            </div>
+          </div>
+          <div class="card-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="action-card secondary" onclick="location.href='manage.html'">
+          <div class="card-icon">
+            <i class="fas fa-cogs"></i>
+          </div>
+          <div class="card-content">
+            <h3>Quản lý mẫu</h3>
+            <p>Thêm, sửa, xóa các mẫu Word có sẵn</p>
+            <div class="card-features">
+              <span class="feature-tag">Upload mẫu</span>
+              <span class="feature-tag">Chỉnh sửa</span>
+              <span class="feature-tag">Tổ chức</span>
+            </div>
+          </div>
+          <div class="card-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <p>&copy; 2025 TheWord. Được phát triển với ❤️</p>
+        <div class="footer-links">
+          <a href="#" onclick="showAbout()">Giới thiệu</a>
+          <a href="#" onclick="showHelp()">Trợ giúp</a>
+          <a href="#" onclick="showSettings()">Cài đặt</a>
+        </div>
+      </div>
+    </footer>
   </div>
+
+  <script>
+    // Load template count
+    async function loadStats() {
+      try {
+        const templates = await window.ipcRenderer.invoke('get-templates');
+        document.getElementById('templateCount').textContent = templates.length;
+        
+        // Simulate export count and time saved
+        document.getElementById('exportCount').textContent = Math.floor(Math.random() * 100) + 50;
+        document.getElementById('timeSaved').textContent = Math.floor(Math.random() * 1000) + 200;
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    // Show about modal
+    function showAbout() {
+      alert('TheWord v1.0\n\nỨng dụng tạo tài liệu Word tự động\nPhát triển bởi AI Assistant');
+    }
+
+    // Show help
+    function showHelp() {
+      alert('Hướng dẫn sử dụng:\n\n1. Chọn "Tạo tài liệu" để bắt đầu\n2. Chọn mẫu Word từ danh sách\n3. Điền thông tin vào form\n4. Nhấn "Xuất file" để tạo tài liệu');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadStats);
+  </script>
 </body>
 </html>

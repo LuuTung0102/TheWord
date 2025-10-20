@@ -7,6 +7,7 @@ const { generateDocx } = require("./logic/generate");
 const { getPlaceholders } = require("./logic/placeholder");
 const { getAddresses } = require("./data/address");
 
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 900,
@@ -39,12 +40,14 @@ ipcMain.handle("load-placeholders", async (event, fileNames) => {
 ipcMain.handle("get-templates", async () => {
   try {
     const folder = path.join(__dirname, "templates");
+    console.log("🔍 get-templates: Checking folder:", folder);
   
     if (!fs.existsSync(folder)) {
-      
+      console.log("🔍 get-templates: Creating folder:", folder);
       fs.mkdirSync(folder);
     }
     const files = fs.readdirSync(folder).filter((f) => f.endsWith(".docx"));
+    console.log("🔍 get-templates: Found files:", files);
    
     return files;
   } catch (err) {
@@ -84,6 +87,62 @@ ipcMain.handle("add-template", async () => {
   return filePaths;
 });
 
+ipcMain.handle("save-temp-file", async (event, { buffer, fileName }) => {
+  try {
+    const os = require('os');
+    const tempDir = os.tmpdir();
+    const tempPath = path.join(tempDir, fileName);
+    
+    // Write buffer to temp file
+    fs.writeFileSync(tempPath, Buffer.from(buffer));
+    console.log(`✅ Saved temp file: ${tempPath}`);
+    return tempPath;
+  } catch (error) {
+    console.error("❌ Error saving temp file:", error);
+    throw error;
+  }
+});
+
+ipcMain.handle("upload-template", async (event, filePath) => {
+  try {
+    const destDir = path.join(__dirname, "templates");
+    
+    // Ensure templates directory exists
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+    
+    // Copy file to templates directory
+    const fileName = path.basename(filePath);
+    const dest = path.join(destDir, fileName);
+    
+    // Handle duplicate files
+    let finalDest = dest;
+    let counter = 1;
+    while (fs.existsSync(finalDest)) {
+      const ext = path.extname(fileName);
+      const name = path.basename(fileName, ext);
+      finalDest = path.join(destDir, `${name}_${counter}${ext}`);
+      counter++;
+    }
+    
+    fs.copyFileSync(filePath, finalDest);
+    console.log(`✅ Uploaded template: ${path.basename(finalDest)}`);
+    
+    // Clean up temp file
+    try {
+      fs.unlinkSync(filePath);
+    } catch (cleanupError) {
+      console.warn("⚠️ Could not clean up temp file:", cleanupError);
+    }
+    
+    return path.basename(finalDest);
+  } catch (error) {
+    console.error("❌ Error uploading template:", error);
+    throw error;
+  }
+});
+
 ipcMain.handle("delete-template", async (event, fileName) => {
   const filePath = path.join(__dirname, "templates", fileName);
   if (fs.existsSync(filePath)) {
@@ -118,6 +177,7 @@ ipcMain.handle("export-word", async (event, { files, data, exportType }) => {
         tempDir,
         `${path.parse(file).name}_filled.docx`
       );
+      
       await generateDocx(inputPath, data, outputPath);
       generatedPaths.push(outputPath);
     }

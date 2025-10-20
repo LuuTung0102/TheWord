@@ -86,6 +86,38 @@ function generateDocx(templatePath, data, outputPath) {
     templatePhs.forEach(ph => {
       if (!(ph in data)) data[ph] = "";
     });
+
+    // Xử lý dữ liệu BD từ nguồn đã chọn
+    if (data.selectedBDDataSource) {
+      const source = data.selectedBDDataSource;
+      // Dùng mapping tập trung từ renderer/bdMapping.js
+      let mapping;
+      try {
+        // Try require when available (in main process)
+        const bdMap = require(path.join(__dirname, '..', 'renderer', 'bdMapping.js'));
+        mapping = bdMap && bdMap[source];
+      } catch (e) {
+        // Fallback: minimal inline mapping if require fails
+        const fallback = {
+          MEN1: { BD_Gender: 'Gender1', BD_Name: 'Name1', BD_CCCD: 'CCCD1', BD_Date: 'Date1', BD_Noi_Cap: 'Noi_Cap1', BD_Ngay_Cap: 'Ngay_Cap1', BD_SDT: 'SDT_MEN1', BD_Address: 'Address1', BD_Email: 'EMAIL_MEN1' },
+          MEN7: { BD_Gender: 'Gender7', BD_Name: 'Name7', BD_CCCD: 'CCCD7', BD_Date: 'Date7', BD_Noi_Cap: 'Noi_Cap7', BD_Ngay_Cap: 'Ngay_Cap7', BD_SDT: 'SDT_MEN7', BD_Address: 'Address2', BD_Email: 'EMAIL_MEN7' },
+        };
+        mapping = fallback[source];
+      }
+      if (mapping) {
+        // Điền dữ liệu từ nguồn vào các trường BD
+        Object.entries(mapping).forEach(([bdField, sourceField]) => {
+          if (data[sourceField] && data[sourceField].trim()) {
+            data[bdField] = data[sourceField];
+            console.log(`✅ BD: ${bdField} = ${data[sourceField]} (từ ${sourceField})`);
+          } else {
+            console.log(`⚠️ BD: ${bdField} = "" (không có dữ liệu từ ${sourceField})`);
+          }
+        });
+      }
+    } else {
+      console.log("⚠️ Không có nguồn dữ liệu BD được chọn");
+    }
     
     // Normalize data values
     Object.keys(data).forEach(k => {

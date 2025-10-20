@@ -22,6 +22,39 @@ function renderForm(placeholders) {
   idToPh = {};
   window.idToPh = idToPh;
 
+  // Kiểm tra xem có placeholder BD không
+  const hasBDPlaceholders = placeholders.some(ph => {
+    const map = window.phMapping && window.phMapping[ph];
+    return map && map.group === 'BD';
+  });
+
+  // Kiểm tra xem có placeholder khác BD không
+  const hasOtherPlaceholders = placeholders.some(ph => {
+    const map = window.phMapping && window.phMapping[ph];
+    return map && map.group !== 'BD';
+  });
+
+  if (hasOtherPlaceholders) {
+    // Render form thông thường trước (BCN, NCN, LAND)
+    renderNormalForm(placeholders);
+  }
+
+  if (hasBDPlaceholders) {
+    // Render form BD với logic đặc biệt
+    renderBDForm(placeholders);
+  }
+
+  // Đảm bảo luôn có ít nhất một section hiển thị
+  const allSections = area.querySelectorAll('.form-section');
+  const activeSection = area.querySelector('.form-section.active');
+  if (allSections.length && !activeSection) {
+    allSections[0].classList.add('active');
+  }
+}
+
+function renderNormalForm(placeholders) {
+  const area = document.getElementById("formArea");
+  
   // Persist last placeholders and manage visibility of extra MEN groups
   window.lastPlaceholders = placeholders;
   if (!window.visibleExtraGroups) window.visibleExtraGroups = new Set();
@@ -44,6 +77,10 @@ function renderForm(placeholders) {
     if (!map) {
       return;
     }
+    // Loại trừ BD placeholders khỏi renderNormalForm
+    if (map.group === 'BD') {
+      return;
+    }
     const groupKey = map.group;
     const subKey = map.subgroup;
     if (!grouped[groupKey]) grouped[groupKey] = {};
@@ -51,7 +88,7 @@ function renderForm(placeholders) {
     grouped[groupKey][subKey].push({ ph, map });
   });
 
-  // Create sections for each group
+  // Create sections for each group - đảm bảo chỉ BCN active mặc định
   Object.keys(grouped).forEach((groupKey) => {
     const sectionDiv = document.createElement("div");
     sectionDiv.className = `form-section ${groupKey === 'BCN' ? 'active' : ''}`;
@@ -112,15 +149,14 @@ function renderForm(placeholders) {
         // Skip until user clicks to reveal
         if (!window.visibleExtraGroups.has(subKey)) return;
       }
-      const subgroupDiv = document.createElement("div");
-      subgroupDiv.className = "form-subgroup";
+    const subgroupDiv = document.createElement("div");
+    const menMatch = subKey && subKey.match && subKey.match(/^MEN(\d+)$/);
+    // Style as a bordered card for each person; remove subgroup title
+    subgroupDiv.className = `form-subgroup${menMatch ? ' person-subgroup' : ''}`;
+    if (!menMatch) {
       let subgroupTitle = (window.subgroupLabels && window.subgroupLabels[subKey]) || subKey;
-      const menMatch = subKey && subKey.match && subKey.match(/^MEN(\d+)$/);
-      if (menMatch) {
-        const num = menMatch[1];
-        subgroupTitle = `Thông tin cá nhân ${num}`;
-      }
       subgroupDiv.innerHTML = `<h4>${subgroupTitle}</h4>`;
+    }
       let items = grouped[groupKey][subKey];
       // Reorder LAND/INFO so TTGLVD and Note appear last
       if (groupKey === 'LAND' && subKey === 'INFO') {
@@ -166,7 +202,7 @@ function renderForm(placeholders) {
           } else if (map.type === "address") {
             inputHtml = `
               <label for="${safeId}"><b>${map.label}</b></label>
-              <div style="display:flex;flex-direction:row;gap:4px;align-items:center;">
+              <div class="address-row">
                 <select id="${safeId}_province" class="input-field address-select" data-level="province">
                   <option value="">-- Chọn tỉnh/thành --</option>
                   ${addressData && addressData.length ? addressData
@@ -199,6 +235,11 @@ function renderForm(placeholders) {
                 extraAttr +=
                   ' inputmode="numeric" pattern="\\d*" maxlength="12"';
               }
+              if (ph === "SDT_MEN1" || ph === "SDT_MEN7") {
+                inputType = "text";
+                extraAttr +=
+                  ' inputmode="numeric" pattern="\\d*" maxlength="10"';
+              }
               inputHtml = `
                   <label for="${safeId}"><b>${map.label}</b></label>
                   <input type="${inputType}" id="${safeId}" class="input-field"${extraAttr}>
@@ -206,7 +247,8 @@ function renderForm(placeholders) {
             }
           }
           const cellDiv = document.createElement("div");
-          cellDiv.className = "form-cell";
+          // Add both classes so existing and new CSS rules apply
+          cellDiv.className = "form-cell form-field";
           cellDiv.style.display = "flex";
           cellDiv.style.flexDirection = "column";
           cellDiv.style.alignItems = "flex-start";
@@ -221,6 +263,13 @@ function renderForm(placeholders) {
     sectionDiv.appendChild(groupDiv);
     area.appendChild(sectionDiv);
   });
+
+  // Nếu không có section nào đang active (ví dụ chỉ có NCN/LAND), kích hoạt section đầu tiên
+  const anyActive = area.querySelector('.form-section.active');
+  if (!anyActive) {
+    const firstSection = area.querySelector('.form-section');
+    if (firstSection) firstSection.classList.add('active');
+  }
 
   setupFormEventListeners();
   // Apply default values for selects after render
@@ -239,6 +288,7 @@ function renderForm(placeholders) {
   setupAddressSelects();
   setupTaskbarNavigation();
   updateTaskbarCounts();
+  updateDynamicTaskbar();
 }
 
 function setupFormEventListeners() {
@@ -250,6 +300,16 @@ function setupFormEventListeners() {
     // CCCD input handling
     if (ph && ph.startsWith && ph.startsWith("CCCD")) {
       setupCCCDInput(el);
+    }
+
+    // Phone input handling
+    if ((ph === "SDT_MEN1" || ph === "SDT_MEN7" || ph === "BD_SDT") && el.tagName.toLowerCase() === "input") {
+      setupPhoneInput(el);
+    }
+
+    // Email input handling
+    if ((ph === "EMAIL_MEN1" || ph === "EMAIL_MEN7" || ph === "BD_Email") && el.tagName.toLowerCase() === "input") {
+      setupEmailInput(el);
     }
 
     // Name input handling (uppercase)
@@ -291,6 +351,43 @@ function setupCCCDInput(el) {
       .slice(0, 12);
     document.execCommand("insertText", false, text);
   });
+}
+
+function setupPhoneInput(el) {
+  el.addEventListener("input", (e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(0, 10);
+    if (e.target.value !== v) {
+      const pos = e.target.selectionStart - (e.target.value.length - v.length);
+      e.target.value = v;
+      e.target.selectionStart = e.target.selectionEnd = Math.max(0, pos);
+    }
+  });
+  el.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData)
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 10);
+    document.execCommand("insertText", false, text);
+  });
+}
+
+function setupEmailInput(el) {
+  el.addEventListener("blur", (e) => {
+    const email = e.target.value.trim();
+    if (email && !isValidEmail(email)) {
+      // Hiển thị cảnh báo nhẹ nhưng không chặn form
+      e.target.style.borderColor = "#ffa500";
+      setTimeout(() => {
+        e.target.style.borderColor = "";
+      }, 2000);
+    }
+  });
+}
+
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 function setupNameInput(el) {
@@ -569,6 +666,17 @@ function validateForm() {
     }
   });
   
+          // Validate Phone Number
+          inputs.forEach((input) => {
+            const ph = idToPh[input.id];
+            if (ph === "SDT_MEN1" || ph === "SDT_MEN7" || ph === "BD_SDT") {
+              const v = (input.value || "").toString().replace(/\D/g, "");
+              if (v && v.length !== 10) {
+                invalidNodes.push({ input, ph });
+              }
+            }
+          });
+  
   document
     .querySelectorAll(".invalid-input")
     .forEach((n) => n.classList.remove("invalid-input"));
@@ -577,7 +685,12 @@ function validateForm() {
     invalidNodes.forEach((n) => n.input.classList.add("invalid-input"));
     const first = invalidNodes[0].input;
     first.focus();
-    alert(`Vui lòng kiểm tra ô CCCD.`);
+    const firstPh = idToPh[first.id];
+    if (firstPh && firstPh.startsWith("CCCD")) {
+      alert(`Vui lòng kiểm tra ô CCCD.`);
+            } else if (firstPh === "SDT_MEN1" || firstPh === "SDT_MEN7" || firstPh === "BD_SDT") {
+              alert(`Vui lòng kiểm tra ô số điện thoại (cần đúng 10 chữ số).`);
+            }
     return false;
   }
 
@@ -694,7 +807,14 @@ function collectFormData() {
         } else {
           value = digits;
         }
-      }
+            } else if ((ph === "SDT_MEN1" || ph === "SDT_MEN7" || ph === "BD_SDT") && value) {
+              const digits = value.toString().replace(/\D/g, "");
+              if (/^\d{10}$/.test(digits)) {
+                value = window.formatPhoneNumber ? `${window.formatPhoneNumber(digits)}` : digits;
+              } else {
+                value = digits;
+              }
+            }
     }
 
     if (ph) {
@@ -705,6 +825,9 @@ function collectFormData() {
         value = window.formatWithCommas ? window.formatWithCommas(digits) : digits;
       } else if (ph === "Loai_Dat") {
         value = window.expandLandType ? window.expandLandType(value) : value;
+      } else if (ph === "EMAIL_MEN1" || ph === "EMAIL_MEN7" || ph === "BD_Email") {
+        // Nếu có email thì xuất, không có thì thay bằng "………."
+        value = value && value.trim() ? value.trim() : "……….";
       }
       data[ph] = value || "";
     }
@@ -758,6 +881,12 @@ function collectFormData() {
     });
   });
   
+  // Thêm selectedBDDataSource vào data
+  if (window.selectedBDDataSource) {
+    data.selectedBDDataSource = window.selectedBDDataSource;
+    console.log("🔍 Added selectedBDDataSource to data:", window.selectedBDDataSource);
+  }
+  
   return data;
 }
 
@@ -773,57 +902,46 @@ function setupTaskbarNavigation() {
       taskbarBtns.forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
       
-    
+      // Add active class to clicked button
       btn.classList.add('active');
+      
+      // Show target section with smooth scroll
       const targetSection = document.getElementById(`section-${section}`);
       if (targetSection) {
         targetSection.classList.add('active');
+        
+        // Smooth scroll to section
+        targetSection.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+        
+        // Add highlight effect
+        targetSection.style.animation = 'highlight 0.5s ease-in-out';
+        setTimeout(() => {
+          targetSection.style.animation = '';
+        }, 500);
       }
     });
   });
 }
 
 function updateTaskbarCounts() {
-  const sections = ['BCN', 'NCN', 'LAND'];
+  const sections = ['BCN', 'NCN', 'LAND', 'BD'];
   
-  sections.forEach(section => {
-    const countElement = document.getElementById(`${section.toLowerCase()}-count`);
-    if (!countElement) return;
-    
-    const sectionElement = document.getElementById(`section-${section}`);
-    if (!sectionElement) {
-      countElement.textContent = '0';
-      return;
-    }
-    
-    // Count filled fields in this section
-    const inputs = sectionElement.querySelectorAll('.input-field');
-    let filledCount = 0;
-    
-    inputs.forEach(input => {
-      if (input.type === 'select-one') {
-        if (input.value && input.value !== '') {
-          filledCount++;
-        }
-      } else if (input.type === 'text' || input.type === 'number' || input.type === 'textarea') {
-        if (input.value && input.value.trim() !== '') {
-          filledCount++;
-        }
-      }
+  // Lấy danh sách placeholder từ template hiện tại
+  const placeholders = window.lastPlaceholders || [];
+  
+  // Kiểm tra xem có placeholder nào thuộc group không
+  const hasGroupPlaceholders = (group) => {
+    return placeholders.some(ph => {
+      const map = window.phMapping && window.phMapping[ph];
+      return map && map.group === group;
     });
-    
-    countElement.textContent = filledCount;
-    
-    // Update button style based on completion
-    const btn = document.querySelector(`[data-section="${section}"]`);
-    if (btn) {
-      if (filledCount > 0) {
-        btn.classList.add('has-data');
-      } else {
-        btn.classList.remove('has-data');
-      }
-    }
-  });
+  };
+  
+  // Bỏ đếm số: chỉ giữ lại cập nhật style nếu cần trong tương lai (hiện không dùng)
+  sections.forEach(() => {});
 }
 
 function setupFormChangeListeners() {
@@ -847,15 +965,12 @@ function addNewPersonSection(subKey) {
   
   // Tạo subgroup mới
   const subgroupDiv = document.createElement("div");
-  subgroupDiv.className = "form-subgroup";
-  
   const menMatch = subKey && subKey.match && subKey.match(/^MEN(\d+)$/);
-  let subgroupTitle = subKey;
-  if (menMatch) {
-    const num = menMatch[1];
-    subgroupTitle = `Thông tin cá nhân ${num}`;
+  subgroupDiv.className = `form-subgroup${menMatch ? ' person-subgroup' : ''}`;
+  if (!menMatch) {
+    let subgroupTitle = subKey;
+    subgroupDiv.innerHTML = `<h4>${subgroupTitle}</h4>`;
   }
-  subgroupDiv.innerHTML = `<h4>${subgroupTitle}</h4>`;
   
   // Lấy placeholders cho subgroup này
   const menExtraGroupToPhs = {
@@ -900,7 +1015,7 @@ function addNewPersonSection(subKey) {
       } else if (map.type === "address") {
         inputHtml = `
           <label for="${safeId}"><b>${map.label}</b></label>
-          <div style="display:flex;flex-direction:row;gap:4px;align-items:center;">
+          <div class="address-row">
             <select id="${safeId}_province" class="input-field address-select" data-level="province">
               <option value="">-- Chọn tỉnh/thành --</option>
               ${window.addressData && window.addressData.length ? window.addressData
@@ -925,19 +1040,19 @@ function addNewPersonSection(subKey) {
           inputType = "text";
           extraAttr += ' inputmode="numeric" pattern="\\d*" maxlength="12"';
         }
+        if (ph === "SDT_MEN1" || ph === "SDT_MEN7") {
+          inputType = "text";
+          extraAttr += ' inputmode="numeric" pattern="\\d*" maxlength="10"';
+        }
         inputHtml = `
             <label for="${safeId}"><b>${map.label}</b></label>
             <input type="${inputType}" id="${safeId}" class="input-field"${extraAttr}>
           `;
       }
       
-      const cellDiv = document.createElement("div");
-      cellDiv.className = "form-cell";
-      cellDiv.style.display = "flex";
-      cellDiv.style.flexDirection = "column";
-      cellDiv.style.alignItems = "flex-start";
-      cellDiv.style.marginRight = "8px";
-      cellDiv.innerHTML = inputHtml;
+          const cellDiv = document.createElement("div");
+          cellDiv.className = "form-cell form-field";
+          cellDiv.innerHTML = inputHtml;
       rowDiv.appendChild(cellDiv);
     }
     subgroupDiv.appendChild(rowDiv);
@@ -1075,3 +1190,217 @@ window.getIdToPh = () => idToPh;
 window.setupTaskbarNavigation = setupTaskbarNavigation;
 window.updateTaskbarCounts = updateTaskbarCounts;
 window.setupFormChangeListeners = setupFormChangeListeners;
+
+function updateDynamicTaskbar() {
+  const taskbarContainer = document.getElementById('taskbarContainer');
+  const taskbar = document.getElementById('taskbar');
+  const sections = ['BCN', 'NCN', 'LAND', 'BD'];
+  
+  // Lấy danh sách placeholder từ template hiện tại
+  const placeholders = window.lastPlaceholders || [];
+  
+  // Nếu không có placeholder nào, ẩn taskbar container
+  if (!placeholders || placeholders.length === 0) {
+    taskbarContainer.style.display = 'none';
+    return;
+  }
+  
+  // Kiểm tra xem có placeholder nào thuộc group không
+  const hasGroupPlaceholders = (group) => {
+    return placeholders.some(ph => {
+      const map = window.phMapping && window.phMapping[ph];
+      return map && map.group === group;
+    });
+  };
+  
+  // Xóa tất cả taskbar buttons hiện tại
+  taskbar.innerHTML = '';
+  
+  // Tạo taskbar buttons cho các group có placeholder
+  let firstButton = true;
+  sections.forEach(section => {
+    const hasData = hasGroupPlaceholders(section);
+    
+    if (hasData) {
+      const groupLabel = window.groupLabels && window.groupLabels[section] || section;
+      let icon = '📄';
+      if (section === 'BCN') icon = '👤';
+      else if (section === 'NCN') icon = '👥';
+      else if (section === 'LAND') icon = '🏠';
+      else if (section === 'BD') icon = '📋';
+      
+      const button = document.createElement('button');
+      button.className = `taskbar-btn ${firstButton ? 'active' : ''}`;
+      button.dataset.section = section;
+      button.innerHTML = `
+        <span class="taskbar-icon">${icon}</span>
+        <span class="taskbar-label">${groupLabel}</span>
+      `;
+      
+      taskbar.appendChild(button);
+      firstButton = false;
+    }
+  });
+  
+  // Hiển thị taskbar container nếu có ít nhất 1 button
+  if (taskbar.children.length > 0) {
+    taskbarContainer.style.display = 'block';
+    // Setup navigation cho các buttons mới
+    setupTaskbarNavigation();
+  } else {
+    taskbarContainer.style.display = 'none';
+  }
+}
+
+function renderBDForm(placeholders) {
+  console.log("🔍 renderBDForm called with placeholders:", placeholders);
+  const area = document.getElementById("formArea");
+  
+  // Persist last placeholders
+  window.lastPlaceholders = placeholders;
+  
+  // Tạo form BD với logic đặc biệt
+  const bdSectionDiv = document.createElement("div");
+  // Chỉ set active nếu hiện chưa có section nào active (trường hợp chỉ có BD)
+  const hasActiveSection = document.querySelector('.form-section.active');
+  bdSectionDiv.className = `form-section ${hasActiveSection ? '' : 'active'}`;
+  bdSectionDiv.id = "section-BD";
+  
+  const bdGroupDiv = document.createElement("div");
+  bdGroupDiv.className = "form-group";
+  bdGroupDiv.innerHTML = `<h3>${window.groupLabels && window.groupLabels['BD'] || 'Thông tin đăng ký biến động đất đai'}</h3>`;
+
+  // Lấy các placeholder BD
+  const bdPlaceholders = placeholders.filter(ph => {
+    const map = window.phMapping && window.phMapping[ph];
+    return map && map.group === 'BD';
+  });
+
+  console.log("🔍 BD placeholders found:", bdPlaceholders);
+
+  // Kiểm tra xem có placeholder thuộc MEN1 hoặc MEN7 không
+  const hasMEN1Placeholders = placeholders.some(ph => {
+    const map = window.phMapping && window.phMapping[ph];
+    return map && map.group === 'BCN' && map.subgroup === 'MEN1';
+  });
+
+  const hasMEN7Placeholders = placeholders.some(ph => {
+    const map = window.phMapping && window.phMapping[ph];
+    return map && map.group === 'NCN' && map.subgroup === 'MEN7';
+  });
+
+  console.log("🔍 hasMEN1Placeholders:", hasMEN1Placeholders, "hasMEN7Placeholders:", hasMEN7Placeholders);
+
+  // Hiển thị form BD khi có BD placeholders
+  if (bdPlaceholders.length > 0) {
+    console.log("🔍 Rendering BD form with data source selection");
+    console.log("🔍 Creating data source card...");
+    // Luôn hiển thị 2 nút chọn nguồn
+    const dataSourceCard = document.createElement("div");
+    dataSourceCard.className = "data-source-card";
+    dataSourceCard.innerHTML = `
+      <div class="data-source-header">
+        <h4>📋 Chọn nguồn dữ liệu</h4>
+        <p>Chọn thông tin từ bên A hoặc bên B để điền vào đơn biến động</p>
+      </div>
+      <div class="data-source-options">
+        <div class="option-card" data-source="MEN1">
+          <div class="option-checkbox"></div>
+          <div class="option-title">Thông tin bên A</div>
+        </div>
+        <div class="option-card" data-source="MEN7">
+          <div class="option-checkbox"></div>
+          <div class="option-title">Thông tin bên B</div>
+        </div>
+      </div>
+    `;
+    
+    bdGroupDiv.appendChild(dataSourceCard);
+    bdSectionDiv.appendChild(bdGroupDiv);
+    area.appendChild(bdSectionDiv);
+
+    console.log("🔍 Data source card appended to DOM");
+    console.log("🔍 Setting up event listeners...");
+
+    // Setup event listeners
+    setupBDFormEventListeners();
+    
+    console.log("🔍 Event listeners setup complete");
+
+    // Force a reflow so elements (like the checkbox) appear without manual resize
+    try {
+      // Trigger layout
+      void bdSectionDiv.offsetHeight;
+      // Dispatch a resize to recalc responsive layouts
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 0);
+    } catch (e) {
+      // no-op
+    }
+  }
+  
+  updateTaskbarCounts();
+}
+
+function setupBDFormEventListeners() {
+  console.log("🔍 setupBDFormEventListeners called");
+  // Setup event listeners cho data source selection
+  const optionCards = document.querySelectorAll('.option-card');
+  console.log("🔍 Found option cards:", optionCards.length);
+  
+  optionCards.forEach((card, index) => {
+    console.log(`🔍 Setting up listener for card ${index}:`, card.dataset.source);
+    card.addEventListener('click', () => {
+      const source = card.dataset.source;
+      const checkbox = card.querySelector('.option-checkbox');
+      
+      // Nếu card đã được chọn, hủy chọn
+      if (card.classList.contains('active')) {
+        card.classList.remove('active');
+        checkbox.classList.remove('checked');
+        window.selectedBDDataSource = null;
+        console.log('Đã hủy chọn nguồn dữ liệu');
+      } else {
+        // Remove active class from all cards
+        optionCards.forEach(c => {
+          c.classList.remove('active');
+          c.querySelector('.option-checkbox').classList.remove('checked');
+        });
+        
+        // Add active class to clicked card
+        card.classList.add('active');
+        checkbox.classList.add('checked');
+        
+        // Lưu nguồn được chọn
+        window.selectedBDDataSource = source;
+        
+        // Hiển thị thông báo xác nhận
+        const sourceName = source === 'MEN1' ? 'Bên chuyển nhượng (MEN1)' : 'Bên nhận chuyển nhượng (MEN7)';
+        console.log(`Đã chọn nguồn dữ liệu: ${sourceName}`);
+      }
+    });
+  });
+}
+
+function fillBDFieldsFromSource(source) {
+  // Dùng mapping tập trung đã nạp vào window (renderer/bdMapping.js)
+  const mappings = window.BD_FIELD_MAPPINGS || {};
+  const mapping = mappings[source];
+  if (!mapping) return;
+
+  // Điền dữ liệu từ nguồn vào các trường BD
+  Object.entries(mapping).forEach(([bdField, sourceField]) => {
+    const bdInput = document.getElementById(bdField.replace(/[^a-zA-Z0-9]/g, "_"));
+    const sourceInput = document.getElementById(sourceField.replace(/[^a-zA-Z0-9]/g, "_"));
+
+    if (bdInput && sourceInput) {
+      // Sao chép giá trị từ trường nguồn sang trường BD
+      bdInput.value = sourceInput.value;
+    }
+  });
+}
+
+
+window.updateDynamicTaskbar = updateDynamicTaskbar;
+
