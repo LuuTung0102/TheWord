@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TheWord - Tạo tài liệu Word thông minh</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Offline fonts and icons removed for offline deployment -->
 </head>
 <body>
   <div class="app-container">
@@ -14,7 +13,7 @@
     <header class="app-header">
       <div class="header-content">
         <div class="logo">
-          <i class="fas fa-file-word"></i>
+          <span class="icon">📄</span>
           <h1>TheWord</h1>
         </div>
         <div class="header-subtitle">
@@ -35,7 +34,7 @@
       <div class="action-cards">
         <div class="action-card primary" onclick="location.href='export.html'">
           <div class="card-icon">
-            <i class="fas fa-file-export"></i>
+            <span class="icon">📤</span>
           </div>
           <div class="card-content">
             <h3>Tạo tài liệu</h3>
@@ -47,13 +46,13 @@
             </div>
           </div>
           <div class="card-arrow">
-            <i class="fas fa-arrow-right"></i>
+            <span class="icon">→</span>
           </div>
         </div>
 
         <div class="action-card secondary" onclick="location.href='manage.html'">
           <div class="card-icon">
-            <i class="fas fa-cogs"></i>
+            <span class="icon">⚙️</span>
           </div>
           <div class="card-content">
             <h3>Quản lý mẫu</h3>
@@ -65,7 +64,7 @@
             </div>
           </div>
           <div class="card-arrow">
-            <i class="fas fa-arrow-right"></i>
+            <span class="icon">→</span>
           </div>
         </div>
       </div>
@@ -101,7 +100,7 @@
 
     // Show about modal
     function showAbout() {
-      alert('TheWord v1.0\n\nỨng dụng tạo tài liệu Word tự động\nPhát triển bởi AI Assistant');
+      alert('TheWord v1.0\n\nỨng dụng tạo tài liệu Word tự động\nPhát triển bởi Thanh Tùng');
     }
 
     // Show help

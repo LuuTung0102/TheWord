@@ -1,3 +1,13 @@
+// Shared constants for MEN extra groups
+const MEN_EXTRA_GROUPS = ["MEN3", "MEN4", "MEN5", "MEN6"];
+
+const MEN_EXTRA_GROUP_PLACEHOLDERS = {
+  MEN3: ["Gender3", "Name3", "CCCD3", "Date3", "Noi_Cap3", "Ngay_Cap3"],
+  MEN4: ["Gender4", "Name4", "CCCD4", "Date4", "Noi_Cap4", "Ngay_Cap4"],
+  MEN5: ["Gender5", "Name5", "CCCD5", "Date5", "Noi_Cap5", "Ngay_Cap5"],
+  MEN6: ["Gender6", "Name6", "CCCD6", "Date6", "Noi_Cap6", "Ngay_Cap6"],
+};
+
 const landTypeMap = {
   LUC: "Đất chuyên trồng lúa nước",
   LUK: "Đất trồng lúa nước còn lại",
@@ -364,6 +374,97 @@ const phMapping = {
     group: "BD",
     subgroup: "INFO",
   },
+  // UQ Group - Thông tin ủy quyền
+  // Bên A - Người ủy quyền (tự động từ MEN1/MEN7)
+  UQA_Gender: {
+    label: "Giới tính",
+    type: "select",
+    options: ["Ông", "Bà"],
+    group: "UQ",
+    subgroup: "BENA",
+  },
+  UQA_Name: {
+    label: "Họ và tên",
+    type: "text",
+    group: "UQ",
+    subgroup: "BENA",
+  },
+  UQA_CCCD: {
+    label: "Số CCCD",
+    type: "number",
+    group: "UQ",
+    subgroup: "BENA",
+  },
+  UQA_Date: {
+    label: "Ngày sinh",
+    type: "date",
+    group: "UQ",
+    subgroup: "BENA",
+  },
+  UQA_Noi_Cap: {
+    label: "Nơi cấp",
+    type: "select",
+    options: ["Cục Cảnh sát QLHC về TTXH cấp", "Công an T. Đắk Lắk cấp"],
+    group: "UQ",
+    subgroup: "BENA",
+  },
+  UQA_Ngay_Cap: {
+    label: "Ngày cấp",
+    type: "date",
+    group: "UQ",
+    subgroup: "BENA",
+  },
+  UQA_Address: {
+    label: "Địa chỉ",
+    type: "address",
+    group: "UQ",
+    subgroup: "BENA",
+  },
+  // Bên B - Người được ủy quyền (nhập trực tiếp)
+  UQ_Gender: {
+    label: "Giới tính",
+    type: "select",
+    options: ["Ông", "Bà"],
+    group: "UQ",
+    subgroup: "INFO",
+  },
+  UQ_Name: {
+    label: "Họ và tên",
+    type: "text",
+    group: "UQ",
+    subgroup: "INFO",
+  },
+  UQ_CCCD: {
+    label: "Số CCCD",
+    type: "number",
+    group: "UQ",
+    subgroup: "INFO",
+  },
+  UQ_Date: {
+    label: "Ngày sinh",
+    type: "date",
+    group: "UQ",
+    subgroup: "INFO",
+  },
+  UQ_Noi_Cap: {
+    label: "Nơi cấp",
+    type: "select",
+    options: ["Cục Cảnh sát QLHC về TTXH cấp", "Công an T. Đắk Lắk cấp"],
+    group: "UQ",
+    subgroup: "INFO",
+  },
+  UQ_Ngay_Cap: {
+    label: "Ngày cấp",
+    type: "date",
+    group: "UQ",
+    subgroup: "INFO",
+  },
+  UQ_Address: {
+    label: "Địa chỉ",
+    type: "address",
+    group: "UQ",
+    subgroup: "INFO",
+  },
 };
 
 const groupLabels = {
@@ -371,6 +472,7 @@ const groupLabels = {
   NCN: "Thông tin bên B",
   LAND: "Thông tin thửa đất",
   BD: "Thông tin đăng ký biến động đất đai",
+  UQ: "Thông tin ủy quyền",
 };
 
 const subgroupLabels = {
@@ -384,6 +486,8 @@ const subgroupLabels = {
   INFO: "Thông tin chi tiết",
 };
 
+window.MEN_EXTRA_GROUPS = MEN_EXTRA_GROUPS;
+window.MEN_EXTRA_GROUP_PLACEHOLDERS = MEN_EXTRA_GROUP_PLACEHOLDERS;
 window.landTypeMap = landTypeMap;
 window.phMapping = phMapping;
 window.groupLabels = groupLabels;

@@ -19,6 +19,33 @@ async function loadTemplates() {
   }
 }
 
+// Helper function to render template items (DRY principle)
+function renderTemplateItem(file, actionType) {
+  const actionConfig = {
+    add: { class: 'add', icon: '+', title: 'Thêm' },
+    remove: { class: 'remove', icon: '🗑️', title: 'Xóa' }
+  };
+  
+  const config = actionConfig[actionType] || actionConfig.add;
+  const item = document.createElement("div");
+  item.className = "template-item";
+  item.innerHTML = `
+    <div class="template-icon">
+      <span class="icon">📄</span>
+    </div>
+    <div class="template-info">
+      <h4 class="template-name">${file}</h4>
+      <p class="template-meta">File Word</p>
+    </div>
+    <div class="template-actions">
+      <button class="action-btn ${config.class}" data-file="${file}" title="${config.title}">
+        <span class="icon">${config.icon}</span>
+      </button>
+    </div>
+  `;
+  return item;
+}
+
 function renderLeftTable(templates) {
   const container = document.querySelector("#leftTable");
   if (!container) {
@@ -28,23 +55,7 @@ function renderLeftTable(templates) {
   container.innerHTML = "";
  
   templates.forEach((file) => {
-    const item = document.createElement("div");
-    item.className = "template-item";
-    item.innerHTML = `
-      <div class="template-icon">
-        <i class="fas fa-file-word"></i>
-      </div>
-      <div class="template-info">
-        <h4 class="template-name">${file}</h4>
-        <p class="template-meta">File Word</p>
-      </div>
-      <div class="template-actions">
-        <button class="action-btn add" data-file="${file}" title="Thêm">
-          <i class="fas fa-plus"></i>
-        </button>
-      </div>
-    `;
-    container.appendChild(item);
+    container.appendChild(renderTemplateItem(file, 'add'));
   });
 }
 
@@ -57,23 +68,7 @@ function renderRightTable(templates) {
   container.innerHTML = "";
  
   templates.forEach((file) => {
-    const item = document.createElement("div");
-    item.className = "template-item";
-    item.innerHTML = `
-      <div class="template-icon">
-        <i class="fas fa-file-word"></i>
-      </div>
-      <div class="template-info">
-        <h4 class="template-name">${file}</h4>
-        <p class="template-meta">File Word</p>
-      </div>
-      <div class="template-actions">
-        <button class="action-btn remove" data-file="${file}" title="Xóa">
-          <i class="fas fa-trash"></i>
-        </button>
-      </div>
-    `;
-    container.appendChild(item);
+    container.appendChild(renderTemplateItem(file, 'remove'));
   });
   updateTemplateCounts();
 }

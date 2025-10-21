@@ -5,6 +5,22 @@
   box-sizing: border-box;
 }
 
+/* Unicode Icon Styles */
+.icon {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+  display: inline-block;
+}
+
+/* Specific icon sizes */
+.icon.small { font-size: 0.875em; }
+.icon.medium { font-size: 1em; }
+.icon.large { font-size: 1.25em; }
+.icon.xlarge { font-size: 1.5em; }
+
 :root {
   /* Colors */
   --primary-color: #3b82f6;
@@ -32,8 +48,8 @@
   --gray-800: #1e293b;
   --gray-900: #0f172a;
   
-  /* Typography */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Typography - Offline fonts */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -783,6 +799,7 @@ body {
 
 .taskbar-icon {
   font-size: var(--font-size-base);
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
 }
 
 /* Removed count badge styles */
@@ -1056,14 +1073,20 @@ input.input-field, textarea.input-field { line-height: 1.4; }
 }
 
 .data-source-header h4 {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--gray-900);
-  margin-bottom: var(--space-2);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.required-indicator {
+  color: var(--error-color);
+  font-weight: bold;
+  font-size: var(--font-size-lg);
 }
 
 .data-source-header p {
@@ -1150,6 +1173,33 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   color: var(--gray-600);
   font-size: var(--font-size-sm);
   line-height: 1.5;
+}
+
+/* ===== UQ BENB CARD ===== */
+.uq-benb-card {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.uq-benb-header {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.uq-benb-header h4 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--space-2);
+}
+
+.uq-benb-header p {
+  color: var(--gray-600);
+  font-size: var(--font-size-sm);
 }
 
 /* ===== EXPORT SECTION ===== */

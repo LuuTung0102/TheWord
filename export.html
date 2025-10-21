@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tạo tài liệu - TheWord</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Offline fonts and icons removed for offline deployment -->
   <link rel="stylesheet" href="./node_modules/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
@@ -15,16 +14,16 @@
     <header class="app-header">
       <div class="header-content">
         <button class="back-btn" onclick="location.href='index.html'">
-          <i class="fas fa-arrow-left"></i>
+          <span class="icon">←</span>
           <span>Trang chính</span>
         </button>
         <div class="header-title">
-          <i class="fas fa-file-export"></i>
+          <span class="icon">📤</span>
           <h1>Tạo tài liệu</h1>
         </div>
         <div class="header-actions">
           <button class="help-btn" onclick="showHelp()" title="Trợ giúp">
-            <i class="fas fa-question-circle"></i>
+            <span class="icon">❓</span>
           </button>
         </div>
       </div>
@@ -36,11 +35,11 @@
       <div class="floating-template-selector" id="templateSelector">
         <div class="floating-header">
           <div class="floating-title">
-            <i class="fas fa-file-alt"></i>
+            <span class="icon">📄</span>
             <span>Chọn mẫu Word</span>
           </div>
           <button class="floating-toggle" id="templateToggle">
-            <i class="fas fa-chevron-down"></i>
+            <span class="icon">▼</span>
           </button>
         </div>
         
@@ -48,12 +47,12 @@
           <div class="template-grid">
             <div class="template-column">
               <div class="column-header">
-                <i class="fas fa-folder-open"></i>
+                <span class="icon">📁</span>
                 <span>Mẫu có sẵn</span>
                 <span class="template-count" id="availableCount">0</span>
               </div>
               <div class="search-container">
-                <i class="fas fa-search"></i>
+                <span class="icon">🔍</span>
                 <input type="text" id="searchLeft" placeholder="Tìm kiếm mẫu...">
               </div>
               <div class="template-list" id="leftTable">
@@ -63,12 +62,12 @@
 
             <div class="template-column">
               <div class="column-header">
-                <i class="fas fa-check-circle"></i>
+                <span class="icon">✅</span>
                 <span>Đã chọn</span>
                 <span class="template-count" id="selectedCount">0</span>
               </div>
               <div class="search-container">
-                <i class="fas fa-search"></i>
+                <span class="icon">🔍</span>
                 <input type="text" id="searchRight" placeholder="Tìm kiếm mẫu đã chọn...">
               </div>
               <div class="template-list" id="rightTable">
@@ -89,13 +88,13 @@
       <!-- Form Content -->
       <section class="form-panel">
         <div class="section-header">
-          <h2><i class="fas fa-edit"></i> Nhập thông tin</h2>
+          <h2><span class="icon">✏️</span> Nhập thông tin</h2>
           <p>Điền thông tin vào các trường bên dưới</p>
         </div>
         <div class="form-content">
           <div id="formArea">
             <div class="empty-state">
-              <i class="fas fa-file-plus"></i>
+              <span class="icon">📄</span>
               <h3>Chưa có mẫu nào được chọn</h3>
               <p>Vui lòng chọn ít nhất một mẫu Word để bắt đầu</p>
             </div>
@@ -107,14 +106,14 @@
       <section class="export-section">
         <div class="export-card">
           <div class="export-info">
-            <i class="fas fa-download"></i>
+            <span class="icon">💾</span>
             <div class="export-details">
               <h3>Sẵn sàng xuất file</h3>
               <p>Nhấn nút bên dưới để tạo tài liệu Word</p>
             </div>
           </div>
           <button id="btnExport" class="export-btn" disabled>
-            <i class="fas fa-file-export"></i>
+            <span class="icon">📤</span>
             <span>Xuất file</span>
           </button>
         </div>
@@ -135,7 +134,7 @@
   <div class="modal-overlay" id="successModal" style="display: none;">
     <div class="modal-content success">
       <div class="modal-icon">
-        <i class="fas fa-check-circle"></i>
+        <span class="icon">✅</span>
       </div>
       <h3>Xuất file thành công!</h3>
       <p id="successMessage">Tài liệu đã được tạo thành công</p>
@@ -150,7 +149,7 @@
   <div class="modal-overlay" id="errorModal" style="display: none;">
     <div class="modal-content error">
       <div class="modal-icon">
-        <i class="fas fa-exclamation-triangle"></i>
+        <span class="icon">⚠️</span>
       </div>
       <h3>Xuất file thất bại!</h3>
       <p id="errorMessage">Có lỗi xảy ra khi tạo tài liệu</p>
@@ -165,6 +164,7 @@
   <script src="renderer/constants.js"></script>
   <script src="renderer/utils.js"></script>
   <script src="renderer/bdMapping.js"></script>
+  <script src="renderer/uqMapping.js"></script>
   <script src="renderer/templateManager.js"></script>
   <script src="renderer/formHandler.js"></script>
   <script src="renderer/exportHandler.js"></script>

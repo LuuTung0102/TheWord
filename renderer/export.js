@@ -4,56 +4,45 @@ window.allTemplates = [];
 window.selectedTemplates = [];
 window.addressData = [];
 
+// Helper function to safely call a function if it exists (DRY principle)
+function safeCall(fnName, fn, isAsync = false) {
+  if (typeof fn === 'function') {
+    try {
+      const result = fn();
+      console.log(`✅ ${fnName} completed`);
+      return result;
+    } catch (error) {
+      console.error(`❌ Error in ${fnName}:`, error);
+      return isAsync ? Promise.reject(error) : null;
+    }
+  } else {
+    console.error(`❌ ${fnName} function not available`);
+    return isAsync ? Promise.resolve() : null;
+  }
+}
+
 // Initialize application
 async function initializeApp() {
   try {
     console.log("🚀 Starting application initialization...");
     
     // Load addresses
-    if (typeof loadAddresses === 'function') {
-      await loadAddresses();
-      console.log("✅ Addresses loaded");
-    } else {
-      console.error("❌ loadAddresses function not available");
-    }
+    await safeCall('loadAddresses', loadAddresses, true);
     
     // Load templates
-    if (typeof loadTemplates === 'function') {
-      await loadTemplates();
-      console.log("✅ Templates loaded");
-    } else {
-      console.error("❌ loadTemplates function not available");
-    }
+    await safeCall('loadTemplates', loadTemplates, true);
     
     // Setup search functionality
-    if (typeof setupSearch === 'function') {
-      setupSearch();
-      console.log("✅ Search functionality setup");
-    } else {
-      console.error("❌ setupSearch function not available");
-    }
+    safeCall('setupSearch', setupSearch);
 
     // Setup template popovers
-    if (typeof setupTemplatePopovers === 'function') {
-      setupTemplatePopovers();
-      console.log("✅ Template popovers setup");
-    } else {
-      console.error("❌ setupTemplatePopovers function not available");
-    }
+    safeCall('setupTemplatePopovers', setupTemplatePopovers);
     
     // Setup export button
-    if (typeof setupExportButton === 'function') {
-      setupExportButton();
-      console.log("✅ Export button setup");
-    } else {
-      console.error("❌ setupExportButton function not available");
-    }
-    if (typeof setupFormChangeListeners === 'function') {
-      setupFormChangeListeners();
-      console.log("✅ Form change listeners setup");
-    } else {
-      console.error("❌ setupFormChangeListeners function not available");
-    }
+    safeCall('setupExportButton', setupExportButton);
+    
+    // Setup form change listeners
+    safeCall('setupFormChangeListeners', setupFormChangeListeners);
     
     console.log("✅ Application initialized successfully");
   } catch (error) {

@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quản lý mẫu - TheWord</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Offline fonts and icons removed for offline deployment -->
 </head>
 <body>
   <div class="app-container">
@@ -14,16 +13,16 @@
     <header class="app-header">
       <div class="header-content">
         <button class="back-btn" onclick="location.href='index.html'">
-          <i class="fas fa-arrow-left"></i>
+          <span class="icon">←</span>
           <span>Trang chính</span>
         </button>
         <div class="header-title">
-          <i class="fas fa-cogs"></i>
+          <span class="icon">⚙️</span>
           <h1>Quản lý mẫu</h1>
         </div>
         <div class="header-actions">
           <button class="help-btn" onclick="showHelp()" title="Trợ giúp">
-            <i class="fas fa-question-circle"></i>
+            <span class="icon">❓</span>
           </button>
         </div>
       </div>
@@ -34,20 +33,20 @@
       <!-- Upload Section -->
       <section class="upload-section">
         <div class="section-header">
-          <h2><i class="fas fa-upload"></i> Thêm mẫu mới</h2>
+          <h2><span class="icon">📤</span> Thêm mẫu mới</h2>
           <p>Upload file Word (.docx) để thêm vào thư viện mẫu</p>
         </div>
         
         <div class="upload-card">
           <div class="upload-area" id="uploadArea">
             <div class="upload-icon">
-              <i class="fas fa-cloud-upload-alt"></i>
+              <span class="icon">☁️</span>
             </div>
             <h3>Kéo thả file Word vào đây</h3>
             <p>Hoặc nhấn để chọn file</p>
             <input type="file" id="fileInput" accept=".docx" multiple style="display: none;">
             <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-              <i class="fas fa-folder-open"></i>
+              <span class="icon">📁</span>
               Chọn file
             </button>
           </div>
@@ -64,21 +63,21 @@
       <!-- Templates List -->
       <section class="templates-section">
         <div class="section-header">
-          <h2><i class="fas fa-file-alt"></i> Mẫu có sẵn</h2>
+          <h2><span class="icon">📄</span> Mẫu có sẵn</h2>
           <p>Quản lý các mẫu Word trong thư viện</p>
         </div>
         
         <div class="templates-controls">
           <div class="search-container">
-            <i class="fas fa-search"></i>
+            <span class="icon">🔍</span>
             <input type="text" id="searchTemplates" placeholder="Tìm kiếm mẫu...">
           </div>
           <div class="view-controls">
             <button class="view-btn active" data-view="grid" title="Xem dạng lưới">
-              <i class="fas fa-th"></i>
+              <span class="icon">⊞</span>
             </button>
             <button class="view-btn" data-view="list" title="Xem dạng danh sách">
-              <i class="fas fa-list"></i>
+              <span class="icon">☰</span>
             </button>
           </div>
         </div>
@@ -88,7 +87,7 @@
         </div>
         
         <div class="empty-state" id="emptyState" style="display: none;">
-          <i class="fas fa-folder-open"></i>
+          <span class="icon">📁</span>
           <h3>Chưa có mẫu nào</h3>
           <p>Hãy upload file Word đầu tiên để bắt đầu</p>
         </div>
@@ -102,7 +101,7 @@
       <div class="modal-header">
         <h3 id="previewTitle">Xem trước mẫu</h3>
         <button class="close-btn" onclick="closePreviewModal()">
-          <i class="fas fa-times"></i>
+          <span class="icon">✕</span>
         </button>
       </div>
       <div class="modal-body">
@@ -136,7 +135,7 @@
   <div class="modal-overlay" id="deleteModal" style="display: none;">
     <div class="modal-content error">
       <div class="modal-icon">
-        <i class="fas fa-exclamation-triangle"></i>
+        <span class="icon">⚠️</span>
       </div>
       <h3>Xác nhận xóa</h3>
       <p id="deleteMessage">Bạn có chắc chắn muốn xóa mẫu này không?</p>
