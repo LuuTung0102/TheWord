@@ -5,4 +5,4 @@
     - CHUYẾN SANG PHẦN NHẬP LIỆU:
         CHỌN FILE WORD ĐÃ ĐƯỢC LƯU VÀO APP.
         NƠI NHẬP Ô XUẤT HIỆN, ĐIỀN THÔNG TIN CẦN CHÈN
-        NHẤT XUẤT FILE ( CHẾ ĐỘ ZIP OR SIMPLE)
+        NHẤN XUẤT FILE ( CHẾ ĐỘ ZIP OR SIMPLE)
