@@ -1162,6 +1162,10 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   color: var(--primary-color);
 }
 
+.option-content {
+  flex: 1;
+}
+
 .option-title {
   font-size: var(--font-size-lg);
   font-weight: 600;

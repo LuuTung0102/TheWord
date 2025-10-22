@@ -279,6 +279,12 @@ const phMapping = {
     group: "LAND",
     subgroup: "INFO",
   },
+  VTTD:{
+    label: "Vị trí thửa đất",
+    type: "text",
+    group: "LAND",
+    subgroup: "INFO",
+  },
   THSD: {
     label: "Thời hạn sử dụng",
     type: "text",

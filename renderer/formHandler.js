@@ -1034,6 +1034,31 @@ function collectFormData() {
     console.log("🔍 Added selectedUQDataSource to data:", window.selectedUQDataSource);
   }
   
+  // Thêm selectedUQBenBDataSource vào data
+  if (window.selectedUQBenBDataSource) {
+    data.selectedUQBenBDataSource = window.selectedUQBenBDataSource;
+    console.log("🔍 Added selectedUQBenBDataSource to data:", window.selectedUQBenBDataSource);
+    
+    // Nếu chọn từ DEFAULT1/2/3, thêm dữ liệu của người đó
+    if (window.selectedUQBenBDataSource.startsWith('DEFAULT')) {
+      const defaultPeople = loadDefaultPeople();
+      const index = parseInt(window.selectedUQBenBDataSource.replace('DEFAULT', '')) - 1;
+      const person = defaultPeople[index];
+      
+      if (person) {
+        data[`DEFAULT${index + 1}_gender`] = person.gender || '';
+        data[`DEFAULT${index + 1}_name`] = person.name || '';
+        data[`DEFAULT${index + 1}_cccd`] = person.cccd || '';
+        data[`DEFAULT${index + 1}_date`] = person.date || '';
+        data[`DEFAULT${index + 1}_noiCap`] = person.noiCap || '';
+        data[`DEFAULT${index + 1}_ngayCap`] = person.ngayCap || '';
+        data[`DEFAULT${index + 1}_address`] = person.address || '';
+        
+        console.log(`🔍 Added DEFAULT${index + 1} person data:`, person.name);
+      }
+    }
+  }
+  
   return data;
 }
 
@@ -1092,7 +1117,6 @@ function updateTaskbarCounts() {
 }
 
 function setupFormChangeListeners() {
-  // Listen for changes in all form inputs
   document.addEventListener('input', () => {
     updateTaskbarCounts();
   });
@@ -1731,58 +1755,48 @@ function renderUQForm(placeholders) {
       uqGroupDiv.appendChild(benACard);
     }
     
-    // Card Bên B - Form nhập thông tin
+    // Card Bên B - Chọn người được ủy quyền
     const benBCard = document.createElement("div");
-    benBCard.className = "uq-benb-card";
+    benBCard.className = "data-source-card";
+    
+    // Load danh sách 3 người mặc định từ localStorage
+    const defaultPeople = loadDefaultPeople();
+    
     benBCard.innerHTML = `
-      <div class="uq-benb-header">
-        <h4>👤 Thông tin bên B (Người được ủy quyền)</h4>
-        <p>Điền đầy đủ thông tin của người được ủy quyền</p>
+      <div class="data-source-header">
+        <h4>👤 Chọn người được ủy quyền (Bên B)</h4>
+        <p>Chọn một trong 3 người mặc định hoặc nhập thủ công</p>
+      </div>
+      <div class="data-source-options">
+        <div class="option-card uq-benb-option" data-source="DEFAULT1" data-type="UQ_BENB">
+          <div class="option-checkbox"></div>
+          <div class="option-content">
+            <div class="option-title">${defaultPeople[0].name || 'Người 1 (Chưa nhập)'}</div>
+            <div class="option-desc">${defaultPeople[0].cccd ? `CCCD: ${defaultPeople[0].cccd}` : 'Nhấn để thiết lập'}</div>
+          </div>
+        </div>
+        <div class="option-card uq-benb-option" data-source="DEFAULT2" data-type="UQ_BENB">
+          <div class="option-checkbox"></div>
+          <div class="option-content">
+            <div class="option-title">${defaultPeople[1].name || 'Người 2 (Chưa nhập)'}</div>
+            <div class="option-desc">${defaultPeople[1].cccd ? `CCCD: ${defaultPeople[1].cccd}` : 'Nhấn để thiết lập'}</div>
+          </div>
+        </div>
+        <div class="option-card uq-benb-option" data-source="DEFAULT3" data-type="UQ_BENB">
+          <div class="option-checkbox"></div>
+          <div class="option-content">
+            <div class="option-title">${defaultPeople[2].name || 'Người 3 (Chưa nhập)'}</div>
+            <div class="option-desc">${defaultPeople[2].cccd ? `CCCD: ${defaultPeople[2].cccd}` : 'Nhấn để thiết lập'}</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 16px; text-align: right;">
+        <button class="btn-secondary" onclick="window.openDefaultPeopleManager()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: white; cursor: pointer;">
+          <span class="icon">⚙️</span> Quản lý 3 người mặc định
+        </button>
       </div>
     `;
     
-    // Tạo form inputs cho Bên B
-    const formDiv = document.createElement("div");
-    formDiv.className = "form-subgroup";
-    
-    // Render các inputs theo cấu trúc giống MEN1
-    const uqFields = [
-      { ph: 'UQ_Gender', map: window.phMapping['UQ_Gender'] },
-      { ph: 'UQ_Name', map: window.phMapping['UQ_Name'] },
-      { ph: 'UQ_Date', map: window.phMapping['UQ_Date'] },
-      { ph: 'UQ_CCCD', map: window.phMapping['UQ_CCCD'] },
-      { ph: 'UQ_Noi_Cap', map: window.phMapping['UQ_Noi_Cap'] },
-      { ph: 'UQ_Ngay_Cap', map: window.phMapping['UQ_Ngay_Cap'] },
-      { ph: 'UQ_Address', map: window.phMapping['UQ_Address'] }
-    ];
-    
-    // Render 3 inputs per row (except address which takes full row)
-    for (let i = 0; i < uqFields.length; i += 3) {
-      const rowDiv = document.createElement("div");
-      rowDiv.className = "form-row";
-      
-      for (let j = i; j < i + 3 && j < uqFields.length; j++) {
-        const { ph, map } = uqFields[j];
-        if (!map) continue;
-        
-        const { inputHtml, isAddress } = renderInputField(ph, map);
-        
-        const cellDiv = document.createElement("div");
-        cellDiv.className = "form-cell form-field";
-        cellDiv.innerHTML = inputHtml;
-        
-        // Address field takes full row
-        if (isAddress) {
-          cellDiv.style.gridColumn = "1 / -1";
-        }
-        
-        rowDiv.appendChild(cellDiv);
-      }
-      
-      formDiv.appendChild(rowDiv);
-    }
-    
-    benBCard.appendChild(formDiv);
     uqGroupDiv.appendChild(benBCard);
     
     uqSectionDiv.appendChild(uqGroupDiv);
@@ -1790,10 +1804,13 @@ function renderUQForm(placeholders) {
 
     console.log("🔍 UQ form appended to DOM");
 
-    // Setup event listeners (chỉ khi có source data)
+    // Setup event listeners
     if (hasSourceData) {
       setupUQFormEventListeners();
     }
+    
+    // Setup event listeners cho Bên B
+    setupUQBenBEventListeners();
     
     // Setup input handlers
     setupFormEventListeners();
@@ -1854,5 +1871,227 @@ function setupUQFormEventListeners() {
     });
   });
 }
+
+function setupUQBenBEventListeners() {
+  console.log("🔍 setupUQBenBEventListeners called");
+  const optionCards = document.querySelectorAll('.option-card.uq-benb-option');
+  console.log("🔍 Found UQ Bên B option cards:", optionCards.length);
+  
+  optionCards.forEach((card, index) => {
+    console.log(`🔍 Setting up listener for UQ Bên B card ${index}:`, card.dataset.source);
+    
+    card.addEventListener('click', () => {
+      const source = card.dataset.source;
+      const checkbox = card.querySelector('.option-checkbox');
+      
+      // Nếu card đã được chọn, hủy chọn
+      if (card.classList.contains('active')) {
+        card.classList.remove('active');
+        checkbox.classList.remove('checked');
+        window.selectedUQBenBDataSource = null;
+        console.log('Đã hủy chọn người được ủy quyền');
+      } else {
+        // Remove active class from all UQ Bên B cards
+        optionCards.forEach(c => {
+          c.classList.remove('active');
+          c.querySelector('.option-checkbox').classList.remove('checked');
+        });
+        
+        // Add active class to clicked card
+        card.classList.add('active');
+        checkbox.classList.add('checked');
+        
+        // Lưu nguồn được chọn
+        window.selectedUQBenBDataSource = source;
+        
+        const defaultPeople = loadDefaultPeople();
+        const index = parseInt(source.replace('DEFAULT', '')) - 1;
+        const personName = defaultPeople[index]?.name || `Người ${index + 1}`;
+        
+        console.log(`✅ Đã chọn người được ủy quyền (Bên B): ${personName}`);
+        console.log(`✅ window.selectedUQBenBDataSource =`, window.selectedUQBenBDataSource);
+      }
+    });
+  });
+}
+
+// Load danh sách 3 người mặc định từ localStorage
+function loadDefaultPeople() {
+  try {
+    const saved = localStorage.getItem('defaultPeople');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.error('Error loading default people:', error);
+  }
+  
+  // Trả về 3 người rỗng nếu chưa có
+  return [
+    { gender: '', name: '', cccd: '', date: '', noiCap: '', ngayCap: '', address: '' },
+    { gender: '', name: '', cccd: '', date: '', noiCap: '', ngayCap: '', address: '' },
+    { gender: '', name: '', cccd: '', date: '', noiCap: '', ngayCap: '', address: '' }
+  ];
+}
+
+// Lưu danh sách 3 người mặc định vào localStorage
+function saveDefaultPeople(people) {
+  try {
+    localStorage.setItem('defaultPeople', JSON.stringify(people));
+    console.log('✅ Đã lưu danh sách 3 người mặc định');
+  } catch (error) {
+    console.error('Error saving default people:', error);
+  }
+}
+
+// Mở modal quản lý 3 người mặc định
+function openDefaultPeopleManager() {
+  const defaultPeople = loadDefaultPeople();
+  
+  // Tạo modal HTML
+  const modalHtml = `
+    <div class="modal-overlay" id="defaultPeopleModal" style="display: flex;">
+      <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-header">
+          <h3>⚙️ Quản lý 3 người mặc định cho ủy quyền</h3>
+          <button class="close-btn" onclick="closeDefaultPeopleModal()">
+            <span class="icon">✕</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 20px; color: #6b7280;">Nhập thông tin 3 người thường xuyên được ủy quyền để sử dụng nhanh</p>
+          
+          ${[1, 2, 3].map(i => `
+            <div class="uq-benb-card" style="margin-bottom: 20px;">
+              <div class="uq-benb-header">
+                <h4>👤 Người ${i}</h4>
+              </div>
+              <div class="form-subgroup">
+                <div class="form-row">
+                  <div class="form-cell form-field">
+                    <label><b>Giới tính</b></label>
+                    <select id="default${i}_gender" class="input-field">
+                      <option value="">-- Chọn --</option>
+                      <option value="Ông" ${defaultPeople[i-1].gender === 'Ông' ? 'selected' : ''}>Ông</option>
+                      <option value="Bà" ${defaultPeople[i-1].gender === 'Bà' ? 'selected' : ''}>Bà</option>
+                    </select>
+                  </div>
+                  <div class="form-cell form-field">
+                    <label><b>Họ và tên</b></label>
+                    <input type="text" id="default${i}_name" class="input-field" value="${defaultPeople[i-1].name || ''}">
+                  </div>
+                  <div class="form-cell form-field">
+                    <label><b>Ngày sinh</b></label>
+                    <input type="text" id="default${i}_date" class="input-field date-input" placeholder="dd/mm/yyyy" value="${defaultPeople[i-1].date || ''}">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-cell form-field">
+                    <label><b>Số CCCD</b></label>
+                    <input type="text" id="default${i}_cccd" class="input-field" maxlength="12" value="${defaultPeople[i-1].cccd || ''}">
+                  </div>
+                  <div class="form-cell form-field">
+                    <label><b>Nơi cấp</b></label>
+                    <select id="default${i}_noiCap" class="input-field">
+                      <option value="">-- Chọn --</option>
+                      <option value="Cục Cảnh sát QLHC về TTXH cấp" ${defaultPeople[i-1].noiCap === 'Cục Cảnh sát QLHC về TTXH cấp' ? 'selected' : ''}>Cục Cảnh sát QLHC về TTXH cấp</option>
+                      <option value="Công an T. Đắk Lắk cấp" ${defaultPeople[i-1].noiCap === 'Công an T. Đắk Lắk cấp' ? 'selected' : ''}>Công an T. Đắk Lắk cấp</option>
+                    </select>
+                  </div>
+                  <div class="form-cell form-field">
+                    <label><b>Ngày cấp</b></label>
+                    <input type="text" id="default${i}_ngayCap" class="input-field date-input" placeholder="dd/mm/yyyy" value="${defaultPeople[i-1].ngayCap || ''}">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-cell form-field" style="grid-column: 1 / -1;">
+                    <label><b>Địa chỉ</b></label>
+                    <input type="text" id="default${i}_address" class="input-field" value="${defaultPeople[i-1].address || ''}">
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+          
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" onclick="closeDefaultPeopleModal()">Hủy</button>
+          <button class="btn-primary" onclick="saveDefaultPeopleFromModal()">
+            <span class="icon">💾</span> Lưu
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Thêm modal vào body
+  const existingModal = document.getElementById('defaultPeopleModal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  
+  // Setup date pickers cho modal
+  setTimeout(() => {
+    if (typeof flatpickr !== 'undefined') {
+      document.querySelectorAll('#defaultPeopleModal .date-input').forEach(input => {
+        flatpickr(input, {
+          dateFormat: "d/m/Y",
+          allowInput: true
+        });
+      });
+    }
+    
+    // Setup CCCD inputs
+    for (let i = 1; i <= 3; i++) {
+      const cccdInput = document.getElementById(`default${i}_cccd`);
+      if (cccdInput) {
+        setupNumericInput(cccdInput, 12);
+      }
+    }
+  }, 100);
+}
+
+function closeDefaultPeopleModal() {
+  const modal = document.getElementById('defaultPeopleModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+function saveDefaultPeopleFromModal() {
+  const people = [];
+  
+  for (let i = 1; i <= 3; i++) {
+    people.push({
+      gender: document.getElementById(`default${i}_gender`)?.value || '',
+      name: document.getElementById(`default${i}_name`)?.value || '',
+      cccd: document.getElementById(`default${i}_cccd`)?.value || '',
+      date: document.getElementById(`default${i}_date`)?.value || '',
+      noiCap: document.getElementById(`default${i}_noiCap`)?.value || '',
+      ngayCap: document.getElementById(`default${i}_ngayCap`)?.value || '',
+      address: document.getElementById(`default${i}_address`)?.value || ''
+    });
+  }
+  
+  saveDefaultPeople(people);
+  closeDefaultPeopleModal();
+  
+  // Refresh form nếu đang ở section UQ
+  const uqSection = document.getElementById('section-UQ');
+  if (uqSection && window.lastPlaceholders) {
+    // Re-render UQ form
+    renderUQForm(window.lastPlaceholders);
+  }
+  
+  alert('✅ Đã lưu thông tin 3 người mặc định!');
+}
+
+// Export functions
+window.loadDefaultPeople = loadDefaultPeople;
+window.saveDefaultPeople = saveDefaultPeople;
+window.openDefaultPeopleManager = openDefaultPeopleManager;
+window.closeDefaultPeopleModal = closeDefaultPeopleModal;
+window.saveDefaultPeopleFromModal = saveDefaultPeopleFromModal;
 
 window.updateDynamicTaskbar = updateDynamicTaskbar;

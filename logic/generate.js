@@ -175,6 +175,94 @@ function generateDocx(templatePath, data, outputPath) {
       console.log("⚠️ Không có nguồn dữ liệu UQ được chọn");
     }
     
+    // Handle UQ Bên B data source (Người được ủy quyền)
+    if (data.selectedUQBenBDataSource) {
+      const source = data.selectedUQBenBDataSource;
+      
+      // Kiểm tra xem có phải là DEFAULT1/2/3 không
+      if (source.startsWith('DEFAULT')) {
+        // Lấy dữ liệu từ defaultPeople được gửi từ frontend
+        const index = parseInt(source.replace('DEFAULT', '')) - 1;
+        
+        const defaultPeopleData = {
+          gender: data[`DEFAULT${index + 1}_gender`] || '',
+          name: data[`DEFAULT${index + 1}_name`] || '',
+          cccd: data[`DEFAULT${index + 1}_cccd`] || '',
+          date: data[`DEFAULT${index + 1}_date`] || '',
+          noiCap: data[`DEFAULT${index + 1}_noiCap`] || '',
+          ngayCap: data[`DEFAULT${index + 1}_ngayCap`] || '',
+          address: data[`DEFAULT${index + 1}_address`] || ''
+        };
+        
+        // Điền dữ liệu vào các trường UQ_*
+        if (defaultPeopleData.gender) {
+          data.UQ_Gender = defaultPeopleData.gender + ':';
+        }
+        if (defaultPeopleData.name) {
+          data.UQ_Name = defaultPeopleData.name;
+        }
+        if (defaultPeopleData.cccd) {
+          const digits = defaultPeopleData.cccd.replace(/\D/g, '');
+          if (digits.length === 12) {
+            data.UQ_CCCD = `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}.${digits.slice(9, 12)}`;
+          }
+        }
+        if (defaultPeopleData.date) {
+          data.UQ_Date = defaultPeopleData.date;
+        }
+        if (defaultPeopleData.noiCap) {
+          data.UQ_Noi_Cap = defaultPeopleData.noiCap;
+        }
+        if (defaultPeopleData.ngayCap) {
+          data.UQ_Ngay_Cap = defaultPeopleData.ngayCap;
+        }
+        if (defaultPeopleData.address) {
+          data.UQ_Address = defaultPeopleData.address;
+        }
+        
+        console.log(`✅ UQ Bên B: Đã điền dữ liệu từ ${source} (${defaultPeopleData.name || 'Chưa có tên'})`);
+      } else {
+        // Logic cũ cho MEN1/MEN2/MEN7
+        let mapping;
+        try {
+          // Try to load from global first (set by uqMapping.js)
+          if (typeof global !== 'undefined' && global.UQ_BENB_FIELD_MAPPINGS) {
+            mapping = global.UQ_BENB_FIELD_MAPPINGS[source];
+          }
+        } catch (e) {
+          console.log('⚠️ Could not load UQ_BENB_FIELD_MAPPINGS from global, using fallback');
+        }
+        // Use fallback if not found
+        if (!mapping) {
+          const fallback = {
+            MEN1: { UQ_Gender: 'Gender1', UQ_Name: 'Name1', UQ_CCCD: 'CCCD1', UQ_Date: 'Date1', UQ_Noi_Cap: 'Noi_Cap1', UQ_Ngay_Cap: 'Ngay_Cap1', UQ_Address: 'Address1' },
+            MEN2: { UQ_Gender: 'Gender2', UQ_Name: 'Name2', UQ_CCCD: 'CCCD2', UQ_Date: 'Date2', UQ_Noi_Cap: 'Noi_Cap2', UQ_Ngay_Cap: 'Ngay_Cap2', UQ_Address: 'Address1' },
+            MEN7: { UQ_Gender: 'Gender7', UQ_Name: 'Name7', UQ_CCCD: 'CCCD7', UQ_Date: 'Date7', UQ_Noi_Cap: 'Noi_Cap7', UQ_Ngay_Cap: 'Ngay_Cap7', UQ_Address: 'Address2' },
+          };
+          mapping = fallback[source];
+        }
+        if (mapping) {
+          // Điền dữ liệu từ nguồn vào các trường UQ (Bên B - người được ủy quyền)
+          Object.entries(mapping).forEach(([uqField, sourceField]) => {
+            const sourceValue = data[sourceField];
+            if (sourceValue !== undefined && sourceValue !== null && sourceValue !== '') {
+              const stringValue = String(sourceValue).trim();
+              if (stringValue) {
+                data[uqField] = data[sourceField]; // Keep original format (with ":" if exists)
+                console.log(`✅ UQ Bên B: ${uqField} = ${data[sourceField]} (từ ${sourceField})`);
+              } else {
+                console.log(`⚠️ UQ Bên B: ${uqField} = "" (dữ liệu rỗng từ ${sourceField})`);
+              }
+            } else {
+              console.log(`⚠️ UQ Bên B: ${uqField} = "" (không có dữ liệu từ ${sourceField})`);
+            }
+          });
+        }
+      }
+    } else {
+      console.log("⚠️ Không có nguồn dữ liệu UQ Bên B được chọn");
+    }
+    
     // Normalize data values
     Object.keys(data).forEach(k => {
       if (data[k] === null || data[k] === undefined) data[k] = "";
