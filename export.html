@@ -160,14 +160,23 @@
   </div>
 
   <script src="./node_modules/flatpickr/dist/flatpickr.min.js"></script>
-  <script src="renderer/electron-imports.js"></script>
-  <script src="renderer/constants.js"></script>
-  <script src="renderer/utils.js"></script>
-  <script src="renderer/bdMapping.js"></script>
-  <script src="renderer/uqMapping.js"></script>
-  <script src="renderer/templateManager.js"></script>
-  <script src="renderer/formHandler.js"></script>
-  <script src="renderer/exportHandler.js"></script>
+  
+  <!-- Core utilities -->
+  <script src="renderer/core/electron-imports.js"></script>
+  <script src="renderer/core/utils.js"></script>
+  <script src="renderer/core/formHelpers.js"></script>
+  
+  <!-- Config & Mappings -->
+  <script src="renderer/config/constants.js"></script>
+  <script src="renderer/config/bdMapping.js"></script>
+  <script src="renderer/config/uqMapping.js"></script>
+  
+  <!-- Handlers -->
+  <script src="renderer/handlers/templateManager.js"></script>
+  <script src="renderer/handlers/formHandler.js"></script>
+  <script src="renderer/handlers/exportHandler.js"></script>
+  
+  <!-- Main -->
   <script src="renderer/export.js"></script>
 
   <script>
