@@ -125,7 +125,9 @@
         </div>
         <div class="preview-actions">
           <button class="btn-secondary" onclick="closePreviewModal()">Đóng</button>
-          <button class="btn-primary" onclick="useTemplate()">Sử dụng mẫu</button>
+          <button class="btn-primary" onclick="openTemplateFile()">
+            <span class="icon">📂</span> Mở file
+          </button>
         </div>
       </div>
     </div>
@@ -146,8 +148,8 @@
     </div>
   </div>
 
-  <script src="renderer/electron-imports.js"></script>
-  <script src="renderer/utils.js"></script>
+  <script src="renderer/core/electron-imports.js"></script>
+  <script src="renderer/core/utils.js"></script>
 
   <script>
     let templates = [];
@@ -182,7 +184,7 @@
         grid.innerHTML = filteredTemplates.map(template => `
           <div class="template-card" data-template="${template}">
             <div class="template-icon">
-              <i class="fas fa-file-word"></i>
+              <span class="icon">📄</span>
             </div>
             <div class="template-info">
               <h4 class="template-name">${template}</h4>
@@ -190,10 +192,10 @@
             </div>
             <div class="template-actions">
               <button class="action-btn preview" onclick="previewTemplate('${template}')" title="Xem trước">
-                <i class="fas fa-eye"></i>
+                <span class="icon">👁️</span>
               </button>
               <button class="action-btn delete" onclick="deleteTemplate('${template}')" title="Xóa">
-                <i class="fas fa-trash"></i>
+                <span class="icon">🗑️</span>
               </button>
             </div>
           </div>
@@ -203,7 +205,7 @@
         grid.innerHTML = filteredTemplates.map(template => `
           <div class="template-item" data-template="${template}">
             <div class="template-icon">
-              <i class="fas fa-file-word"></i>
+              <span class="icon">📄</span>
             </div>
             <div class="template-info">
               <h4 class="template-name">${template}</h4>
@@ -211,10 +213,10 @@
             </div>
             <div class="template-actions">
               <button class="action-btn preview" onclick="previewTemplate('${template}')" title="Xem trước">
-                <i class="fas fa-eye"></i>
+                <span class="icon">👁️</span>
               </button>
               <button class="action-btn delete" onclick="deleteTemplate('${template}')" title="Xóa">
-                <i class="fas fa-trash"></i>
+                <span class="icon">🗑️</span>
               </button>
             </div>
           </div>
@@ -335,10 +337,16 @@
       document.getElementById('previewModal').style.display = 'none';
     }
 
-    // Use template
-    function useTemplate() {
-      closePreviewModal();
-      location.href = 'export.html';
+    // Open template file
+    async function openTemplateFile() {
+      try {
+        const templateName = document.getElementById('previewFileName').textContent;
+        await window.ipcRenderer.invoke('open-template-file', templateName);
+        closePreviewModal();
+      } catch (error) {
+        console.error('Error opening file:', error);
+        showError('Không thể mở file Word');
+      }
     }
 
     // Delete template

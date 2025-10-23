@@ -1,11 +1,11 @@
-/* ===== RESET & BASE STYLES ===== */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Unicode Icon Styles */
+
 .icon {
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
   font-style: normal;
@@ -15,14 +15,14 @@
   display: inline-block;
 }
 
-/* Specific icon sizes */
+
 .icon.small { font-size: 0.875em; }
 .icon.medium { font-size: 1em; }
 .icon.large { font-size: 1.25em; }
 .icon.xlarge { font-size: 1.5em; }
 
 :root {
-  /* Colors */
+ 
   --primary-color: #3b82f6;
   --primary-hover: #2563eb;
   --primary-light: #dbeafe;
@@ -35,7 +35,7 @@
   --error-color: #ef4444;
   --error-hover: #dc2626;
   
-  /* Neutral Colors */
+ 
   --white: #ffffff;
   --gray-50: #f8fafc;
   --gray-100: #f1f5f9;
@@ -48,7 +48,7 @@
   --gray-800: #1e293b;
   --gray-900: #0f172a;
   
-  /* Typography - Offline fonts */
+ 
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
@@ -59,7 +59,7 @@
   --font-size-3xl: 1.875rem;
   --font-size-4xl: 2.25rem;
   
-  /* Spacing */
+ 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -72,20 +72,20 @@
   --space-16: 4rem;
   --space-20: 5rem;
   
-  /* Border Radius */
+ 
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
   
-  /* Shadows */
+ 
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   
-  /* Transitions */
+ 
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 250ms ease-in-out;
   --transition-slow: 350ms ease-in-out;
@@ -101,14 +101,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== APP CONTAINER ===== */
+
 .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* ===== HEADER ===== */
+
 .app-header {
   background: var(--white);
   border-bottom: 1px solid var(--gray-200);
@@ -215,7 +215,7 @@ body {
   color: var(--gray-800);
 }
 
-/* ===== MAIN CONTENT ===== */
+
 .main-content {
   flex: 1;
   max-width: 1200px;
@@ -224,7 +224,7 @@ body {
     width: 100%;
 }
 
-/* ===== WELCOME SECTION ===== */
+
 .welcome-section {
   margin-bottom: var(--space-12);
 }
@@ -257,7 +257,7 @@ body {
   margin: 0 auto;
 }
 
-/* ===== ACTION CARDS ===== */
+
 .action-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -384,7 +384,7 @@ body {
   transform: translateX(4px);
 }
 
-/* ===== STATS SECTION ===== */
+
 .stats-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -433,7 +433,7 @@ body {
   font-weight: 500;
 }
 
-/* ===== FOOTER ===== */
+
 .app-footer {
   background: var(--white);
   border-top: 1px solid var(--gray-200);
@@ -471,7 +471,7 @@ body {
   color: var(--primary-color);
 }
 
-/* ===== FLOATING TEMPLATE SELECTOR ===== */
+
 .floating-template-selector {
   background: var(--white);
   border-radius: var(--radius-xl);
@@ -755,7 +755,7 @@ body {
   color: var(--gray-600);
 }
 
-/* ===== TASKBAR SECTION ===== */
+
 .taskbar-section {
   background: var(--white);
   border-radius: var(--radius-xl);
@@ -802,9 +802,9 @@ body {
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
 }
 
-/* Removed count badge styles */
 
-/* ===== FORM SECTION ===== */
+
+
 .form-panel, .form-section {
   background: var(--white);
   border-radius: var(--radius-xl);
@@ -812,7 +812,7 @@ body {
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--gray-200);
   margin-bottom: var(--space-8);
-  /* Hidden by default; shown when .active is present */
+ 
   display: none;
 }
 
@@ -820,12 +820,12 @@ body {
   margin-top: var(--space-6);
 }
 
-/* Only the selected section is visible */
+
 .form-panel, .form-section.active {
   display: block !important;
 }
 
-/* Enforce hidden state even if other rules override */
+
 .form-section:not(.active) {
   display: none !important;
 }
@@ -855,7 +855,7 @@ body {
   margin: 0 auto;
 }
 
-/* ===== FORM GROUPS ===== */
+
 .form-group {
   margin-bottom: var(--space-8);
 }
@@ -864,7 +864,7 @@ body {
   margin-bottom: var(--space-6);
 }
 
-/* Bordered block for each person (MEN1, MEN2, MEN3, ...) */
+
 .person-subgroup {
   border: 2px solid var(--primary-color);
   border-radius: var(--radius-lg);
@@ -873,7 +873,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-/* Compact variant: allow smaller inputs when needed */
+
 .person-subgroup .input-field {
   min-height: 38px;
   padding: var(--space-3) var(--space-5);
@@ -929,7 +929,7 @@ body {
   min-height: 42px;
 }
 
-/* Improve select appearance across platforms */
+
 select.input-field {
   appearance: none;
   -moz-appearance: none;
@@ -943,10 +943,10 @@ select.input-field {
   padding-right: 2.5rem;
 }
 
-/* Inputs consistent height */
+
 input.input-field, textarea.input-field { line-height: 1.4; }
 
-/* Labels bold and aligned */
+
 .form-cell > label { font-weight: 600; margin-bottom: 6px; }
 
 .form-field input:hover,
@@ -981,7 +981,7 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), var(--shadow-md);
 }
 
-/* Floating label effect */
+
 .form-field {
   position: relative;
 }
@@ -995,14 +995,14 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   line-height: 1.4;
 }
 
-/* Make form cells take full width for consistent sizing */
+
 .form-cell { 
   width: 100%; 
   display: flex;
   flex-direction: column;
 }
 
-/* Address row: prevent overflow by wrapping to multiple lines */
+
 .address-row {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -1015,13 +1015,13 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   max-width: 100% !important;
 }
 
-/* Smaller screens: ensure selects stack nicely */
+
 @media (max-width: 700px) {
   .form-row { grid-template-columns: 1fr; }
   .address-row .address-select { flex-basis: 100% !important; }
 }
 
-/* Input with icon */
+
 .form-field.with-icon {
   position: relative;
 }
@@ -1045,7 +1045,7 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   color: var(--primary-color);
 }
 
-/* Shake animation for errors */
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
@@ -1058,7 +1058,7 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   font-weight: 500;
 }
 
-/* ===== DATA SOURCE CARD ===== */
+
 .data-source-card {
   background: var(--gray-50);
   border: 1px solid var(--gray-200);
@@ -1179,7 +1179,7 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   line-height: 1.5;
 }
 
-/* ===== UQ BENB CARD ===== */
+
 .uq-benb-card {
   background: var(--gray-50);
   border: 1px solid var(--gray-200);
@@ -1206,7 +1206,7 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   font-size: var(--font-size-sm);
 }
 
-/* ===== EXPORT SECTION ===== */
+
 .export-section {
   background: var(--white);
   border-radius: var(--radius-xl);
@@ -1287,7 +1287,7 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   font-size: var(--font-size-lg);
 }
 
-/* ===== LOADING OVERLAY ===== */
+
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -1338,7 +1338,7 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   font-size: var(--font-size-base);
 }
 
-/* ===== MODAL ===== */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1427,7 +1427,7 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   border-color: var(--gray-400);
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
+
 @media (max-width: 768px) {
   .header-content {
     padding: var(--space-4);
@@ -1498,7 +1498,7 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   }
 }
 
-/* ===== ANIMATIONS ===== */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -1544,7 +1544,7 @@ input.input-field, textarea.input-field { line-height: 1.4; }
   animation: slideIn 0.3s ease-out;
 }
 
-/* ===== UTILITY CLASSES ===== */
+
 .text-center { text-align: center; }
 .text-left { text-align: left; }
 .text-right { text-align: right; }

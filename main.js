@@ -152,6 +152,25 @@ ipcMain.handle("delete-template", async (event, fileName) => {
   return true;
 });
 
+ipcMain.handle("open-template-file", async (event, fileName) => {
+  try {
+    const { shell } = require('electron');
+    const filePath = path.join(__dirname, "templates", fileName);
+    
+    if (!fs.existsSync(filePath)) {
+      throw new Error('File không tồn tại');
+    }
+    
+    // Mở file bằng ứng dụng mặc định
+    await shell.openPath(filePath);
+    console.log(`✅ Opened template file: ${fileName}`);
+    return true;
+  } catch (error) {
+    console.error("❌ Error opening template file:", error);
+    throw error;
+  }
+});
+
 ipcMain.handle("get-placeholders", async (event, fileName) => {
   try {
     const filePath = path.join(__dirname, "templates", fileName);

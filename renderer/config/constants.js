@@ -323,7 +323,7 @@ const phMapping = {
     group: "LAND",
     subgroup: "INFO",
   },
-  Reponsibility: {
+  Responsibility: {
     label: "Trách nhiệm",
     type: "select",
     options: ["A", "B"],

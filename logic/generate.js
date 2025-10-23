@@ -112,7 +112,6 @@ function generateDocx(templatePath, data, outputPath) {
       } catch (e) {
         console.log('⚠️ Could not load bdMapping module, using fallback');
       }
-      // Use fallback if require failed
       if (!mapping) {
         const fallback = {
           MEN1: { BD_Gender: 'Gender1', BD_Name: 'Name1', BD_CCCD: 'CCCD1', BD_Date: 'Date1', BD_Noi_Cap: 'Noi_Cap1', BD_Ngay_Cap: 'Ngay_Cap1', BD_SDT: 'SDT_MEN1', BD_Address: 'Address1', BD_Email: 'EMAIL_MEN1' },
