@@ -1,8 +1,3 @@
-// ========================================
-// SESSION STORAGE MANAGER
-// Lưu tạm dữ liệu form để tái sử dụng
-// ========================================
-
 (function() {
   console.log('🔧 Initializing sessionStorageManager...');
   
