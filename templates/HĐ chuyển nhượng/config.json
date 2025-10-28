@@ -1,0 +1,249 @@
+{
+  "folder": {
+    "id": "chuyen-nhuong",
+    "name": "HĐ chuyển nhượng ",
+    "description": "Nhóm hợp đồng chuyển nhượng các loại tài sản",
+    "icon": "📜"
+  },
+
+  "templates": [
+    {
+      "id": "hd-cn-dat",
+      "filename": "HĐ chuyển nhượng quyền sử dụng đất.docx",
+      "name": "Hợp đồng chuyển nhượng đất",
+      "description": "Chuyển nhượng quyền sử dụng đất",
+      "groups": ["BCN", "NCN", "LAND"],
+      "placeholders": {
+        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
+        "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
+        "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
+      }
+    },
+    {
+      "id": "hd-cn-nha",
+      "filename": "HĐ chuyển nhượng nhà cửa.docx",
+      "name": "Hợp đồng chuyển nhượng nhà cửa",
+      "description": "Chuyển nhượng nhà ở, công trình xây dựng",
+      "groups": ["BCT", "NCN", "LAND"],
+      "placeholders": {
+        "BCT": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
+        "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
+        "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
+      }
+    },
+    {
+      "id": "hd-cn-dat-ts",
+      "filename": "HĐ chuyển nhượng QSDĐ & tài sản.docx",
+      "name": "HĐ chuyển nhượng đất & tài sản gắn liền",
+      "description": "Chuyển nhượng đất kèm nhà, công trình",
+      "groups": ["BCN", "NCN", "LAND"],
+      "placeholders": {
+        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
+        "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
+        "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
+      }
+    }
+  ],
+
+  "groups": [
+    {
+      "id": "BCN",
+      "label": "Bên chuyển nhượng",
+      "order": 1,
+      "description": "Người chuyển nhượng tài sản"
+    },
+    {
+      "id": "BCT",
+      "label": "Bên công trình",
+      "order": 1,
+      "description": "Người chuyển nhượng công trình"
+    },
+    {
+      "id": "NCN",
+      "label": "Bên nhận chuyển nhượng",
+      "order": 2,
+      "description": "Người nhận chuyển nhượng tài sản"
+    },
+    {
+      "id": "LAND",
+      "label": "Thông tin thửa đất",
+      "order": 3,
+      "description": "Thông tin đất đai, nhà cửa"
+    }
+  ],
+
+  "fieldSchemas": {
+    "PersonalInfo": {
+      "description": "Thông tin cá nhân của các bên",
+      "applicableTo": ["BCN", "BCT", "NCN"],
+      "fields": [
+        {
+          "name": "Gender",
+          "label": "Giới tính",
+          "type": "select",
+          "options": ["Ông", "Bà"],
+          "defaultValue": "Ông"
+        },
+        {
+          "name": "Name",
+          "label": "Họ và tên",
+          "type": "text"
+        },
+        {
+          "name": "Date",
+          "label": "Ngày sinh",
+          "type": "date"
+        },
+        {
+          "name": "CCCD",
+          "label": "CCCD",
+          "type": "number"
+        },
+        {
+          "name": "Noi_Cap",
+          "label": "Nơi cấp",
+          "type": "select",
+          "options": ["Cục Cảnh sát QLHC về TTXH cấp", "Công an T. Đắk Lắk cấp"]
+        },
+        {
+          "name": "Ngay_Cap",
+          "label": "Ngày cấp",
+          "type": "date"
+        },
+        {
+          "name": "Address",
+          "label": "Địa chỉ thường trú",
+          "type": "address-select"
+        }
+      ]
+    },
+
+    "LandInfo": {
+      "description": "Thông tin đất đai",
+      "applicableTo": ["LAND"],
+      "fields": [
+        {
+          "name": "QSH",
+          "label": "Quyền sử dụng đất",
+          "type": "text"
+        },
+        {
+          "name": "So_so",
+          "label": "Số sổ",
+          "type": "text"   
+        },
+        {
+          "name": "Ngay_CapD",
+          "label": "Ngày cấp",
+          "type": "date"
+        },
+        {
+          "name": "Thua_dat_so",
+          "label": "Thửa đất số",
+          "type": "text"
+      
+        },
+        {
+          "name": "Ban_do_so",
+          "label": "Bản đồ số",
+          "type": "text"
+       
+        },
+        {
+          "name": "S",
+          "label": "Diện tích (m²)",
+          "type": "number"
+        },
+        {
+          "name": "Loai_Dat",
+          "label": "Loại đất",
+          "type": "land_type"
+        },
+        {
+          "name": "HTSD",
+          "label": "Hình thức sử dụng",
+          "type": "select",
+          "options": ["Sử dụng chung", "Sử dụng riêng"]
+        },
+        {
+          "name": "THSD",
+          "label": "Thời hạn sử dụng",
+          "type": "text"
+        },
+        {
+          "name": "AddressD",
+          "label": "Địa chỉ thửa đất",
+          "type": "address-select"
+        },
+        {
+          "name": "TTGLVD",
+          "label": "TT tài sản gắn liền",
+          "type": "textarea"
+        
+        },
+        {
+          "name": "Money",
+          "label": "Giá chuyển nhượng",
+          "type": "currency"
+        },  
+        {
+          "name": "MoneyText",
+          "label": "Giá chuyển nhượng (chữ)",
+          "type": "text",
+          "hidden": true
+        },
+        {
+          "name": "Responsibility",
+          "label": "Bên chịu trách nhiệm thuế phí",
+          "type": "select",
+          "options": ["Bên A", "Bên B"]
+        },
+        {
+          "name": "Note",
+          "label": "Ghi chú",
+          "type": "textarea"
+        }
+      ]
+    } 
+   
+  },
+
+  "fieldMappings": [
+    {
+      "group": "BCN",
+      "schema": "PersonalInfo",
+      "subgroups": [
+          { "id": "MEN1", "label": "Thông tin cá nhân" },
+          { "id": "MEN2", "label": "Thông tin cá nhân" }
+      ],
+      "suffixes": ["1", "2"],
+      "defaultGenders": ["Ông", "Bà"]
+    },
+    {
+      "group": "BCT",
+      "schema": "PersonalInfo",
+      "subgroups": [
+          { "id": "MEN1", "label": "Thông tin cá nhân" },
+          { "id": "MEN2", "label": "Thông tin cá nhân" }
+      ],
+      "suffixes": ["1", "2"],
+      "defaultGenders": ["Ông", "Bà"]
+    },
+    {
+      "group": "NCN",
+      "schema": "PersonalInfo",
+      "subgroups": [
+          { "id": "MEN7", "label": "Thông tin cá nhân" }
+      ],
+      "suffixes": ["7"],
+      "defaultGenders": ["Ông"]
+    },
+    {
+      "group": "LAND",
+      "subgroups": [
+        {"id": "INFO", "label": "Thông tin đất đai"}
+      ],
+      "schema": "LandInfo"
+    }
+  ]
+}

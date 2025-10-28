@@ -23,10 +23,10 @@ function expandPlaceholders(placeholders) {
     'MEN6': ['Gender6', 'Name6', 'Date6', 'CCCD6', 'Noi_Cap6', 'Ngay_Cap6'],
     
     // NCN group
-    'MEN7': ['Gender7', 'Name7', 'Date7', 'CCCD7', 'Noi_Cap7', 'Ngay_Cap7', 'Address2', 'MST7', 'SDT_MEN7', 'EMAIL_MEN7'],
+    'MEN7': ['Gender7', 'Name7', 'Date7', 'CCCD7', 'Noi_Cap7', 'Ngay_Cap7', 'Address7', 'MST7', 'SDT_MEN7', 'EMAIL_MEN7'],
     
     // LAND group
-    'LAND_INFO': ['QSH', 'So_so', 'Ngay_CapD', 'Thua_dat_so', 'Ban_do_so', 'S', 'Loai_Dat', 'VTTD', 'THSD', 'HTSD', 'Address3', 'TTGLVD', 'Note', 'Money', 'Responsibility'],
+    'LAND_INFO': ['QSH', 'So_so', 'Ngay_CapD', 'Thua_dat_so', 'Ban_do_so', 'S', 'Loai_Dat', 'VTTD', 'THSD', 'HTSD', 'AddressD', 'TTGLVD', 'Note', 'Money', 'Responsibility'],
     
     // BD group - Giới tính - Họ và tên - Ngày sinh - CCCD - Nơi cấp - Ngày cấp - Số điện thoại - Hộp thư điện tử
     'BD_INFO': ['BD_Gender', 'BD_Name', 'BD_Date', 'BD_CCCD', 'BD_Noi_Cap', 'BD_Ngay_Cap', 'BD_SDT', 'BD_Email'],
@@ -83,11 +83,25 @@ function expandPlaceholders(placeholders) {
 }
 
 function renderForm(placeholders) {
+  // 🗑️ CLEANUP old event listeners FIRST
+  if (typeof window.cleanupAllEventListeners === 'function') {
+    window.cleanupAllEventListeners();
+  }
+  
+  // ✅ SHOW OLD TASKBAR (ẩn bởi genericFormHandler)
+  const oldTaskbar = document.getElementById('taskbarContainer');
+  if (oldTaskbar) {
+    oldTaskbar.style.display = '';
+  }
+  
   const area = document.getElementById("formArea");
   area.innerHTML = "";
   idToPh = {};
   window.idToPh = idToPh;
 
+  // 📄 VĂN BẢN CHUYỂN NHƯỢNG (Transfer)
+  console.log("📄 Detected TRANSFER document - Using standard form handler");
+  
   // Expand placeholders to show all fields for detected subgroups
   const expandedPlaceholders = expandPlaceholders(placeholders);
   
@@ -235,19 +249,37 @@ function renderNormalForm(placeholders) {
       
       // Hàm định nghĩa thứ tự hiển thị các trường
       const getFieldOrder = (ph) => {
-        // Thứ tự: Giới tính - Họ và tên - Ngày sinh - CCCD - Nơi cấp - Ngày cấp - Địa chỉ - Mã số thuế - Số điện thoại - Hộp thư điện tử
+        // ===== LAND FIELDS: Check TRƯỚC (để tránh bị override bởi pattern matching) =====
+        if (ph === 'QSH') return 20;
+        if (ph === 'So_so') return 21;
+        if (ph === 'Ngay_CapD') return 22;
+        if (ph === 'Thua_dat_so') return 23;
+        if (ph === 'Ban_do_so') return 24;
+        if (ph === 'S') return 25;
+        if (ph === 'Loai_Dat') return 26;
+        if (ph === 'VTTD') return 27;
+        if (ph === 'THSD') return 28;
+        if (ph === 'HTSD') return 29;
+        if (ph === 'Responsibility') return 30;
+        if (ph === 'AddressD') return 31;  // ← Phải check TRƯỚC 'Address' pattern
+        if (ph === 'Money') return 32;
+        if (ph === 'TTGLVD') return 33;
+        if (ph === 'Note') return 34;
+        
+        // ===== MEN FIELDS: Pattern matching =====
+        // Thứ tự: Giới tính - Quan hệ - Họ và tên - Ngày sinh - CCCD - Nơi cấp - Ngày cấp - Địa chỉ - MST - SĐT - Email
         const fieldOrderMap = {
-          // Pattern matching cho các trường
           'Gender': 1,
-          'Name': 2,
-          'Date': 3,
-          'CCCD': 4,
-          'Noi_Cap': 5,
-          'Ngay_Cap': 6,
-          'Address': 7,
-          'MST': 8,
-          'SDT_MEN': 9,
-          'EMAIL_MEN': 10
+          'Relation': 2,     // MENx_Relation (cho HĐ phân chia tài sản)
+          'Name': 3,
+          'Date': 4,
+          'CCCD': 5,
+          'Noi_Cap': 6,
+          'Ngay_Cap': 7,
+          'Address': 8,      // Address1, Address7 (MEN)
+          'MST': 9,
+          'SDT_MEN': 10,
+          'EMAIL_MEN': 11
         };
         
         // Kiểm tra từng pattern
@@ -256,10 +288,6 @@ function renderNormalForm(placeholders) {
             return order;
           }
         }
-        
-        // Special cases cho LAND INFO
-        if (ph === 'TTGLVD') return 100;
-        if (ph === 'Note') return 101;
         
         return 50; // Default order
       };
@@ -285,7 +313,7 @@ function renderNormalForm(placeholders) {
             const defaultAttr = map.defaultValue ? ` data-default="${map.defaultValue}"` : "";
             inputHtml = `
               <label for="${safeId}"><b>${map.label}</b></label>
-              <select id="${safeId}" class="input-field"${defaultAttr}>
+              <select id="${safeId}" data-ph="${ph}" class="input-field"${defaultAttr}>
                 <option value="">-- Chọn --</option>
                 ${map.options
                   .map((opt) => `<option value="${opt}">${opt}</option>`)
@@ -295,12 +323,12 @@ function renderNormalForm(placeholders) {
           } else if (map.type === "date") {
             inputHtml = `
               <label for="${safeId}"><b>${map.label}</b></label>
-              <input type="text" id="${safeId}" class="input-field date-input" placeholder="dd/mm/yyyy">
+              <input type="text" id="${safeId}" data-ph="${ph}" class="input-field date-input" placeholder="dd/mm/yyyy">
             `;
           } else if (ph === "Loai_Dat") {
             inputHtml = `
               <label for="${safeId}"><b>${map.label}</b></label>
-              <input type="text" id="${safeId}" class="input-field land-type-input">
+              <input type="text" id="${safeId}" data-ph="${ph}" class="input-field land-type-input" placeholder="Nhập hoặc click để chọn... (VD: ONT+LUK)">
               <div id="${safeId}_dropdown" class="land-type-dropdown" style="display:none; position:absolute; background:white; border:1px solid #ccc; max-height:200px; overflow-y:auto; z-index:1000; width:300px;"></div>
             `;
           } else if (map.type === "address") {
@@ -328,7 +356,7 @@ function renderNormalForm(placeholders) {
             if (ph === "Note") {
               inputHtml = `
                 <label for="${safeId}"><b>${map.label}</b></label>
-                <textarea id="${safeId}" class="input-field" rows="4" style="min-height:80px; resize:vertical;"></textarea>
+                <textarea id="${safeId}" data-ph="${ph}" class="input-field" rows="4" style="min-height:80px; resize:vertical;"></textarea>
               `;
             } else {
               let inputType = map.type === "number" ? "number" : "text";
@@ -351,7 +379,7 @@ function renderNormalForm(placeholders) {
               }
               inputHtml = `
                   <label for="${safeId}"><b>${map.label}</b></label>
-                  <input type="${inputType}" id="${safeId}" class="input-field"${extraAttr}>
+                  <input type="${inputType}" id="${safeId}" data-ph="${ph}" class="input-field"${extraAttr}>
                 `;
             }
           }
@@ -411,7 +439,7 @@ function renderInputField(ph, map) {
     const defaultAttr = map.defaultValue ? ` data-default="${map.defaultValue}"` : "";
     inputHtml = `
       <label for="${safeId}"><b>${map.label}</b></label>
-      <select id="${safeId}" class="input-field"${defaultAttr}>
+      <select id="${safeId}" data-ph="${ph}" class="input-field"${defaultAttr}>
         <option value="">-- Chọn --</option>
         ${map.options.map((opt) => `<option value="${opt}">${opt}</option>`).join("")}
       </select>
@@ -419,12 +447,12 @@ function renderInputField(ph, map) {
   } else if (map.type === "date") {
     inputHtml = `
       <label for="${safeId}"><b>${map.label}</b></label>
-      <input type="text" id="${safeId}" class="input-field date-input" placeholder="dd/mm/yyyy">
+      <input type="text" id="${safeId}" data-ph="${ph}" class="input-field date-input" placeholder="dd/mm/yyyy">
     `;
   } else if (map.type === "number" && (ph.includes("CCCD") || ph.includes("UQ_CCCD") || ph.includes("UQA_CCCD") || ph.includes("BD_CCCD"))) {
     inputHtml = `
       <label for="${safeId}"><b>${map.label}</b></label>
-      <input type="text" id="${safeId}" class="input-field" inputmode="numeric" pattern="\\d*" maxlength="12">
+      <input type="text" id="${safeId}" data-ph="${ph}" class="input-field" inputmode="numeric" pattern="\\d*" maxlength="12">
     `;
   } else if (map.type === "address") {
     inputHtml = `
@@ -451,7 +479,7 @@ function renderInputField(ph, map) {
     let inputType = map.type === "number" ? "number" : "text";
     inputHtml = `
       <label for="${safeId}"><b>${map.label}</b></label>
-      <input type="${inputType}" id="${safeId}" class="input-field">
+      <input type="${inputType}" id="${safeId}" data-ph="${ph}" class="input-field">
     `;
   }
   
@@ -563,18 +591,7 @@ function validateForm() {
   });
 
   
-  const hasMEN1ForBDValidation = window.lastPlaceholders && window.lastPlaceholders.some(ph => {
-    const map = window.phMapping && window.phMapping[ph];
-    return map && map.group === 'BCN' && map.subgroup === 'MEN1';
-  });
-  const hasMEN7ForBDValidation = window.lastPlaceholders && window.lastPlaceholders.some(ph => {
-    const map = window.phMapping && window.phMapping[ph];
-    return map && map.group === 'NCN' && map.subgroup === 'MEN7';
-  });
-  const hasSourceDataForBDValidation = hasMEN1ForBDValidation || hasMEN7ForBDValidation;
-
-  
-  if (hasBDPlaceholders && hasSourceDataForBDValidation && !window.selectedBDDataSource) {
+  if (hasBDPlaceholders && !window.selectedBDDataSource) {
     alert('Vui lòng chọn dữ liệu cho thông tin đăng ký biến động đất đai (Bên A hoặc Bên B)');
     
     const bdSection = document.getElementById('section-BD');
@@ -601,18 +618,7 @@ function validateForm() {
   });
 
   
-  const hasMEN1ForValidation = window.lastPlaceholders && window.lastPlaceholders.some(ph => {
-    const map = window.phMapping && window.phMapping[ph];
-    return map && map.group === 'BCN' && map.subgroup === 'MEN1';
-  });
-  const hasMEN7ForValidation = window.lastPlaceholders && window.lastPlaceholders.some(ph => {
-    const map = window.phMapping && window.phMapping[ph];
-    return map && map.group === 'NCN' && map.subgroup === 'MEN7';
-  });
-  const hasSourceDataForValidation = hasMEN1ForValidation || hasMEN7ForValidation;
-
-  
-  if (hasUQPlaceholders && hasSourceDataForValidation && !window.selectedUQDataSource) {
+  if (hasUQPlaceholders && !window.selectedUQDataSource) {
     alert('Vui lòng chọn nguồn dữ liệu Bên A cho thông tin ủy quyền (Bên A hoặc Bên B)');
     
     const uqSection = document.getElementById('section-UQ');
@@ -634,7 +640,7 @@ function validateForm() {
 
   
   const landMissing = [];
-  const landExceptions = new Set(["Note", "TTGLVD", "MoneyText", "Address3"]);
+  const landExceptions = new Set(["Note", "TTGLVD", "MoneyText", "AddressD"]);
   if (window.phMapping) {
     Object.keys(window.phMapping).forEach((ph) => {
       const info = window.phMapping[ph];
@@ -684,6 +690,13 @@ function validateForm() {
 }
 
 function collectFormData() {
+  // 🔍 Nếu đang dùng generic form (NEW SYSTEM), gọi hàm riêng
+  if (typeof window.collectGenericFormData === 'function' && window.idToPhGeneric && Object.keys(window.idToPhGeneric).length > 0) {
+    console.log("🆕 Using GENERIC form data collector (NEW SYSTEM)");
+    return window.collectGenericFormData();
+  }
+
+  console.log("📄 Using standard form data collector (OLD - Transfer)");
   const inputs = document.querySelectorAll(".input-field");
   const data = {};
   let moneyDigits = "";
@@ -704,54 +717,19 @@ function collectFormData() {
       const village = input.value;
       value = [village, ward, district, province].filter(Boolean).join(", ");
     } else if (ph && map && map.type === "select") {
-      if ((ph.startsWith("Gender") || ph.startsWith("UQ_Gender") || ph.startsWith("UQA_Gender") || ph.startsWith("BD_Gender")) && value) {
-        value = value + ":";
-      }
-    } else if (ph && map && map.type === "date") {
-      
-      let formatted = "";
-      const dmMatch =
-        value && value.toString().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      const isoMatch =
-        value && value.toString().match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-      if (dmMatch) {
-        const dd = dmMatch[1].padStart(2, "0");
-        const mm = dmMatch[2].padStart(2, "0");
-        const yyyy = dmMatch[3];
-        formatted = `${dd}/${mm}/${yyyy}`;
-      } else if (isoMatch) {
-        const yyyy = isoMatch[1];
-        const mm = isoMatch[2].padStart(2, "0");
-        const dd = isoMatch[3].padStart(2, "0");
-        formatted = `${dd}/${mm}/${yyyy}`;
-      } else {
-        formatted = window.formatDate ? window.formatDate(value) : value;
-      }
-
-      if (formatted) {
-        if (ph && ph.startsWith && ph.startsWith("Date")) {
-          value = `${formatted}`;
-        } else if (ph && ph.indexOf && ph.indexOf("Ngay_Cap") !== -1) {
-          value = `${formatted}`;
-        } else {
-          value = formatted;
-        }
-      }
-    } else if (ph && map && map.type === "number") {
-      if ((ph.startsWith("CCCD") || ph.startsWith("UQ_CCCD") || ph.startsWith("UQA_CCCD") || ph.startsWith("BD_CCCD")) && value) {
-        const digits = value.toString().replace(/\D/g, "");
-        if (/^\d{12}$/.test(digits)) {
-          value = window.formatCCCD ? `${window.formatCCCD(digits)}` : digits;
-        } else {
-          value = digits;
+      // Gender KHÔNG tự động thêm ":" - chỉ MENx_Ly mới có
+    } else if (ph && map && (map.type === "date" || (map.type === "number" && ph.includes("CCCD")))) {
+      // ✅ SỬ DỤNG HELPER FUNCTION CHUNG để format date/CCCD
+      if (window.formatInputValue) {
+        value = window.formatInputValue(value, ph, map);
         }
             } else if ((ph === "SDT_MEN1" || ph === "SDT_MEN7" || ph === "BD_SDT") && value) {
+      // Format phone number
               const digits = value.toString().replace(/\D/g, "");
               if (/^\d{10}$/.test(digits)) {
                 value = window.formatPhoneNumber ? `${window.formatPhoneNumber(digits)}` : digits;
               } else {
                 value = digits;
-              }
             }
     }
 
@@ -983,7 +961,7 @@ function addNewPersonSection(subKey) {
         const defaultAttr = map.defaultValue ? ` data-default="${map.defaultValue}"` : "";
         inputHtml = `
           <label for="${safeId}"><b>${map.label}</b></label>
-          <select id="${safeId}" class="input-field"${defaultAttr}>
+          <select id="${safeId}" data-ph="${ph}" class="input-field"${defaultAttr}>
             <option value="">-- Chọn --</option>
             ${map.options
               .map((opt) => `<option value="${opt}">${opt}</option>`)
@@ -993,7 +971,7 @@ function addNewPersonSection(subKey) {
       } else if (map.type === "date") {
         inputHtml = `
           <label for="${safeId}"><b>${map.label}</b></label>
-          <input type="text" id="${safeId}" class="input-field date-input" placeholder="dd/mm/yyyy">
+          <input type="text" id="${safeId}" data-ph="${ph}" class="input-field date-input" placeholder="dd/mm/yyyy">
         `;
       } else if (map.type === "address") {
         inputHtml = `
@@ -1033,7 +1011,7 @@ function addNewPersonSection(subKey) {
         }
         inputHtml = `
             <label for="${safeId}"><b>${map.label}</b></label>
-            <input type="${inputType}" id="${safeId}" class="input-field"${extraAttr}>
+            <input type="${inputType}" id="${safeId}" data-ph="${ph}" class="input-field"${extraAttr}>
           `;
       }
       
@@ -1254,22 +1232,10 @@ function renderBDForm(placeholders) {
   });
 
   console.log("🔍 BD placeholders found:", bdPlaceholders);
-  const hasMEN1Placeholders = placeholders.some(ph => {
-    const map = window.phMapping && window.phMapping[ph];
-    return map && map.group === 'BCN' && map.subgroup === 'MEN1';
-  });
-
-  const hasMEN7Placeholders = placeholders.some(ph => {
-    const map = window.phMapping && window.phMapping[ph];
-    return map && map.group === 'NCN' && map.subgroup === 'MEN7';
-  });
-
-  const hasSourceData = hasMEN1Placeholders || hasMEN7Placeholders;
-  console.log("🔍 Has MEN1:", hasMEN1Placeholders, "Has MEN7:", hasMEN7Placeholders, "hasSourceData:", hasSourceData);
   
   if (bdPlaceholders.length > 0) {
-    console.log("🔍 Rendering BD form, hasSourceData:", hasSourceData);
-    if (hasSourceData) {
+    console.log("🔍 Rendering BD form");
+    {
       console.log("🔍 Rendering data source selection card");
       const dataSourceCard = document.createElement("div");
       dataSourceCard.className = "data-source-card";
@@ -1291,62 +1257,15 @@ function renderBDForm(placeholders) {
       `;
       
       bdGroupDiv.appendChild(dataSourceCard);
-    } else {
-      
-      console.log("🔍 No source data, rendering manual BD form");
-      const bdManualCard = document.createElement("div");
-      bdManualCard.className = "uq-benb-card";
-      bdManualCard.innerHTML = `
-        <div class="uq-benb-header">
-          <h4>📋 Thông tin đăng ký biến động đất đai</h4>
-          <p>Điền đầy đủ thông tin người đăng ký</p>
-        </div>
-      `;
-      
-      
-      const formDivBD = document.createElement("div");
-      formDivBD.className = "form-subgroup";
-      
-      const bdFields = [
-        { ph: 'BD_Gender', map: window.phMapping['BD_Gender'] },
-        { ph: 'BD_Name', map: window.phMapping['BD_Name'] },
-        { ph: 'BD_Date', map: window.phMapping['BD_Date'] },
-        { ph: 'BD_CCCD', map: window.phMapping['BD_CCCD'] },
-        { ph: 'BD_Noi_Cap', map: window.phMapping['BD_Noi_Cap'] },
-        { ph: 'BD_Ngay_Cap', map: window.phMapping['BD_Ngay_Cap'] },
-        { ph: 'BD_SDT', map: window.phMapping['BD_SDT'] },
-        { ph: 'BD_Email', map: window.phMapping['BD_Email'] }
-      ];
-      
-      for (let i = 0; i < bdFields.length; i += 3) {
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "form-row";
-        for (let j = i; j < i + 3 && j < bdFields.length; j++) {
-          const { ph, map } = bdFields[j];
-          if (!map) continue;
-          const { inputHtml, isAddress } = renderInputField(ph, map);
-          const cellDiv = document.createElement("div");
-          cellDiv.className = "form-cell form-field";
-          cellDiv.innerHTML = inputHtml;
-          if (isAddress) {
-            cellDiv.style.gridColumn = "1 / -1";
-          }
-          rowDiv.appendChild(cellDiv);
-        }
-        formDivBD.appendChild(rowDiv);
-      }
-      bdManualCard.appendChild(formDivBD);
-      bdGroupDiv.appendChild(bdManualCard);
     }
     
     bdSectionDiv.appendChild(bdGroupDiv);
     area.appendChild(bdSectionDiv);
     console.log("🔍 BD form appended to DOM");
   
-    if (hasSourceData) {
       setupBDFormEventListeners();
+    setupFormEventListeners(); // Setup CCCD, phone, email, name, etc.
       console.log("🔍 Event listeners setup complete");
-    }
     try {
       void bdSectionDiv.offsetHeight;
       setTimeout(() => {
@@ -1426,21 +1345,10 @@ function renderUQForm(placeholders) {
   });
 
   console.log("🔍 UQ placeholders found:", uqPlaceholders);
-  const hasMEN1Placeholders = placeholders.some(ph => {
-    const map = window.phMapping && window.phMapping[ph];
-    return map && map.group === 'BCN' && map.subgroup === 'MEN1';
-  });
-
-  const hasMEN7Placeholders = placeholders.some(ph => {
-    const map = window.phMapping && window.phMapping[ph];
-    return map && map.group === 'NCN' && map.subgroup === 'MEN7';
-  });
-  const hasSourceData = hasMEN1Placeholders || hasMEN7Placeholders;
-  console.log("🔍 Has MEN1:", hasMEN1Placeholders, "Has MEN7:", hasMEN7Placeholders);
   
   if (uqPlaceholders.length > 0) {
-    console.log("🔍 Rendering UQ form, hasSourceData:", hasSourceData);
-    if (hasSourceData) {
+    console.log("🔍 Rendering UQ form");
+    {
       const dataSourceCard = document.createElement("div");
       dataSourceCard.className = "data-source-card";
       dataSourceCard.innerHTML = `
@@ -1461,47 +1369,8 @@ function renderUQForm(placeholders) {
       `;
       
       uqGroupDiv.appendChild(dataSourceCard);
-    } else {
-      console.log("🔍 No source data, rendering manual UQA form");
-      const benACard = document.createElement("div");
-      benACard.className = "uq-benb-card";
-      benACard.innerHTML = `
-        <div class="uq-benb-header">
-          <h4>👤 Thông tin bên A (Người ủy quyền)</h4>
-          <p>Điền đầy đủ thông tin của người ủy quyền</p>
-        </div>
-      `;
-      const formDivA = document.createElement("div");
-      formDivA.className = "form-subgroup";
-      const uqaFields = [
-        { ph: 'UQA_Gender', map: window.phMapping['UQA_Gender'] },
-        { ph: 'UQA_Name', map: window.phMapping['UQA_Name'] },
-        { ph: 'UQA_Date', map: window.phMapping['UQA_Date'] },
-        { ph: 'UQA_CCCD', map: window.phMapping['UQA_CCCD'] },
-        { ph: 'UQA_Noi_Cap', map: window.phMapping['UQA_Noi_Cap'] },
-        { ph: 'UQA_Ngay_Cap', map: window.phMapping['UQA_Ngay_Cap'] },
-        { ph: 'UQA_Address', map: window.phMapping['UQA_Address'] }
-      ];
-      for (let i = 0; i < uqaFields.length; i += 3) {
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "form-row";
-        for (let j = i; j < i + 3 && j < uqaFields.length; j++) {
-          const { ph, map } = uqaFields[j];
-          if (!map) continue;
-          const { inputHtml, isAddress } = renderInputField(ph, map);
-          const cellDiv = document.createElement("div");
-          cellDiv.className = "form-cell form-field";
-          cellDiv.innerHTML = inputHtml;
-          if (isAddress) {
-            cellDiv.style.gridColumn = "1 / -1";
-          }
-          rowDiv.appendChild(cellDiv);
-        }
-        formDivA.appendChild(rowDiv);
-      }
-      benACard.appendChild(formDivA);
-      uqGroupDiv.appendChild(benACard);
     }
+    
     const benBCard = document.createElement("div");
     benBCard.className = "data-source-card"
     const defaultPeople = loadDefaultPeople(); 
@@ -1543,13 +1412,10 @@ function renderUQForm(placeholders) {
     uqSectionDiv.appendChild(uqGroupDiv);
     area.appendChild(uqSectionDiv);
     console.log("🔍 UQ form appended to DOM");   
-    if (hasSourceData) {
+    
       setupUQFormEventListeners();
-    }
     setupUQBenBEventListeners();
-    setupFormEventListeners();
-    setupDatePickers();
-    setupAddressSelects();
+    setupFormEventListeners(); // Setup CCCD, phone, email, name, etc.
     console.log("🔍 UQ form setup complete");
     try {
       void uqSectionDiv.offsetHeight;

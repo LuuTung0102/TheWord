@@ -19,26 +19,31 @@ async function loadTemplates() {
   }
 }
 
-// Helper function to render template items (DRY principle)
-function renderTemplateItem(file, actionType) {
+// Helper function to render template items (folders)
+function renderTemplateItem(folder, actionType) {
   const actionConfig = {
-    add: { class: 'add', icon: '+', title: 'Thêm' },
-    remove: { class: 'remove', icon: '🗑️', title: 'Xóa' }
+    add: { class: 'add', icon: '+', title: 'Chọn folder' },
+    remove: { class: 'remove', icon: '🗑️', title: 'Bỏ chọn' }
   };
   
   const config = actionConfig[actionType] || actionConfig.add;
   const item = document.createElement("div");
   item.className = "template-item";
+  
+  // Folder có thể là string (tên) hoặc object {name, fileCount, files}
+  const folderName = typeof folder === 'string' ? folder : folder.name;
+  const fileCount = typeof folder === 'object' ? folder.fileCount : 0;
+  
   item.innerHTML = `
     <div class="template-icon">
-      <span class="icon">📄</span>
+      <span class="icon">📁</span>
     </div>
     <div class="template-info">
-      <h4 class="template-name">${file}</h4>
-      <p class="template-meta">File Word</p>
+      <h4 class="template-name">${folderName}</h4>
+      <p class="template-meta">${fileCount} file${fileCount !== 1 ? 's' : ''} Word</p>
     </div>
     <div class="template-actions">
-      <button class="action-btn ${config.class}" data-file="${file}" title="${config.title}">
+      <button class="action-btn ${config.class}" data-file="${folderName}" title="${config.title}">
         <span class="icon">${config.icon}</span>
       </button>
     </div>
@@ -146,8 +151,11 @@ async function updateForm() {
   const ensureFullGroup = (groupIdx) => {
     Object.values(menAliasMap).forEach((base) => phSet.add(`${base}${groupIdx}`));
   };
-  for (const f of selectedTemplates) {
-    const ph = await window.ipcRenderer.invoke("get-placeholders", f);
+  
+  // Lấy placeholders từ folder (thay vì từ files)
+  for (const folderName of selectedTemplates) {
+    console.log(`📋 Loading placeholders from folder: ${folderName}`);
+    const ph = await window.ipcRenderer.invoke("get-folder-placeholders", folderName);
     if (Array.isArray(ph)) {
       ph.forEach((p) => {
         phSet.add(p);
@@ -163,11 +171,55 @@ async function updateForm() {
     }
   }
 
-  if (typeof renderForm === 'function') {
-    renderForm([...phSet]);
-  } else {
- 
+  console.log(`✅ Total placeholders: ${phSet.size}`);
+  
+  // 🆕 TRY LOAD CONFIG.JSON FIRST
+  let folderConfig = null;
+  let folderPath = null;
+  
+  if (selectedTemplates.length > 0) {
+    // Get folder path
+    const templatesRoot = await window.ipcRenderer.invoke("get-templates-root");
+    folderPath = `${templatesRoot}\\${selectedTemplates[0]}`;
+    
+    console.log(`🔍 Trying to load config from: ${folderPath}`);
+    
+    if (typeof window.loadFolderConfig === 'function') {
+      folderConfig = await window.loadFolderConfig(folderPath);
+    }
   }
+  
+  // 🎨 RENDER FORM
+  if (folderConfig && typeof window.renderGenericForm === 'function') {
+    // Check if has BD or UQ groups → Use old system (has special logic)
+    // For new JSON format, check if any group has BD/UQ in the name
+    const hasBDorUQ = folderConfig.groups && folderConfig.groups.some(group => 
+      group.id === 'BD' || group.id === 'UQ' || 
+      group.label.toLowerCase().includes('biến động') || 
+      group.label.toLowerCase().includes('ủy quyền')
+    );
+    
+    if (hasBDorUQ) {
+      // ⚠️ FALLBACK: BD/UQ need old system for source selection
+      console.log("⚠️ Config has BD/UQ - Using OLD system for advanced features");
+      renderForm([...phSet]);
+    } else {
+      // ✅ NEW SYSTEM: Use config-based generic form
+      console.log("🆕 Using NEW config-based system");
+      await window.renderGenericForm([...phSet], folderConfig, folderPath);
+    }
+  } else if (typeof renderForm === 'function') {
+    // ⚠️ OLD SYSTEM: Fallback to legacy form
+    console.log("⚠️ Using OLD legacy system (no config.json found)");
+    renderForm([...phSet]);
+  }
+  
+  // ⚡ Setup lại TẤT CẢ event listeners sau khi render form
+  setTimeout(() => {
+    if (typeof window.reSetupAllInputs === 'function') {
+      window.reSetupAllInputs();
+    }
+  }, 500);
 }
 
 // Setup search functionality

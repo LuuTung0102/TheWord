@@ -1,0 +1,34 @@
+{
+  "folders": [
+    {
+      "name": "HĐ chuyển nhượng",
+      "path": "templates/HĐ chuyển nhượng",
+      "description": "Hợp đồng chuyển nhượng quyền sử dụng đất",
+      "icon": "📜"
+    },
+    {
+      "name": "HĐ phân chia tài sản",
+      "path": "templates/HĐ phân chia tài sản",
+      "description": "Hợp đồng phân chia tài sản thừa kế",
+      "icon": "🏛️"
+    },
+    {
+      "name": "Giấy ủy quyền",
+      "path": "templates/Giấy Ủy Quyền",
+      "description": "Giấy ủy quyền",
+      "icon": "📄"
+    },
+    {
+      "name": "Biến động",
+      "path": "templates/Giấy tờ khác",
+      "description": "Giấy đăng ký biến động đất đai",
+      "icon": "📋"
+    },
+    {
+      "name": "Thuế",
+      "path": "templates/Thuế",
+      "description": "Giấy tờ thuế",
+      "icon": "💰"
+    }
+  ]
+}

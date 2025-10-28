@@ -24,12 +24,27 @@ function setupExportButton() {
     // Collect form data
     const data = typeof collectFormData === 'function' ? collectFormData() : {};
     
-    // Get selected templates
+    // Get selected folder (chỉ cho phép chọn 1 folder)
     const selectedTemplates = typeof getSelectedTemplates === 'function' ? getSelectedTemplates() : (window.selectedTemplates || []);
+    
+    if (selectedTemplates.length === 0) {
+      alert("❌ Vui lòng chọn ít nhất 1 folder!");
+      if (typeof hideLoading === 'function') hideLoading();
+      return;
+    }
+    
+    if (selectedTemplates.length > 1) {
+      alert("⚠️ Chỉ cho phép xuất 1 folder tại 1 thời điểm!");
+      if (typeof hideLoading === 'function') hideLoading();
+      return;
+    }
+    
+    const folderName = selectedTemplates[0];
+    console.log(`📤 Xuất folder: ${folderName}`);
     
     try {
       const result = await window.ipcRenderer.invoke("export-word", {
-        files: selectedTemplates,
+        folderName: folderName,
         data,
         exportType,
       });

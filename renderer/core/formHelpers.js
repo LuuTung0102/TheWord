@@ -24,7 +24,49 @@ function setupNumericInput(el, maxLength) {
 }
 
 function setupCCCDInput(el) {
-  setupNumericInput(el, 12);
+  // Format: xxx.xxx.xxx.xxx (12 số với dấu chấm) - chỉ format khi blur
+  
+  // ✅ Khi đang gõ - chỉ cho phép nhập số và giới hạn 12 số
+  el.addEventListener("input", (e) => {
+    let value = e.target.value.replace(/\D/g, ""); // Chỉ giữ số
+    value = value.slice(0, 12); // Giới hạn 12 số
+    e.target.value = value; // Không format, chỉ hiển thị số thuần
+  });
+  
+  // ✅ Khi focus - xóa dấu chấm để dễ chỉnh sửa
+  el.addEventListener("focus", (e) => {
+    let value = e.target.value.replace(/\D/g, ""); // Loại bỏ dấu chấm
+    e.target.value = value;
+  });
+  
+  // ✅ Khi blur (mất focus) - format với dấu chấm
+  el.addEventListener("blur", (e) => {
+    let value = e.target.value.replace(/\D/g, "");
+    value = value.slice(0, 12);
+    
+    if (value.length === 0) return; // Không format nếu rỗng
+    
+    // Thêm dấu chấm sau mỗi 3 số
+    let formatted = "";
+    for (let i = 0; i < value.length; i++) {
+      if (i > 0 && i % 3 === 0) {
+        formatted += ".";
+      }
+      formatted += value[i];
+    }
+    
+    e.target.value = formatted;
+  });
+  
+  // ✅ Khi paste - giữ số thuần, không format
+  el.addEventListener("paste", (e) => {
+    e.preventDefault();
+    let text = (e.clipboardData || window.clipboardData)
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 12);
+    document.execCommand("insertText", false, text);
+  });
 }
 
 function setupPhoneInput(el) {
@@ -70,12 +112,37 @@ function setupNameInput(el) {
 }
 
 function setupLandTypeInput(el, id) {
+  // Prevent duplicate setup
+  if (el.dataset.landTypeSetup === 'true') {
+    console.log('⚠️ setupLandTypeInput already done for', id);
+    return;
+  }
+  
   const dropdown = document.getElementById(`${id}_dropdown`);
+  
+  // ✅ NULL CHECK: If dropdown doesn't exist, retry after DOM render
+  if (!dropdown) {
+    console.warn(`⚠️ Dropdown not found for ${id}, will retry...`);
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const retryDropdown = document.getElementById(`${id}_dropdown`);
+        if (retryDropdown && !el.dataset.landTypeSetup) {
+          console.log(`✅ Retry successful for ${id}`);
+          setupLandTypeInput(el, id); // Retry
+        }
+      }, 50);
+    });
+    return;
+  }
+  
+  // Mark as setup
+  el.dataset.landTypeSetup = 'true';
+  
   const landKeys = window.landTypeMap ? Object.keys(window.landTypeMap).sort() : [];
 
   function getSelectedCodes(value) {
     return value
-      .split("")
+      .split("+")
       .map((s) => s.trim().toUpperCase())
       .filter(Boolean);
   }
@@ -87,6 +154,9 @@ function setupLandTypeInput(el, id) {
   }
 
   function updateDropdown(query) {
+    // ✅ NULL CHECK
+    if (!dropdown || !el) return;
+    
     // Show all when no query (e.g., user presses ArrowDown)
     const selected = getSelectedCodes(el.value);
     const filtered = landKeys.filter(
@@ -111,6 +181,7 @@ function setupLandTypeInput(el, id) {
   });
 
   el.addEventListener("focus", (e) => {
+    // Khi focus, hiện TẤT CẢ options
     const cursorPos = e.target.selectionStart;
     const query = getCurrentQuery(e.target.value, cursorPos);
     updateDropdown(query);
@@ -130,74 +201,83 @@ function setupLandTypeInput(el, id) {
       e.preventDefault();
       updateDropdown("");
     } else if (e.key === "Escape") {
-      dropdown.style.display = "none";
+      if (dropdown) dropdown.style.display = "none";
     }
   });
 
-  // Click outside to hide dropdown
-  document.addEventListener("click", (e) => {
+  // Click outside to hide dropdown - Use named function for cleanup
+  const handleClickOutside = (e) => {
+    // ✅ NULL CHECK
+    if (!el || !dropdown) return;
     if (!el.contains(e.target) && !dropdown.contains(e.target)) {
       dropdown.style.display = "none";
     }
+  };
+  document.addEventListener("click", handleClickOutside);
+  
+  // Store for cleanup
+  if (!el._cleanupFunctions) el._cleanupFunctions = [];
+  el._cleanupFunctions.push(() => {
+    document.removeEventListener("click", handleClickOutside);
   });
 
   // Delegate click on suggestions
   dropdown.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (e.target.classList.contains("suggestion-item")) {
       const key = e.target.dataset.key;
-      const cursorPos = el.selectionStart;
-      const beforeCursor = el.value.slice(0, cursorPos);
-      const afterCursor = el.value.slice(cursorPos);
-      // Find the position after the last + before cursor
-      const lastPlusIndex = beforeCursor.lastIndexOf("+");
-      const insertPos = lastPlusIndex >= 0 ? lastPlusIndex + 1 : 0;
-      const newValue =
-        el.value.slice(0, insertPos) +
-        key +
-        (afterCursor || beforeCursor.endsWith("+") ? "" : "+") +
-        el.value.slice(insertPos + (beforeCursor.length - insertPos));
-      el.value = newValue;
-      el.selectionStart = el.selectionEnd =
-        insertPos +
-        key.length +
-        (afterCursor || beforeCursor.endsWith("+") ? 0 : 1);
-      updateDropdown("");
+      const currentValue = el.value.trim();
+      
+      if (!currentValue) {
+        // Trống: Chỉ thêm key
+        el.value = key;
+      } else {
+        // Có giá trị: Kiểm tra xem có dấu "+" không
+        const lastPlusIndex = currentValue.lastIndexOf('+');
+        
+        if (lastPlusIndex >= 0) {
+          // Có "+": Replace phần sau dấu "+" cuối cùng
+          el.value = currentValue.substring(0, lastPlusIndex + 1) + key;
+        } else {
+          // Không có "+": Replace toàn bộ (vì đang là query)
+          el.value = key;
+        }
+      }
+      
+      // Đóng dropdown
+      dropdown.style.display = "none";
     }
   });
 }
 
 function setupMoneyInput(el) {
+  // Input event: Chỉ cho phép nhập số, KHÔNG format ngay
   el.addEventListener("input", (e) => {
     const input = e.target;
-    const rawBefore = input.getAttribute("data-raw") || "";
-    const displayed = input.value;
     const caret = input.selectionStart;
-    let digitsBefore = 0;
-    for (let i = 0; i < Math.min(caret, displayed.length); i++)
-      if (/\d/.test(displayed[i])) digitsBefore++;
-    const newRaw = displayed.replace(/\D/g, "");
-    const formatted = window.formatWithCommas ? window.formatWithCommas(newRaw) : newRaw;
-    input.value = formatted;
-    input.setAttribute("data-raw", newRaw);
-    if (newRaw.length === 0) {
-      input.selectionStart = input.selectionEnd = 0;
-      return;
+    const value = input.value;
+    
+    // Chỉ giữ lại số, xóa ký tự khác
+    const digitsOnly = value.replace(/\D/g, "");
+    
+    if (value !== digitsOnly) {
+      // Nếu có ký tự không phải số, xóa và giữ cursor position
+      input.value = digitsOnly;
+      const newCaret = Math.max(0, caret - (value.length - digitsOnly.length));
+      input.selectionStart = input.selectionEnd = newCaret;
     }
-    let digitCount = 0;
-    let newPos = formatted.length;
-    for (let i = 0; i < formatted.length; i++) {
-      if (/\d/.test(formatted[i])) digitCount++;
-      if (digitCount >= digitsBefore) {
-        newPos = i + 1;
-        break;
-      }
-    }
-    if (digitsBefore > newRaw.length) newPos = formatted.length;
-    input.selectionStart = input.selectionEnd = newPos;
+    
+    // Lưu raw value (không format)
+    input.setAttribute("data-raw", digitsOnly);
   });
+  
+  // Blur event: Format với dấu phẩy khi chuyển sang ô khác
   el.addEventListener("blur", (e) => {
-    const raw = e.target.value.replace(/[^0-9]/g, "");
-    e.target.value = window.formatWithCommas ? window.formatWithCommas(raw) : raw;
+    const raw = e.target.value.replace(/\D/g, "");
+    const formatted = window.formatWithCommas ? window.formatWithCommas(raw) : raw;
+    e.target.value = formatted;
     e.target.setAttribute("data-raw", raw);
   });
 
@@ -221,12 +301,40 @@ function setupNoteTextarea(el) {
 
 function setupDatePickers() {
   try {
-    document.querySelectorAll(".date-input").forEach((input) => {
-      if (typeof flatpickr === "undefined") return;
+    if (typeof flatpickr === "undefined") {
+      console.warn("⚠️ Flatpickr not loaded");
+      return;
+    }
+    
+    // Tìm tất cả các trường date-input và date-picker
+    const dateInputs = document.querySelectorAll(".date-input, .date-picker");
+    if (dateInputs.length === 0) {
+      console.warn("⚠️ No date inputs found");
+      return;
+    }
+    console.log(`✅ Found ${dateInputs.length} date inputs`);
+    
+    dateInputs.forEach((input) => {
+      // Destroy existing flatpickr instance if any
+      if (input._flatpickr) {
+        input._flatpickr.destroy();
+      }
+      
       flatpickr(input, {
         dateFormat: "d/m/Y",
         allowInput: true,
         altInput: false,
+        locale: {
+          firstDayOfWeek: 1,
+          weekdays: {
+            shorthand: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+            longhand: ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'],
+          },
+          months: {
+            shorthand: ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'],
+            longhand: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+          },
+        },
         onClose: function (selectedDates, dateStr, instance) {
           if (selectedDates && selectedDates.length) {
             instance.input.value = instance.formatDate(
@@ -248,6 +356,7 @@ function setupDatePickers() {
       });
     });
   } catch (err) {
+    console.error("❌ Error setting up date pickers:", err);
   }
 }
 
@@ -321,6 +430,127 @@ function setupAddressSelects() {
   });
 }
 
+// Re-setup all form inputs (called after form is rendered)
+function reSetupAllInputs() {
+  // Setup date pickers and address selects first
+  setupDatePickers();
+  setupAddressSelects();
+  
+  // Setup CCCD inputs
+  const cccdInputs = document.querySelectorAll('input[data-ph*="CCCD"]');
+  cccdInputs.forEach(input => {
+    // ✅ Remove maxlength attribute to allow formatted value (12 digits + 3 dots = 15 chars)
+    input.removeAttribute('maxlength');
+    setupCCCDInput(input);
+  });
+  
+  // Setup phone inputs
+  const phoneInputs = document.querySelectorAll('input[data-ph*="SDT"], input[data-ph*="Phone"]');
+  phoneInputs.forEach(input => {
+    setupPhoneInput(input);
+  });
+  
+  // Setup MST inputs
+  const mstInputs = document.querySelectorAll('input[data-ph*="MST"]');
+  mstInputs.forEach(input => {
+    setupMSTInput(input);
+  });
+  
+  // Setup email inputs
+  const emailInputs = document.querySelectorAll('input[data-ph*="Email"], input[data-ph*="EMAIL"]');
+  emailInputs.forEach(input => {
+    setupEmailInput(input);
+  });
+  
+  // Setup name inputs
+  const nameInputs = document.querySelectorAll('input[data-ph*="Name"]');
+  nameInputs.forEach(input => {
+    setupNameInput(input);
+  });
+  
+  // Setup money inputs
+  document.querySelectorAll('input[data-ph="Money"]').forEach(input => {
+    setupMoneyInput(input);
+  });
+  
+  // Setup note textareas
+  document.querySelectorAll('textarea[data-ph="Note"]').forEach(textarea => {
+    setupNoteTextarea(textarea);
+  });
+  
+  // Setup land type inputs
+  document.querySelectorAll('input[data-ph="Loai_Dat"]').forEach(input => {
+    const id = input.id;
+    if (id) setupLandTypeInput(input, id);
+  });
+}
+
+// 🗑️ Cleanup all event listeners before rendering new form
+function cleanupAllEventListeners() {
+  console.log('🗑️ Cleaning up old event listeners...');
+  
+  // Cleanup land type inputs
+  document.querySelectorAll('input[data-ph="Loai_Dat"]').forEach(input => {
+    if (input._cleanupFunctions) {
+      input._cleanupFunctions.forEach(fn => fn());
+      input._cleanupFunctions = [];
+    }
+    // ✅ REMOVE flag, not just set to false
+    delete input.dataset.landTypeSetup;
+  });
+  
+  // Hide all dropdowns
+  document.querySelectorAll('.land-type-dropdown').forEach(dropdown => {
+    dropdown.style.display = 'none';
+  });
+  
+  console.log('✅ Cleanup completed');
+}
+
+// Export to window
+if (typeof window !== 'undefined') {
+  window.cleanupAllEventListeners = cleanupAllEventListeners;
+}
+
+function formatInputValue(value, ph, map) {
+  if (!value || !map) return value || '';
+  
+  let formatted = value;
+  
+  // Format based on type
+  if (map.type === "date") {
+    // Format date
+    const dmMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    const isoMatch = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    
+    if (dmMatch) {
+      const dd = dmMatch[1].padStart(2, "0");
+      const mm = dmMatch[2].padStart(2, "0");
+      const yyyy = dmMatch[3];
+      formatted = `${dd}/${mm}/${yyyy}`;
+    } else if (isoMatch) {
+      const yyyy = isoMatch[1];
+      const mm = isoMatch[2].padStart(2, "0");
+      const dd = isoMatch[3].padStart(2, "0");
+      formatted = `${dd}/${mm}/${yyyy}`;
+    } else if (window.formatDate) {
+      formatted = window.formatDate(value);
+    }
+  } else if (map.type === "number") {
+    // Format CCCD
+    if (ph.includes('CCCD') && value) {
+      const digits = value.replace(/\D/g, "");
+      if (/^\d{12}$/.test(digits)) {
+        formatted = window.formatCCCD ? window.formatCCCD(digits) : digits;
+      } else {
+        formatted = digits;
+      }
+    }
+  }
+  
+  return formatted;
+}
+
 // Export to window for global access
 window.setupNumericInput = setupNumericInput;
 window.setupCCCDInput = setupCCCDInput;
@@ -334,4 +564,6 @@ window.setupMoneyInput = setupMoneyInput;
 window.setupNoteTextarea = setupNoteTextarea;
 window.setupDatePickers = setupDatePickers;
 window.setupAddressSelects = setupAddressSelects;
+window.reSetupAllInputs = reSetupAllInputs;
+window.formatInputValue = formatInputValue;
 

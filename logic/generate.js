@@ -61,40 +61,200 @@ function generateDocx(templatePath, data, outputPath) {
     }
     const templatePhs = getPlaceholders(templatePath);
   
-    // Use shared constants
-    const menGroupsToCheck = ['MEN3', 'MEN4', 'MEN5', 'MEN6'];
-    const menPlaceholders = {
-      'MEN3': ['Gender3', 'Name3', 'CCCD3', 'Date3', 'Noi_Cap3', 'Ngay_Cap3'],
-      'MEN4': ['Gender4', 'Name4', 'CCCD4', 'Date4', 'Noi_Cap4', 'Ngay_Cap4'],
-      'MEN5': ['Gender5', 'Name5', 'CCCD5', 'Date5', 'Noi_Cap5', 'Ngay_Cap5'],
-      'MEN6': ['Gender6', 'Name6', 'CCCD6', 'Date6', 'Noi_Cap6', 'Ngay_Cap6']
+    // ===== FUNCTION: BUILD MENx_Ly LINES (Tái sử dụng cho Transfer & Inheritance) =====
+    const buildMenLinesGeneric = (indices, options = {}) => {
+      const { 
+        includeRelation = false,
+        includeAddress = false,
+        datePrefix = 'sinh ngày:',
+        cccdPrefix = 'CCCD số:',
+        separator = ', ',
+        docType = 'transfer'
+      } = options;
+      
+      indices.forEach(index => {
+        const group = `MEN${index}`;
+        const relation = includeRelation ? (data[`${group}_Relation`] || "").trim() : "";
+        const gender = (data[`Gender${index}`] || "").trim();
+        const name = (data[`Name${index}`] || "").trim();
+        const birthDate = (data[`Date${index}`] || "").trim();
+        const cccd = (data[`CCCD${index}`] || "").trim();
+        const issuingPlace = (data[`Noi_Cap${index}`] || "").trim();
+        const issuingDate = (data[`Ngay_Cap${index}`] || "").trim();
+        const address = includeAddress ? (data[`Address${index}`] || "").trim() : "";
+        
+        // Check empty
+        const hasAny = [relation, gender, name, birthDate, cccd, issuingPlace, issuingDate, address]
+          .some(v => v && v.length > 0);
+        
+        if (!hasAny) {
+          // XÓA DÒNG
+          data[`${group}_L1`] = "___DELETE_THIS___";
+          data[`${group}_L1_Before`] = "___DELETE_THIS___";
+          data[`${group}_L1_Name`] = "";
+          data[`${group}_L1_After`] = "";
+          data[`${group}_L2`] = "___DELETE_THIS___";
+          data[`${group}_L3`] = "___DELETE_THIS___";
+          data[`${group}_EMPTY`] = true;
+          console.log(`🗑️ Removed empty ${group} (${docType})`);
+          return;
+        }
+        
+        data[`${group}_EMPTY`] = false;
+        
+        // BUILD Line 1
+        if (includeRelation) {
+          // Format cho Inheritance: "Ông: Nguyễn Văn B là con sinh năm 2000"
+          data[`${group}_L1_Before`] = gender ? `${gender}: ` : "";
+          data[`${group}_L1_Name`] = name;
+          data[`${group}_L1_After`] = (relation ? ` là ${relation}` : "") + (birthDate ? ` ${datePrefix} ${birthDate}` : "");
+          
+          const line1Parts = [];
+          if (gender) line1Parts.push(`${gender}:`);
+          if (name) line1Parts.push(name);
+          if (relation) line1Parts.push(`là ${relation}`);
+          if (birthDate) line1Parts.push(`${datePrefix} ${birthDate}`);
+          data[`${group}_L1`] = line1Parts.join(" ");
+        } else {
+          // Format cho Transfer: "Ông Nguyễn Văn B sinh ngày: 2000"
+          data[`${group}_L1_Before`] = gender ? `${gender} ` : "";
+          data[`${group}_L1_Name`] = name;
+          data[`${group}_L1_After`] = birthDate ? ` ${datePrefix} ${birthDate}` : "";
+          
+          const line1Parts = [];
+          if (gender && name) line1Parts.push(`${gender} ${name}`);
+          else if (name) line1Parts.push(name);
+          if (birthDate) line1Parts.push(`${datePrefix} ${birthDate}`);
+          data[`${group}_L1`] = line1Parts.join(" ");
+        }
+        
+        // BUILD Line 2 - CCCD
+        const line2Parts = [];
+        if (cccd) line2Parts.push(`${cccdPrefix} ${cccd}`);
+        if (issuingPlace) line2Parts.push(`do ${issuingPlace}`);
+        if (issuingDate) line2Parts.push(`${separator === ', ' ? 'ngày' : 'cấp ngày'} ${issuingDate}`);
+        data[`${group}_L2`] = line2Parts.join(separator);
+        
+        // BUILD Line 3 - Address (chỉ cho inheritance documents)
+        if (includeAddress) {
+          data[`${group}_L3`] = address ? `Thường trú: ${address}` : "";
+        }
+      });
     };
 
-    menGroupsToCheck.forEach(group => {
-      const placeholders = menPlaceholders[group] || [];
-      const hasAnyData = placeholders.some(ph => {
-        const value = data[ph];
-        return value && value.trim() !== "";
+    // ===== Transfer Documents: MEN3-6 =====
+    buildMenLinesGeneric([3, 4, 5, 6], { 
+      includeRelation: false,
+      datePrefix: 'sinh ngày:',
+      cccdPrefix: 'CCCD số:',
+      separator: ', ',
+      docType: 'transfer'
+    });
+
+    // ===== Phân chia Documents: MEN2-7 (với Relation và Address) =====
+    buildMenLinesGeneric([2, 3, 4, 5, 6, 7], { 
+      includeRelation: true,
+      includeAddress: true,
+      datePrefix: 'sinh năm',
+      cccdPrefix: 'CCCD số',
+      separator: ', ',
+      docType: 'phanchia'
+    });
+
+    // ===== XÓA DÒNG TRỐNG CHO FATHER/MOTHER (Phân chia documents) =====
+    // FATHER
+    const fatherName = (data.FATHER_Name || "").trim();
+    const fatherDate = (data.FATHER_Date || "").trim();
+    const fatherDeathDate = (data.FATHER_Death_Date || "").trim();
+    
+    if (!fatherName) {
+      ['FATHER_Name', 'FATHER_Date', 'FATHER_Death_Date'].forEach(ph => {
+        data[ph] = "___DELETE_THIS___";
       });
+      data.FATHER_L1 = "___DELETE_THIS___";
+      data.FATHER_L1_Before = "___DELETE_THIS___";
+      data.FATHER_L1_Name = "";
+      data.FATHER_L1_After = "";
+      console.log(`🗑️ Removed empty FATHER section`);
+    } else {
+      // Line 1: "Cha: {name} (sinh {date}, mất {death_date})"
+      data.FATHER_L1_Before = "Cha: ";
+      data.FATHER_L1_Name = fatherName;
+      const afterParts = [];
+      if (fatherDate || fatherDeathDate) {
+        const dateParts = [];
+        if (fatherDate) dateParts.push(`sinh ${fatherDate}`);
+        if (fatherDeathDate) dateParts.push(`mất ${fatherDeathDate}`);
+        afterParts.push(`(${dateParts.join(", ")})`);
+      }
+      data.FATHER_L1_After = afterParts.length > 0 ? ` ${afterParts.join(" ")}` : "";
+      
+      const line1Parts = ["Cha:", fatherName];
+      if (fatherDate || fatherDeathDate) {
+        const dateParts = [];
+        if (fatherDate) dateParts.push(`sinh ${fatherDate}`);
+        if (fatherDeathDate) dateParts.push(`mất ${fatherDeathDate}`);
+        line1Parts.push(`(${dateParts.join(", ")})`);
+      }
+      data.FATHER_L1 = line1Parts.join(" ");
+    }
 
-      if (!hasAnyData) {
-        placeholders.forEach(ph => {
-          data[ph] = "";
-        });
-        data[`${group}_EMPTY`] = true;
+    // MOTHER
+    const motherName = (data.MOTHER_Name || "").trim();
+    const motherDate = (data.MOTHER_Date || "").trim();
+    const motherDeathDate = (data.MOTHER_Death_Date || "").trim();
+    
+    if (!motherName) {
+      ['MOTHER_Name', 'MOTHER_Date', 'MOTHER_Death_Date'].forEach(ph => {
+        data[ph] = "___DELETE_THIS___";
+      });
+      data.MOTHER_L1 = "___DELETE_THIS___";
+      data.MOTHER_L1_Before = "___DELETE_THIS___";
+      data.MOTHER_L1_Name = "";
+      data.MOTHER_L1_After = "";
+      console.log(`🗑️ Removed empty MOTHER section`);
+    } else {
+      // Line 1: "Mẹ: {name} (sinh {date}, mất {death_date})"
+      data.MOTHER_L1_Before = "Mẹ: ";
+      data.MOTHER_L1_Name = motherName;
+      const afterParts = [];
+      if (motherDate || motherDeathDate) {
+        const dateParts = [];
+        if (motherDate) dateParts.push(`sinh ${motherDate}`);
+        if (motherDeathDate) dateParts.push(`mất ${motherDeathDate}`);
+        afterParts.push(`(${dateParts.join(", ")})`);
+      }
+      data.MOTHER_L1_After = afterParts.length > 0 ? ` ${afterParts.join(" ")}` : "";
+      
+      const line1Parts = ["Mẹ:", motherName];
+      if (motherDate || motherDeathDate) {
+        const dateParts = [];
+        if (motherDate) dateParts.push(`sinh ${motherDate}`);
+        if (motherDeathDate) dateParts.push(`mất ${motherDeathDate}`);
+        line1Parts.push(`(${dateParts.join(", ")})`);
+      }
+      data.MOTHER_L1 = line1Parts.join(" ");
+    }
 
-        const index = group.replace('MEN', '');
-        data[`MEN${index}_L1`] = "___DELETE_THIS___"; 
-        data[`MEN${index}_L1_Before`] = "___DELETE_THIS___";
-        data[`MEN${index}_L1_Name`] = "";
-        data[`MEN${index}_L1_After`] = "";
-        data[`MEN${index}_L2`] = "___DELETE_THIS___";
-        
-        console.log(`🗑️ Removed empty group: ${group}`);
+    const landParts = [];
+    Object.keys(data).forEach(key => {
+      if (key.startsWith('S_') && key !== 'S_Text' && key !== 'S_Chung') {
+        const value = data[key];
+        if (value && value.toString().trim() !== "" && value !== "0") {
+          // Lấy mã loại đất từ key (ví dụ: S_ONT -> ONT)
+          const landCode = key.replace('S_', '');
+          landParts.push(`${value}m²: ${landCode}`);
       } else {
-        data[`${group}_EMPTY`] = false;
+          data[key] = "";  
+        }
       }
     });
+    
+
+    data.Loai_Dat_Full = landParts.join('; ');
+    
+    console.log(`📊 Mục đích sử dụng: ${data.Loai_Dat_Full || '(trống)'}`);
+    console.log(`📊 Tìm thấy ${landParts.length} loại đất có diện tích`);
     templatePhs.forEach(ph => {
       if (ph.length === 0 || (ph.length > 1 && !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(ph))) {
         console.warn(`⚠️ Bỏ qua placeholder không hợp lệ: ${ph}`);
@@ -115,12 +275,11 @@ function generateDocx(templatePath, data, outputPath) {
       if (!mapping) {
         const fallback = {
           MEN1: { BD_Gender: 'Gender1', BD_Name: 'Name1', BD_CCCD: 'CCCD1', BD_Date: 'Date1', BD_Noi_Cap: 'Noi_Cap1', BD_Ngay_Cap: 'Ngay_Cap1', BD_SDT: 'SDT_MEN1', BD_Address: 'Address1', BD_Email: 'EMAIL_MEN1' },
-          MEN7: { BD_Gender: 'Gender7', BD_Name: 'Name7', BD_CCCD: 'CCCD7', BD_Date: 'Date7', BD_Noi_Cap: 'Noi_Cap7', BD_Ngay_Cap: 'Ngay_Cap7', BD_SDT: 'SDT_MEN7', BD_Address: 'Address2', BD_Email: 'EMAIL_MEN7' },
+          MEN7: { BD_Gender: 'Gender7', BD_Name: 'Name7', BD_CCCD: 'CCCD7', BD_Date: 'Date7', BD_Noi_Cap: 'Noi_Cap7', BD_Ngay_Cap: 'Ngay_Cap7', BD_SDT: 'SDT_MEN7', BD_Address: 'Address7', BD_Email: 'EMAIL_MEN7' },
         };
         mapping = fallback[source];
       }
       if (mapping) {
-        // Điền dữ liệu từ nguồn vào các trường BD
         Object.entries(mapping).forEach(([bdField, sourceField]) => {
           if (data[sourceField] && data[sourceField].trim()) {
             data[bdField] = data[sourceField];
@@ -134,7 +293,6 @@ function generateDocx(templatePath, data, outputPath) {
       console.log("⚠️ Không có nguồn dữ liệu BD được chọn");
     }
     
-    // Handle UQ data source (Ủy quyền - Bên A)
     if (data.selectedUQDataSource) {
       const source = data.selectedUQDataSource;
       let mapping;
@@ -148,19 +306,18 @@ function generateDocx(templatePath, data, outputPath) {
       if (!mapping) {
         const fallback = {
           MEN1: { UQA_Gender: 'Gender1', UQA_Name: 'Name1', UQA_CCCD: 'CCCD1', UQA_Date: 'Date1', UQA_Noi_Cap: 'Noi_Cap1', UQA_Ngay_Cap: 'Ngay_Cap1', UQA_Address: 'Address1' },
-          MEN7: { UQA_Gender: 'Gender7', UQA_Name: 'Name7', UQA_CCCD: 'CCCD7', UQA_Date: 'Date7', UQA_Noi_Cap: 'Noi_Cap7', UQA_Ngay_Cap: 'Ngay_Cap7', UQA_Address: 'Address2' },
+          MEN7: { UQA_Gender: 'Gender7', UQA_Name: 'Name7', UQA_CCCD: 'CCCD7', UQA_Date: 'Date7', UQA_Noi_Cap: 'Noi_Cap7', UQA_Ngay_Cap: 'Ngay_Cap7', UQA_Address: 'Address7' },
         };
         mapping = fallback[source];
       }
       if (mapping) {
-        // Điền dữ liệu từ nguồn vào các trường UQA (Bên A - người ủy quyền)
         Object.entries(mapping).forEach(([uqaField, sourceField]) => {
           const sourceValue = data[sourceField];
           if (sourceValue !== undefined && sourceValue !== null && sourceValue !== '') {
-            // Convert to string and check if not empty after trimming
+           
             const stringValue = String(sourceValue).trim();
             if (stringValue) {
-              data[uqaField] = data[sourceField]; // Keep original format (with ":" if exists)
+              data[uqaField] = data[sourceField]; 
               console.log(`✅ UQ Bên A: ${uqaField} = ${data[sourceField]} (từ ${sourceField})`);
             } else {
               console.log(`⚠️ UQ Bên A: ${uqaField} = "" (dữ liệu rỗng từ ${sourceField})`);
@@ -174,13 +331,10 @@ function generateDocx(templatePath, data, outputPath) {
       console.log("⚠️ Không có nguồn dữ liệu UQ được chọn");
     }
     
-    // Handle UQ Bên B data source (Người được ủy quyền)
+   
     if (data.selectedUQBenBDataSource) {
       const source = data.selectedUQBenBDataSource;
-      
-      // Kiểm tra xem có phải là DEFAULT1/2/3 không
       if (source.startsWith('DEFAULT')) {
-        // Lấy dữ liệu từ defaultPeople được gửi từ frontend
         const index = parseInt(source.replace('DEFAULT', '')) - 1;
         
         const defaultPeopleData = {
@@ -195,7 +349,7 @@ function generateDocx(templatePath, data, outputPath) {
         
         // Điền dữ liệu vào các trường UQ_*
         if (defaultPeopleData.gender) {
-          data.UQ_Gender = defaultPeopleData.gender + ':';
+          data.UQ_Gender = defaultPeopleData.gender;
         }
         if (defaultPeopleData.name) {
           data.UQ_Name = defaultPeopleData.name;
@@ -236,7 +390,7 @@ function generateDocx(templatePath, data, outputPath) {
           const fallback = {
             MEN1: { UQ_Gender: 'Gender1', UQ_Name: 'Name1', UQ_CCCD: 'CCCD1', UQ_Date: 'Date1', UQ_Noi_Cap: 'Noi_Cap1', UQ_Ngay_Cap: 'Ngay_Cap1', UQ_Address: 'Address1' },
             MEN2: { UQ_Gender: 'Gender2', UQ_Name: 'Name2', UQ_CCCD: 'CCCD2', UQ_Date: 'Date2', UQ_Noi_Cap: 'Noi_Cap2', UQ_Ngay_Cap: 'Ngay_Cap2', UQ_Address: 'Address1' },
-            MEN7: { UQ_Gender: 'Gender7', UQ_Name: 'Name7', UQ_CCCD: 'CCCD7', UQ_Date: 'Date7', UQ_Noi_Cap: 'Noi_Cap7', UQ_Ngay_Cap: 'Ngay_Cap7', UQ_Address: 'Address2' },
+            MEN7: { UQ_Gender: 'Gender7', UQ_Name: 'Name7', UQ_CCCD: 'CCCD7', UQ_Date: 'Date7', UQ_Noi_Cap: 'Noi_Cap7', UQ_Ngay_Cap: 'Ngay_Cap7', UQ_Address: 'Address7' },
           };
           mapping = fallback[source];
         }
@@ -268,52 +422,7 @@ function generateDocx(templatePath, data, outputPath) {
       else if (typeof data[k] !== 'string') data[k] = String(data[k]);
     });
 
-    const buildMenLines = (index) => {
-     
-      if (data[`MEN${index}_EMPTY`] === true) {
-        return;
-      }
-      
-      const gender = (data[`Gender${index}`] || "").trim();
-      const name = (data[`Name${index}`] || "").trim();
-      const birthDate = (data[`Date${index}`] || "").trim();
-      const cccd = (data[`CCCD${index}`] || "").trim();
-      const issuingPlace = (data[`Noi_Cap${index}`] || "").trim();
-      const issuingDate = (data[`Ngay_Cap${index}`] || "").trim();
-
-      const hasAny = [gender, name, birthDate, cccd, issuingPlace, issuingDate]
-        .some(v => v && v.length > 0);
-
-      if (!hasAny) {
-       
-        data[`MEN${index}_L1`] = "___DELETE_THIS___";
-        data[`MEN${index}_L1_Before`] = "___DELETE_THIS___";
-        data[`MEN${index}_L1_Name`] = "";
-        data[`MEN${index}_L1_After`] = "";
-        data[`MEN${index}_L2`] = "___DELETE_THIS___";
-        return;
-      }
-
-      data[`MEN${index}_L1_Before`] = gender ? `${gender} ` : "";
-    
-      data[`MEN${index}_L1_Name`] = name;
-      
-      data[`MEN${index}_L1_After`] = birthDate ? ` sinh ngày: ${birthDate}` : "";
-
-      const line1Parts = [];
-      const fullName = `${gender} ${name}`.trim();
-      if (fullName) line1Parts.push(fullName);
-      if (birthDate) line1Parts.push(`sinh ngày: ${birthDate}`);
-      data[`MEN${index}_L1`] = line1Parts.join(" ");
-
-      const line2Segments = [];
-      if (cccd) line2Segments.push(`CCCD số: ${cccd}`);
-      if (issuingPlace) line2Segments.push(`do ${issuingPlace}`);
-      if (issuingDate) line2Segments.push(`ngày ${issuingDate}`);
-      data[`MEN${index}_L2`] = line2Segments.join(", ");
-    };
-
-    [3, 4, 5, 6].forEach(buildMenLines);
+    // ✅ buildMenLines đã được thay bằng buildMenLinesGeneric ở trên
 
     try {
       doc.render(data);
