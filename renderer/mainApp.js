@@ -486,6 +486,12 @@ class MainApp {
       // Collect form data
       const formData = this.collectFormData();
       
+      // ✅ Save to session storage for reuse
+      if (window.sessionStorageManager && this.selectedFile) {
+        window.sessionStorageManager.saveFormData(this.selectedFile, formData);
+        console.log(`💾 Saved session data for: ${this.selectedFile}`);
+      }
+      
       // ✅ Get folder path from template config
       const selectedTemplate = this.templates.find(t => t.name === this.selectedFolder);
       if (!selectedTemplate) {

@@ -1,9 +1,4 @@
-// ==========================================
-// FORM INPUT HELPER FUNCTIONS
-// Extracted from formHandler.js for better organization
-// ==========================================
 
-// Generic numeric input setup function (DRY principle)
 function setupNumericInput(el, maxLength) {
   el.addEventListener("input", (e) => {
     const v = e.target.value.replace(/\D/g, "").slice(0, maxLength);
@@ -24,8 +19,6 @@ function setupNumericInput(el, maxLength) {
 }
 
 function setupCCCDInput(el) {
-  // Format: xxx.xxx.xxx.xxx (12 số với dấu chấm) - chỉ format khi blur
-  
   // ✅ Khi đang gõ - chỉ cho phép nhập số và giới hạn 12 số
   el.addEventListener("input", (e) => {
     let value = e.target.value.replace(/\D/g, ""); // Chỉ giữ số
@@ -39,23 +32,23 @@ function setupCCCDInput(el) {
     e.target.value = value;
   });
   
-  // ✅ Khi blur (mất focus) - format với dấu chấm
+  // ✅ Khi blur (mất focus) - format với dấu chấm sử dụng utils.js
   el.addEventListener("blur", (e) => {
     let value = e.target.value.replace(/\D/g, "");
     value = value.slice(0, 12);
     
     if (value.length === 0) return; // Không format nếu rỗng
     
-    // Thêm dấu chấm sau mỗi 3 số
-    let formatted = "";
-    for (let i = 0; i < value.length; i++) {
-      if (i > 0 && i % 3 === 0) {
-        formatted += ".";
-      }
-      formatted += value[i];
+    // ✅ Sử dụng hàm formatCCCD từ utils.js
+    if (value.length === 12 && window.formatCCCD) {
+      const formatted = window.formatCCCD(value);
+      // Nếu formatCCCD trả về chuỗi rỗng, giữ nguyên value
+      e.target.value = formatted || value;
+      console.log(`🆔 CCCD formatted: ${value} -> ${formatted || value}`);
+    } else {
+      // Nếu chưa đủ 12 số, giữ nguyên
+      e.target.value = value;
     }
-    
-    e.target.value = formatted;
   });
   
   // ✅ Khi paste - giữ số thuần, không format
@@ -253,40 +246,42 @@ function setupLandTypeInput(el, id) {
 }
 
 function setupMoneyInput(el) {
-  // Input event: Chỉ cho phép nhập số, KHÔNG format ngay
+  // ✅ Khi đang gõ - chỉ cho phép nhập số
   el.addEventListener("input", (e) => {
-    const input = e.target;
-    const caret = input.selectionStart;
-    const value = input.value;
-    
-    // Chỉ giữ lại số, xóa ký tự khác
-    const digitsOnly = value.replace(/\D/g, "");
-    
-    if (value !== digitsOnly) {
-      // Nếu có ký tự không phải số, xóa và giữ cursor position
-      input.value = digitsOnly;
-      const newCaret = Math.max(0, caret - (value.length - digitsOnly.length));
-      input.selectionStart = input.selectionEnd = newCaret;
-    }
-    
-    // Lưu raw value (không format)
-    input.setAttribute("data-raw", digitsOnly);
+    let value = e.target.value.replace(/\D/g, ""); // Chỉ giữ số
+    e.target.value = value; // Không format, chỉ hiển thị số thuần
   });
   
-  // Blur event: Format với dấu phẩy khi chuyển sang ô khác
-  el.addEventListener("blur", (e) => {
-    const raw = e.target.value.replace(/\D/g, "");
-    const formatted = window.formatWithCommas ? window.formatWithCommas(raw) : raw;
-    e.target.value = formatted;
-    e.target.setAttribute("data-raw", raw);
-  });
-
+  // ✅ Khi focus - xóa dấu phẩy để dễ chỉnh sửa
   el.addEventListener("focus", (e) => {
-    const raw =
-      e.target.getAttribute("data-raw") ||
-      e.target.value.replace(/[^0-9]/g, "");
-    e.target.value = raw;
-    e.target.selectionStart = e.target.selectionEnd = e.target.value.length;
+    let value = e.target.value.replace(/\D/g, ""); // Loại bỏ dấu phẩy
+    e.target.value = value;
+  });
+  
+  // ✅ Khi blur (mất focus) - format với dấu phẩy và cập nhật MoneyText
+  el.addEventListener("blur", (e) => {
+    let value = e.target.value.replace(/\D/g, "");
+    
+    if (value.length === 0) {
+      // Nếu rỗng, clear MoneyText
+      const moneyTextField = document.querySelector('[data-ph="MoneyText"]');
+      if (moneyTextField) {
+        moneyTextField.value = "";
+      }
+      return;
+    }
+    
+    // ✅ Sử dụng hàm formatWithCommas từ utils.js
+    const formatted = window.formatWithCommas ? window.formatWithCommas(value) : value;
+    e.target.value = formatted;
+    
+    // ✅ Sử dụng hàm numberToVietnameseWords từ utils.js
+    const moneyText = window.numberToVietnameseWords ? window.numberToVietnameseWords(value) : "";
+    const moneyTextField = document.querySelector('[data-ph="MoneyText"]');
+    if (moneyTextField && moneyText) {
+      moneyTextField.value = moneyText;
+      console.log(`💰 Money: ${formatted} -> Text: "${moneyText}"`);
+    }
   });
 }
 

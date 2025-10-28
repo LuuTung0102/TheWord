@@ -1,78 +1,53 @@
 {
-  "folder": {
-    "id": "chuyen-nhuong",
-    "name": "HĐ chuyển nhượng ",
-    "description": "Nhóm hợp đồng chuyển nhượng các loại tài sản",
-    "icon": "📜"
-  },
-
-  "templates": [
-    {
-      "id": "hd-cn-dat",
-      "filename": "HĐ chuyển nhượng quyền sử dụng đất.docx",
-      "name": "Hợp đồng chuyển nhượng đất",
-      "description": "Chuyển nhượng quyền sử dụng đất",
-      "groups": ["BCN", "NCN", "LAND"],
-      "placeholders": {
-        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
-        "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
-        "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
+    "folder": {
+      "id": "phan-chia-tai-san",
+      "name": "HĐ phân chia tài sản",
+      "description": "Nhóm hợp đồng phân chia tài sản",
+      "icon": "📜"
+    },
+  
+    "templates": [
+      {
+        "id": "hd-pc-ts",
+        "filename": "Phân chia tài sản thừa kế.docx",
+        "name": "Hợp đồng phân chia tài sản thừa kế",
+        "description": "Phân chia tài sản thừa kế",
+        "groups": ["BCN", "NCN", "LAND"],
+        "placeholders": {
+          "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
+          "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
+          "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
+        }
       }
-    },
-    {
-      "id": "hd-cn-nha",
-      "filename": "HĐ chuyển nhượng nhà cửa.docx",
-      "name": "Hợp đồng chuyển nhượng nhà cửa",
-      "description": "Chuyển nhượng nhà ở, công trình xây dựng",
-      "groups": ["BCT", "NCN", "LAND"],
-      "placeholders": {
-        "BCT": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
-        "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
-        "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
-      }
-    },
-    {
-      "id": "hd-cn-dat-ts",
-      "filename": "HĐ chuyển nhượng QSDĐ & tài sản.docx",
-      "name": "HĐ chuyển nhượng đất & tài sản gắn liền",
-      "description": "Chuyển nhượng đất kèm nhà, công trình",
-      "groups": ["BCN", "NCN", "LAND"],
-      "placeholders": {
-        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
-        "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
-        "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
-      }
-    }
-  ],
+    ],
+    "groups": [
+        {
+          "id": "BCN",
+          "label": "Bên chuyển nhượng",
+          "order": 1,
+          "description": "Người chuyển nhượng tài sản"
+        },
+        {
+          "id": "BCT",
+          "label": "Bên công trình",
+          "order": 1,
+          "description": "Người chuyển nhượng công trình"
+        },
+        {
+          "id": "NCN",
+          "label": "Bên nhận chuyển nhượng",
+          "order": 2,
+          "description": "Người nhận chuyển nhượng tài sản"
+        },
+        {
+          "id": "LAND",
+          "label": "Thông tin thửa đất",
+          "order": 3,
+          "description": "Thông tin đất đai, nhà cửa"
+        }
+      ],
 
-  "groups": [
-    {
-      "id": "BCN",
-      "label": "Bên chuyển nhượng",
-      "order": 1,
-      "description": "Người chuyển nhượng tài sản"
-    },
-    {
-      "id": "BCT",
-      "label": "Bên công trình",
-      "order": 1,
-      "description": "Người chuyển nhượng công trình"
-    },
-    {
-      "id": "NCN",
-      "label": "Bên nhận chuyển nhượng",
-      "order": 2,
-      "description": "Người nhận chuyển nhượng tài sản"
-    },
-    {
-      "id": "LAND",
-      "label": "Thông tin thửa đất",
-      "order": 3,
-      "description": "Thông tin đất đai, nhà cửa"
-    }
-  ],
-
-  "fieldSchemas": {
+      "fieldSchemas": {
     "PersonalInfo": {
       "description": "Thông tin cá nhân của các bên",
       "applicableTo": ["BCN", "BCT", "NCN"],

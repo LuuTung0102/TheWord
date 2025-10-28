@@ -114,3 +114,5 @@ window.formatPhoneNumber = formatPhoneNumber;
 window.formatDate = formatDate;
 window.formatWithCommas = formatWithCommas;
 window.numberToVietnameseWords = numberToVietnameseWords;
+
+console.log('✅ Utils functions loaded successfully');

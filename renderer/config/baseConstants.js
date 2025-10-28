@@ -1,5 +1,4 @@
 const BASE_PLACEHOLDERS = {
-  // ==== THÔNG TIN CÁ NHÂN ====
   Gender: {
     type: "select",
     options: ["Ông", "Bà"],
