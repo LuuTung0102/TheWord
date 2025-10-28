@@ -1,6 +1,3 @@
-// ========================================
-// CONFIG LOADER - Load JSON từ folder
-// ========================================
 
 const { ipcRenderer } = require("electron");
 const path = require("path");

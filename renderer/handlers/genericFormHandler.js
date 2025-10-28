@@ -534,33 +534,85 @@ function setupReuseDataListeners() {
 
 /**
  * Fill form với dữ liệu group (MEN hoặc LAND/INFO...)
- * @param {object} groupData - {Name: "A", CCCD: "123"} hoặc {QSH: "AA", S: "100"}
+ * @param {object} groupData - {Name: "A", CCCD: "123", Address: "Xã ABC, H. XYZ, T. DEF"}
  * @param {string} targetSuffix - "1", "2", "7"... (hoặc "" cho LAND/INFO)
  */
 function fillFormWithMenData(groupData, targetSuffix) {
   Object.keys(groupData).forEach(fieldName => {
     const value = groupData[fieldName];
-    
-    // Nếu có targetSuffix → thêm suffix (vd: Name + "1" = "Name1")
-    // Nếu không có → dùng trực tiếp (vd: "QSH", "AddressD")
     const placeholder = targetSuffix ? `${fieldName}${targetSuffix}` : fieldName;
+    
+    // Xử lý đặc biệt cho Address (address-select với 4 dropdowns)
+    if (fieldName.includes('Address') && value && typeof value === 'string') {
+      fillAddressField(placeholder, value);
+      return;
+    }
     
     // Tìm input/select/textarea có data-ph
     const element = document.querySelector(`[data-ph="${placeholder}"]`);
     
     if (element) {
       element.value = value;
-      console.log(`✅ Filled ${placeholder} = ${value}`);
-      
-      // Trigger change event để re-format (nếu có)
       element.dispatchEvent(new Event('change', { bubbles: true }));
-      
-      // Trigger blur event để apply formatting (CCCD, Money...)
       element.dispatchEvent(new Event('blur', { bubbles: true }));
-    } else {
-      console.warn(`⚠️ Element not found for placeholder: ${placeholder}`);
     }
   });
+}
+
+/**
+ * Fill address field (4 dropdowns: province, district, ward, village)
+ * @param {string} placeholder - "Address1", "Address7", "AddressD"
+ * @param {string} addressString - "Xã Ea Bông, H. Krông A Na, T. Đắk Lắk"
+ */
+function fillAddressField(placeholder, addressString) {
+  const provinceSelect = document.querySelector(`select[data-main*="${placeholder}"][data-level="province"]`);
+  if (!provinceSelect) return;
+  
+  const addressGroup = provinceSelect.closest('.address-group');
+  if (!addressGroup) return;
+  
+  const parts = addressString.split(',').map(p => p.trim());
+  if (parts.length < 3) return;
+  
+  const districtSelect = addressGroup.querySelector('select[data-level="district"]');
+  const wardSelect = addressGroup.querySelector('select[data-level="ward"]');
+  const villageInput = addressGroup.querySelector('input[data-level="village"]');
+  
+  // Set province
+  const provinceName = parts[parts.length - 1];
+  const provinceOption = Array.from(provinceSelect.options).find(opt => 
+    opt.text.includes(provinceName.replace('T. ', '').replace('TP. ', ''))
+  );
+  if (provinceOption) {
+    provinceSelect.value = provinceOption.value;
+    provinceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  
+  setTimeout(() => {
+    const districtName = parts[parts.length - 2];
+    const districtOption = Array.from(districtSelect.options).find(opt => 
+      opt.text.includes(districtName.replace('H. ', '').replace('Q. ', '').replace('TX. ', '').replace('TP. ', ''))
+    );
+    if (districtOption) {
+      districtSelect.value = districtOption.value;
+      districtSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    
+    setTimeout(() => {
+      const wardName = parts[0];
+      const wardOption = Array.from(wardSelect.options).find(opt => 
+        opt.text.includes(wardName.replace('Xã ', '').replace('Phường ', '').replace('TT. ', ''))
+      );
+      if (wardOption) {
+        wardSelect.value = wardOption.value;
+        wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      
+      if (parts.length === 4 && villageInput) {
+        villageInput.value = parts[0];
+      }
+    }, 100);
+  }, 100);
 }
 
 /**
@@ -582,35 +634,20 @@ function sortGenericFields(items) {
 function collectGenericFormData() {
   const data = {};
   
-  // ✅ Thu thập dữ liệu từ localStorage buttons trước
-  const personButtonContainers = document.querySelectorAll('.person-buttons');
-  console.log(`🔍 Found ${personButtonContainers.length} person-buttons containers`);
-  
-  personButtonContainers.forEach(buttonContainer => {
+  // Thu thập dữ liệu từ localStorage buttons
+  document.querySelectorAll('.person-buttons').forEach(buttonContainer => {
     const groupKey = buttonContainer.getAttribute('data-group');
     const suffix = buttonContainer.getAttribute('data-suffix');
-    
-    console.log(`🔍 Checking group ${groupKey} with suffix ${suffix}`);
-    
-    // Tìm button đang active
     const activeButton = buttonContainer.querySelector('.person-btn.active');
-    console.log(`🔍 Active button found: ${!!activeButton}`);
     
     if (activeButton && groupKey) {
       const personId = activeButton.getAttribute('data-person-id');
-      console.log(`🔍 Person ID: ${personId}`);
-      
       const person = window.getPersonById ? window.getPersonById(personId) : null;
-      console.log(`🔍 Person data:`, person);
       
       if (person && person.data) {
-        // Map person data to placeholders với suffix
-        // Ví dụ: Gender2, Name2, Date2 (với suffix = "2")
         Object.keys(person.data).forEach(key => {
-          // Tạo placeholder với suffix: Gender + 2 = Gender2
           const placeholder = suffix ? `${key}${suffix}` : key;
           data[placeholder] = person.data[key];
-          console.log(`📂 From localStorage: ${placeholder} = ${person.data[key]}`);
         });
       }
     }
@@ -623,34 +660,20 @@ function collectGenericFormData() {
     
     let value = el.value.trim();
     
-    // ✅ Xử lý đặc biệt cho Money: đảm bảo có format và tạo MoneyText
     if (ph === 'Money' && value) {
-      // Nếu chưa có dấu phẩy (user chưa blur), format ngay
       const rawMoney = value.replace(/\D/g, '');
       if (rawMoney) {
         if (!value.includes(',')) {
-          // Chưa format, format ngay
           value = window.formatWithCommas ? window.formatWithCommas(rawMoney) : rawMoney;
-          el.value = value; // Cập nhật lại UI
+          el.value = value;
         }
-        
-        // Tự động tạo MoneyText từ raw number
         const moneyText = window.numberToVietnameseWords ? window.numberToVietnameseWords(rawMoney) : "";
-        if (moneyText) {
-          data['MoneyText'] = moneyText;
-          console.log(`💰 Money collected: ${value} -> Text: "${moneyText}"`);
-        }
+        if (moneyText) data['MoneyText'] = moneyText;
       }
     }
     
-    // ✅ CCCD và Money đã được format bởi setupCCCDInput/setupMoneyInput, không cần format lại
-    // Chỉ format date fields
-    if (window.formatInputValue && typeof window.formatInputValue === 'function') {
-      const isDate = el.classList.contains('date-picker');
-      
-      if (isDate) {
-        value = window.formatInputValue(value, ph, { type: 'date' });
-      }
+    if (el.classList.contains('date-picker') && window.formatInputValue) {
+      value = window.formatInputValue(value, ph, { type: 'date' });
     }
     
     data[ph] = value;
@@ -675,20 +698,15 @@ function collectGenericFormData() {
     if (!phMatch) return;
     const ph = phMatch[1];
     
-    // Gộp các giá trị địa chỉ theo format: xxx, xxx, xxx (dấu phẩy)
     const parts = [];
     if (villageSelect && villageSelect.value) parts.push(villageSelect.value);
     if (wardSelect && wardSelect.value) parts.push(wardSelect.value);
     if (districtSelect && districtSelect.value) parts.push(districtSelect.value);
     if (provinceSelect && provinceSelect.value) parts.push(provinceSelect.value);
     
-    const addressString = parts.join(', ');
-    data[ph] = addressString;
-    
-    console.log(`📍 Address collected for ${ph}: "${addressString}"`);
+    data[ph] = parts.join(', ');
   });
   
-  console.log("📦 Collected generic data:", data);
   return data;
 }
 

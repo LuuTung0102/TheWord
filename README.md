@@ -1,19 +1,42 @@
-# 📄 TheWord - Document Automation System---
+# 📄 TheWord - Hệ Thống Tự Động Hóa Văn Bản
+
+> **Tạo văn bản Word chuyên nghiệp trong 1 phút** - Chọn file → Điền form → Xuất ngay
+
+---
 
 ## ✨ Tính Năng Nổi Bật
 
-🚀 **Tự động hóa 100%** - Chọn folder → Điền form → Xuất văn bản (1 phút)  
-📁 **Quản lý theo Folder** - Xuất cả bộ hồ sơ cùng lúc (4-5 file Word)  
-✨ **Autofill Thông Minh** - Auto-format CCCD, Phone, Name, Date, Address  
-🗑️ **Tự động Xóa Dòng Trống** - Văn bản sạch đẹp, không cần chỉnh sửa  
-🎨 **UI Thân Thiện** - Form tự động, validation, calendar picker  
-⚡ **Nhanh** - Export 4 files trong 3-5 giây
+🚀 **Tự động hóa 100%** - Từ template Word đến văn bản hoàn chỉnh  
+📝 **Form thông minh** - Auto-format CCCD, tiền, ngày tháng, địa chỉ  
+🔄 **Tái sử dụng dữ liệu** - Lưu thông tin, dùng lại cho văn bản khác  
+💾 **LocalStorage & SessionStorage** - Lưu người dùng thường xuyên  
+🗑️ **Tự động dọn dẹp** - Xóa dòng trống, format đẹp  
+⚡ **Nhanh chóng** - Xuất văn bản trong < 5 giây  
+🎨 **UI hiện đại** - Taskbar, dropdown, date picker, address cascading
+
+---
+
+## 🎯 Workflow
+
+```
+1️⃣ Chọn folder → 2️⃣ Chọn file Word → 3️⃣ Điền form → 4️⃣ Xuất văn bản ✅
+```
+
+### **Chi tiết:**
+
+```
+📁 Chọn folder (vd: "HĐ chuyển nhượng")
+  └─ 📄 Chọn file (vd: "HĐ chuyển nhượng quyền sử dụng đất.docx")
+      └─ 📝 Form tự động render theo placeholders trong file
+          └─ ✅ Nhấn "Xuất Word" → Chọn nơi lưu → Hoàn tất!
+```
 
 ---
 
 ## 📖 Quick Start
 
 ### **1. Cài Đặt**
+
 ```bash
 # Clone repository
 git clone https://github.com/yourusername/theword.git
@@ -26,39 +49,47 @@ npm install
 npm start
 ```
 
-### **2. Sử Dụng**
+### **2. Sử Dụng Cơ Bản**
+
+1. **Chọn folder** (panel bên phải)
+2. **Chọn file Word** trong folder
+3. **Điền thông tin** vào form (bên trái)
+4. **Nhấn "Xuất Word"** → Chọn thư mục lưu
+5. **Mở file Word** → Văn bản hoàn chỉnh! ✅
+
+### **3. Tính Năng Nâng Cao**
+
+#### **🔄 Tái sử dụng dữ liệu (Session Storage)**
+
 ```
-1. Chọn folder template (VD: "HĐ chuyển nhượng sử dụng đất")
-2. Điền thông tin vào form (auto-format, validation)
-3. Nhấn "Xuất văn bản"
-4. Tất cả file Word được tạo → Tự động tải về ZIP
+Scenario: Tạo nhiều văn bản cho cùng một người
+
+1. Điền "HĐ chuyển nhượng" cho ông A
+2. Xuất văn bản
+3. Mở "Giấy ủy quyền"
+4. Dropdown "Tái sử dụng" → Chọn "MEN1 - Nguyễn Văn A"
+5. Form tự động điền ✅
 ```
 
-### **3. Tạo Template Mới**
+#### **💾 Lưu người dùng (Local Storage)**
+
 ```
-1. Tạo file .docx
-2. Chèn placeholders: {PlaceholderName}
-   VD: {Gender1}, {Name1}, {Date1}, {CCCD1}
-3. Lưu vào: templates/[Folder Name]/[File Name].docx
-4. Khởi động TheWord → Template sẵn sàng!
+File: renderer/config/local_storage.json
+
+Thêm người dùng thường xuyên:
+{
+  "id": "person1",
+  "name": "Nguyễn Văn A",
+  "data": {
+    "Gender": "Ông",
+    "Name": "NGUYỄN VĂN A",
+    "CCCD": "123.456.789.012",
+    "Address": "Xã ABC, H. XYZ, T. Đắk Lắk"
+  }
+}
+
+→ Chọn từ dropdown trong form (nhóm có source: "localStorage")
 ```
-
----
-
-## 📚 Documentation
-
-📖 **[HƯỚNG DẪN SỬ DỤNG.md](./HƯỚNG%20DẪN%20SỬ%20DỤNG.md)** - Hướng dẫn chi tiết cho người dùng  
-🏗️ **[MÔ TẢ HỆ THỐNG.md](./MÔ%20TẢ%20HỆ%20THỐNG.md)** - Kiến trúc và cách hoạt động kỹ thuật  
-📜 **[CODE-CLEANUP-HISTORY.md](./CODE-CLEANUP-HISTORY.md)** - Lịch sử refactoring
-
----
-
-## 🔧 Công Nghệ
-
-- **Platform:** Electron 28
-- **Document Engine:** Docxtemplater 3.x
-- **UI:** HTML/CSS/JavaScript, Flatpickr
-- **File Processing:** Node.js fs, archiver
 
 ---
 
@@ -66,204 +97,348 @@ npm start
 
 ```
 TheWord/
-├── main.js                  # Electron main process
-├── renderer/                # Frontend
-│   ├── config/             # Placeholders config
-│   ├── handlers/           # Form & export logic
-│   └── core/               # Utilities
-├── logic/                  # Document generation
-├── templates/              # Word templates
-│   ├── HĐ chuyển nhượng sử dụng đất/
-│   └── HĐ phân chia tài sản/
-└── package.json
+├── main.js                       # Electron main process
+├── index.html                    # App entry point
+├── style.css                     # Global styles
+├── renderer/
+│   ├── config/
+│   │   ├── config.json          # Main config (folders)
+│   │   ├── baseConstants.js     # Default field types
+│   │   ├── configLoader.js      # Config parser
+│   │   ├── address.json         # VN address data
+│   │   ├── land_types.json      # Land type definitions
+│   │   └── local_storage.json   # Saved people
+│   ├── handlers/
+│   │   ├── genericFormHandler.js    # Form renderer
+│   │   ├── formHandler.js           # Legacy handler
+│   │   └── exportHandler.js         # Export logic
+│   ├── core/
+│   │   ├── formHelpers.js           # Input formatters
+│   │   ├── utils.js                 # Utilities
+│   │   ├── localStorageLoader.js    # Load saved people
+│   │   └── sessionStorageManager.js # Session data manager
+│   └── mainApp.js               # App controller
+├── logic/
+│   └── generate.js              # Docx generation
+└── templates/
+    ├── HĐ chuyển nhượng/
+    │   ├── config.json          # Template config
+    │   └── *.docx               # Word templates
+    ├── Giấy Ủy Quyền/
+    └── HĐ phân chia tài sản/
 ```
 
 ---
 
-## 🎯 Các Loại Văn Bản
+## 🎨 Kiến Trúc Hệ Thống
 
-### **1. HĐ Chuyển Nhượng Sử Dụng Đất**
-- Hợp đồng chuyển nhượng
-- Giấy ủy quyền
-- Đơn biến động đất đai
-- Tờ khai thuế
+### **1. Config-based System**
 
-### **2. HĐ Phân Chia Tài Sản Thừa Kế**
-- Hợp đồng phân chia tài sản
-- Thông tin người mất, cha/mẹ
-- Người thừa kế (1-7 người)
+Mỗi folder template có `config.json`:
+
+```json
+{
+  "folder": {
+    "id": "chuyen-nhuong",
+    "name": "HĐ chuyển nhượng",
+    "icon": "📜"
+  },
+  "templates": [{
+    "id": "hd-cn",
+    "filename": "HĐ chuyển nhượng quyền sử dụng đất.docx",
+    "groups": ["BCN", "NCN", "LAND"],
+    "placeholders": {
+      "BCN": ["Gender1", "Name1", "CCCD1", "Address1"],
+      "NCN": ["Gender7", "Name7", "CCCD7", "Address7"],
+      "LAND": ["QSH", "S", "AddressD", "Money"]
+    }
+  }],
+  "groups": [...],
+  "fieldSchemas": {...},
+  "fieldMappings": [...]
+}
+```
+
+### **2. Dynamic Form Rendering**
+
+```
+config.json → configLoader.js → genericFormHandler.js → Form UI
+```
+
+- **Không cần code mới** cho file Word mới
+- Chỉ cần cập nhật `config.json`
+- Form tự động render theo config
+
+### **3. Data Flow**
+
+```
+User Input → Form → collectGenericFormData()
+                ↓
+        sessionStorage (tái sử dụng)
+                ↓
+         main.js (IPC)
+                ↓
+        logic/generate.js
+                ↓
+         Docxtemplater
+                ↓
+         Output Word ✅
+```
 
 ---
 
 ## 💡 Ví Dụ Placeholders
 
-### **Thông tin cơ bản:**
-```
-{Gender1}      → Dropdown: Ông/Bà
-{Name1}        → Text input (auto-capitalize)
-{Date1}        → Calendar picker → 01/01/2025
-{CCCD1}        → Number input → 123.456.789.012 (auto-format)
-{Address1}     → Cascading dropdown → Thôn, Xã, Huyện, Tỉnh
-```
+### **Thông tin người (MEN)**
 
-### **Tự động sinh (MENx_Ly):**
-```
-{MEN3_L1}      → "Ông Nguyễn Văn C sinh ngày: 01/01/1990"
-{MEN3_L2}      → "CCCD số: 123.456.789.012, do CA Đắk Lắk cấp, ngày 01/01/2020"
-```
+| Placeholder | Type | Input | Output |
+|------------|------|-------|--------|
+| `{Gender1}` | select | Ông/Bà | Ông |
+| `{Name1}` | text | nguyễn văn a | NGUYỄN VĂN A |
+| `{Date1}` | date | 01/01/2025 | 01/01/2025 |
+| `{CCCD1}` | number | 123456789012 | 123.456.789.012 |
+| `{Address1}` | address-select | Cascading dropdown | Xã ABC, H. XYZ, T. Đắk Lắk |
 
-### **Thửa đất:**
+### **Thửa đất (LAND)**
+
+| Placeholder | Description | Example |
+|------------|-------------|---------|
+| `{QSH}` | Quyền sử dụng | AA 150 |
+| `{S}` | Diện tích (m²) | 500 |
+| `{Loai_Dat}` | Loại đất | ONT → "Đất ở nông thôn" |
+| `{Money}` | Giá (VNĐ) | 1000000 → "1,000,000" |
+| `{MoneyText}` | Giá (chữ) | → "một triệu đồng chẵn" |
+
+### **Tự động sinh (MENx_Ly)**
+
 ```
-{QSH}          → Quyền sử dụng
-{Thua_dat_so}  → Số thửa
-{S}            → Diện tích
-{Loai_Dat}     → ONT+LUK → "Đất ở nông thôn và Đất trồng cây lâu năm"
-{Money}        → 1000000 → "1,000,000" + "(Bằng chữ: một triệu đồng chẵn)"
+{MEN1_L1} → "Ông NGUYỄN VĂN A sinh ngày: 01/01/1990"
+{MEN1_L2} → "CCCD số: 123.456.789.012, do CA T. Đắk Lắk cấp, ngày 01/01/2020"
+{MEN1_L3} → "Địa chỉ thường trú tại: Xã ABC, H. XYZ, T. Đắk Lắk"
 ```
 
 ---
 
-## ⚙️ Cấu Hình
+## ⚙️ Tạo Template Mới
 
-### **Thêm Placeholder Mới**
+### **Bước 1: Tạo file Word**
 
-**File:** `renderer/config/constants.js` (hoặc `constants-inheritance.js`)
+```
+1. Tạo file .docx trong folder templates/
+2. Chèn placeholders: {PlaceholderName}
+3. Format đẹp (font, spacing, alignment)
+```
 
-```javascript
-phMapping = {
-  NewField: {
-    label: "Label hiển thị",
-    type: "text",          // text, select, date, number, address
-    group: "BCN",          // BCN, NCN, LAND, BD, UQ
-    subgroup: "MEN1"       // MEN1-7, INFO, etc.
+### **Bước 2: Cập nhật config.json**
+
+```json
+{
+  "templates": [
+    {
+      "id": "new-doc",
+      "filename": "New Document.docx",
+      "groups": ["GROUP1", "GROUP2"],
+      "placeholders": {
+        "GROUP1": ["Field1", "Field2"],
+        "GROUP2": ["Field3", "Field4"]
+      }
+    }
+  ],
+  "fieldSchemas": {
+    "SchemaName": {
+      "fields": [
+        {
+          "name": "Field1",
+          "label": "Label hiển thị",
+          "type": "text"
+        }
+      ]
+    }
   }
 }
 ```
 
-### **Thêm Loại Đất Mới**
+### **Bước 3: Khởi động TheWord**
 
-**File:** `renderer/config/constants.js`
-
-```javascript
-const landTypeMap = {
-  "ONT": "Đất ở nông thôn",
-  "NEW": "Loại đất mới",  // ← Thêm ở đây
-}
 ```
+npm start → Template sẵn sàng! ✅
+```
+
+---
+
+## 🔧 Field Types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `text` | Text input | Name, Address |
+| `number` | Number input | CCCD, Phone |
+| `date` | Date picker | Birth date |
+| `select` | Dropdown | Gender, Options |
+| `address-select` | Cascading address | Province → District → Ward |
+| `land_type` | Land type selector | ONT, LUK, TSC |
+| `currency` | Money input | 1,000,000 |
+| `textarea` | Multi-line text | Notes |
 
 ---
 
 ## 🐛 Troubleshooting
 
-### **Vấn đề: Export ra Word trống**
-```
-✅ Kiểm tra: Đã điền đầy đủ form chưa?
-✅ Kiểm tra: Placeholders trong Word đúng format {Name} chưa?
-✅ Thử: Restart app (Close → Open lại)
+### **App không khởi động**
+
+```bash
+# Clear cache
+rm -rf node_modules
+npm install
+npm start
 ```
 
-### **Vấn đề: Autofill không hoạt động**
+### **Form không hiển thị**
+
 ```
-✅ Hard reload: Ctrl+Shift+R
-✅ Clear cache: Close app → Delete cache folder → Restart
-✅ Check: DevTools (F12) → Console tab có lỗi không?
+✅ F12 → Console → Xem lỗi
+✅ Kiểm tra config.json syntax (JSONLint.com)
+✅ Restart app (Ctrl+R)
 ```
 
-### **Vấn đề: Date picker không hiện**
+### **Export ra Word lỗi**
+
 ```
-✅ Kiểm tra: Flatpickr đã load chưa? (F12 Console)
-✅ Thử: Restart app
-✅ Kiểm tra: File formHelpers.js có bị lỗi không?
+✅ Kiểm tra placeholders trong Word: {Name} (không phải {{Name}})
+✅ Kiểm tra file Word không bị corrupt
+✅ Xem console logs trong terminal
+```
+
+### **Address dropdown không load**
+
+```
+✅ Kiểm tra renderer/config/address.json tồn tại
+✅ F12 → Network → address.json có load không?
+✅ Xem console: window.addressData có data không?
 ```
 
 ---
 
-## 📊 Performance
+## 📊 Performance Benchmarks
 
-- **Template Scan:** ~50ms per folder
-- **Form Render:** ~200ms
-- **Export 4 files:** 3-5 seconds
-- **ZIP Creation:** ~500ms
+| Task | Time |
+|------|------|
+| App startup | ~2s |
+| Template scan (5 folders) | ~100ms |
+| Form render | ~300ms |
+| Export 1 Word | ~2s |
+| Load session data | ~50ms |
 
 ---
 
 ## 🚀 Roadmap
 
-### **v2.1 (Planned)**
-- [ ] Template visual editor
-- [ ] Data import from Excel/CSV
-- [ ] Export history
-- [ ] Cloud sync
+### **v2.0** ✅ (Current)
+- [x] Config-based system
+- [x] Session storage reuse
+- [x] LocalStorage integration
+- [x] Address cascading
+- [x] Auto-format (CCCD, Money, Date)
 
-### **v2.2 (Future)**
-- [ ] More document types
+### **v2.1** (Next)
+- [ ] Export history
+- [ ] Multiple file export (ZIP)
+- [ ] Template preview
+- [ ] Data validation rules
+
+### **v3.0** (Future)
+- [ ] Cloud sync
+- [ ] Excel import/export
+- [ ] Template visual editor
 - [ ] Multi-language support
-- [ ] Advanced validation
-- [ ] Unit tests
 
 ---
 
 ## 🤝 Contributing
 
-Contributions welcome! Please:
+Contributions welcome!
+
 1. Fork the repo
-2. Create a feature branch
-3. Commit changes
-4. Push and create a Pull Request
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit: `git commit -m 'Add amazing feature'`
+4. Push: `git push origin feature/amazing-feature`
+5. Open Pull Request
 
 ---
 
 ## 📄 License
 
-Private - All rights reserved
+**Private** - All rights reserved
+
+---
+
+## 💻 Tech Stack
+
+- **Platform:** Electron 28.x
+- **Template Engine:** Docxtemplater 3.x
+- **UI Framework:** Vanilla JS (no framework)
+- **Date Picker:** Flatpickr
+- **File Processing:** Node.js fs, path
+- **Document Generation:** PizZip, Docxtemplater
 
 ---
 
 ## 📞 Support
 
-**Issues:** [GitHub Issues](https://github.com/yourusername/theword/issues)  
-**Documentation:** See `HƯỚNG DẪN SỬ DỤNG.md`  
-**Technical:** See `MÔ TẢ HỆ THỐNG.md`
+- **Issues:** [GitHub Issues](https://github.com/yourusername/theword/issues)
+- **Email:** support@theword.app
+- **Docs:** See `/docs` folder
 
 ---
 
 ## 🎉 Acknowledgments
 
-- **Docxtemplater** - Amazing Word template engine
+- **Docxtemplater** - Powerful Word template engine
 - **Electron** - Cross-platform desktop framework
 - **Flatpickr** - Beautiful date picker
-- **Vietnamese Address Data** - Comprehensive địa chỉ Việt Nam
-
----
-
-**Made with ❤️ for Document Automation**
+- **Vietnamese Address Dataset** - Comprehensive địa chỉ Việt Nam
 
 ---
 
 ## 📸 Screenshots
 
-### **1. Template Selection**
+### **Main Interface**
+
 ```
-┌─────────────────────────────────────┐
-│  📁 HĐ chuyển nhượng sử dụng đất   │
-│     4 files                         │
-│                                     │
-│  📁 HĐ phân chia tài sản           │
-│     1 file                          │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  TheWord - Document Automation                              │
+├───────────────────────────┬─────────────────────────────────┤
+│  📝 Form Input            │  📁 Folders                     │
+│                           │                                 │
+│  Bên chuyển nhượng       │  📜 HĐ chuyển nhượng           │
+│  ┌──────────────────┐    │    └─ HĐ chuyển nhượng....docx│
+│  │ Giới tính: Ông ▼│    │                                 │
+│  │ Họ tên: [____]  │    │  📄 Giấy ủy quyền              │
+│  │ CCCD: [____]    │    │    └─ Giấy ủy quyền.docx      │
+│  └──────────────────┘    │                                 │
+│                           │  🏛️ HĐ phân chia tài sản      │
+│  [Xuất Word]             │                                 │
+└───────────────────────────┴─────────────────────────────────┘
 ```
 
-### **2. Form Input**
+### **Reuse Data Feature**
+
 ```
-┌─────────────────────────────────────┐
-│  BCN | NCN | LAND | BD | UQ        │ ← Taskbar
-├─────────────────────────────────────┤
-│  Bên chuyển nhượng (MEN1)          │
-│  ┌─────────┬─────────┬─────────┐   │
-│  │ Giới tính│ Họ tên  │ Ngày sinh│  │
-│  │  [Ông]  │[______]│[📅____] │   │
-│  └─────────┴─────────┴─────────┘   │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────┐
+│  Bên chuyển nhượng (MEN1)           │
+│                                      │
+│  🔄 Tái sử dụng dữ liệu:            │
+│  ┌────────────────────────────────┐ │
+│  │ MEN1 - Nguyễn Văn A (HĐ CN)  ▼│ │
+│  │ MEN2 - Trần Thị B (HĐ CN)     │ │
+│  │ LAND - Xã ABC (HĐ CN)         │ │
+│  └────────────────────────────────┘ │
+│                                      │
+│  → Form tự động điền!               │
+└──────────────────────────────────────┘
+```
 
-**Happy Document Automation! 🚀**
+---
 
+**Made with ❤️ for Vietnamese Document Automation**
+
+**Happy Document Generation! 🚀📄✨**

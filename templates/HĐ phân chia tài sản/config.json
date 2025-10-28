@@ -171,7 +171,7 @@
           "name": "Responsibility",
           "label": "Bên chịu trách nhiệm thuế phí",
           "type": "select",
-          "options": ["Bên A", "Bên B"]
+          "options": ["A", "B"]
         },
         {
           "name": "Note",

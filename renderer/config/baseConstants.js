@@ -45,14 +45,14 @@ const BASE_PLACEHOLDERS = {
     order: 9
   },
   
-  SDT_MEN: {
+  SDT: {
     type: "tel",
     maxLength: 10,
     hidden: true,
     order: 10
   },
   
-  EMAIL_MEN: {
+  EMAIL: {
     type: "email",
     hidden: true,
     order: 11
@@ -130,7 +130,7 @@ const BASE_PLACEHOLDERS = {
   
   Responsibility: {
     type: "select",
-    options: ["Bên A", "Bên B"],
+    options: ["A", "B"],
     order: 11
   },
   

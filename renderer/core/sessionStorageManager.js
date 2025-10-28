@@ -55,7 +55,7 @@
       const matchWithSuffix = key.match(/^([A-Za-z_]+?)(\d+)$/);
       
       if (matchWithSuffix) {
-        const fieldName = matchWithSuffix[1]; // vd: "Name", "CCCD"
+        const fieldName = matchWithSuffix[1]; // vd: "Name", "CCCD", "Address"
         const suffix = matchWithSuffix[2];    // vd: "1", "7"
         const groupKey = `MEN${suffix}`;
         
@@ -65,17 +65,8 @@
         
         groups[groupKey][fieldName] = formData[key];
       } else {
-        // 2. Không có suffix số → Group theo tên field (QSH, S, AddressD...)
-        // Các field này thuộc về LAND, INFO, hoặc các group khác
-        
-        // Nhóm các field không có suffix vào group "LAND" (mặc định)
-        // Bạn có thể mở rộng logic này dựa trên field name
         const groupKey = determineGroupByFieldName(key);
-        
-        if (!groups[groupKey]) {
-          groups[groupKey] = {};
-        }
-        
+        if (!groups[groupKey]) groups[groupKey] = {};
         groups[groupKey][key] = formData[key];
       }
     });
@@ -83,21 +74,11 @@
     return groups;
   }
 
-  /**
-   * Xác định group dựa trên field name
-   */
   function determineGroupByFieldName(fieldName) {
-    // Các field của LAND
     const landFields = ['QSH', 'So_so', 'Ngay_CapD', 'Thua_dat_so', 'Ban_do_so', 
                         'S', 'Loai_Dat', 'HTSD', 'THSD', 'AddressD', 'TTGLVD', 
                         'Money', 'MoneyText', 'Responsibility', 'Note', 'VTTD'];
-    
-    if (landFields.includes(fieldName)) {
-      return 'LAND';
-    }
-    
-    // Mặc định: OTHER
-    return 'OTHER';
+    return landFields.includes(fieldName) ? 'LAND' : 'OTHER';
   }
 
   /**
