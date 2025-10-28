@@ -174,7 +174,10 @@
         }
         
         function openOutputFolder() {
-            if (window.ipcRenderer) {
+            if (window.ipcRenderer && window.mainAppInstance && window.mainAppInstance.lastExportedPath) {
+                window.ipcRenderer.invoke('open-output-folder', window.mainAppInstance.lastExportedPath);
+            } else if (window.ipcRenderer) {
+                // Fallback: open default output folder
                 window.ipcRenderer.invoke('open-output-folder');
             }
         }
@@ -183,6 +186,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             if (window.MainApp) {
                 const app = new window.MainApp();
+                window.mainAppInstance = app; // Expose for openOutputFolder()
                 app.init();
             }
         });

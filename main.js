@@ -417,7 +417,8 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     
     return {
       success: true,
-      generatedPath: outputPath,
+      outputPath: outputPath,
+      generatedPath: outputPath, // Keep for backward compatibility
       fileName: path.basename(outputPath)
     };
     
@@ -483,17 +484,31 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
 });
 
 // Open output folder
-ipcMain.handle("open-output-folder", async () => {
+ipcMain.handle("open-output-folder", async (event, filePath) => {
   try {
-    const outputDir = path.join(__dirname, "output");
-    if (fs.existsSync(outputDir)) {
-      const { shell } = require("electron");
-      shell.openPath(outputDir);
-      return true;
+    const { shell } = require("electron");
+    
+    if (!filePath) {
+      // Fallback: open default output folder
+      const outputDir = path.join(__dirname, "output");
+      if (fs.existsSync(outputDir)) {
+        await shell.openPath(outputDir);
+        return { success: true };
+      }
+      return { success: false, error: 'Output folder not found' };
     }
-    return false;
+    
+    // Get folder containing the file
+    const folderPath = path.dirname(filePath);
+    
+    if (fs.existsSync(folderPath)) {
+      await shell.openPath(folderPath);
+      return { success: true };
+    } else {
+      return { success: false, error: 'Folder not found' };
+    }
   } catch (err) {
     console.error("❌ open-output-folder: Error:", err);
-    return false;
+    return { success: false, error: err.message };
   }
 });

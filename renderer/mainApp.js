@@ -6,11 +6,12 @@ class MainApp {
   constructor() {
     this.selectedFolder = null;
     this.selectedFile = null;
-    this.expandedFolder = null; // Track which folder is expanded
+    this.expandedFolder = null;
     this.templates = [];
     this.files = [];
     this.formData = {};
     this.isLoading = false;
+    this.lastExportedPath = null; // Track last exported file path
   }
 
   /**
@@ -507,6 +508,7 @@ class MainApp {
         });
         
         if (result.success) {
+          this.lastExportedPath = result.outputPath;
           this.showSuccess('Văn bản đã được tạo thành công!');
         } else {
           throw new Error(result.error || 'Export failed');
