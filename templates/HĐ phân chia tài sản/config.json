@@ -41,24 +41,28 @@
       "id": "NTK",
       "label": "Người thừa kế",
       "order": 1,
+      "visible": true,
       "description": "Những người được thừa kế tài sản"
     },
     {
       "id": "NM",
       "label": "Người mất",
       "order": 2,
+      "visible": true,
       "description": "Người để lại tài sản thừa kế"
     },
     {
       "id": "MP",
       "label": "Bố/mẹ người mất",
       "order": 3,
+      "visible": true,
       "description": "Bố mẹ của người mất (nếu có)"
     },
     {
       "id": "LAND",
       "label": "Thông tin thửa đất",
       "order": 4,
+      "visible": true,
       "description": "Thông tin đất đai, nhà cửa"
     }
   ],
@@ -107,12 +111,12 @@
       "group": "NTK",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN1", "label": "Người thừa kế 1", "visible": true },
-        { "id": "MEN2", "label": "Người thừa kế 2", "visible": false },
-        { "id": "MEN3", "label": "Người thừa kế 3", "visible": false },
-        { "id": "MEN4", "label": "Người thừa kế 4", "visible": false },
-        { "id": "MEN5", "label": "Người thừa kế 5", "visible": false },
-        { "id": "MEN6", "label": "Người thừa kế 6", "visible": false }
+        { "id": "MEN1", "label": "Người thừa kế", "visible": true },
+        { "id": "MEN2", "label": "Người thừa kế", "visible": false },
+        { "id": "MEN3", "label": "Người thừa kế", "visible": false },
+        { "id": "MEN4", "label": "Người thừa kế", "visible": false },
+        { "id": "MEN5", "label": "Người thừa kế", "visible": false },
+        { "id": "MEN6", "label": "Người thừa kế", "visible": false }
       ],
       "suffixes": ["1", "2", "3", "4", "5", "6"]
     },

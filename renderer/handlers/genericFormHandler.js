@@ -178,6 +178,24 @@ async function renderGenericForm(placeholders, config, folderPath) {
   const groupOrder = config.groups
     .sort((a, b) => (a.order || 999) - (b.order || 999))
     .map(group => group.id);
+  
+  // ✅ Track visible state of subgroups
+  if (!window.visibleSubgroups) window.visibleSubgroups = new Set();
+  
+  // Initialize visible subgroups from fieldMappings
+  if (config.fieldMappings) {
+    config.fieldMappings.forEach(mapping => {
+      if (mapping.subgroups) {
+        mapping.subgroups.forEach(subgroup => {
+          const subgroupId = typeof subgroup === 'string' ? subgroup : subgroup.id;
+          const isVisible = typeof subgroup === 'string' ? true : (subgroup.visible !== false);
+          if (isVisible) {
+            window.visibleSubgroups.add(subgroupId);
+          }
+        });
+      }
+    });
+  }
 
   // 🎨 RENDER TASKBAR
   const taskbarHtml = `
@@ -202,6 +220,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
     });
   }
 
+
   // Render each group
   for (let index = 0; index < groupOrder.length; index++) {
     const groupKey = groupOrder[index];
@@ -213,7 +232,38 @@ async function renderGenericForm(placeholders, config, folderPath) {
 
     const groupDiv = document.createElement("div");
     groupDiv.className = "form-group";
-    groupDiv.innerHTML = `<h3>${groupLabels[groupKey] || groupKey}</h3>`;
+    
+    // ✅ Header với nút "Thêm" (nếu có subgroups ẩn)
+    const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
+    const hiddenSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups.filter(sg => {
+      const subId = typeof sg === 'string' ? sg : sg.id;
+      return !window.visibleSubgroups.has(subId) && grouped[groupKey] && grouped[groupKey][subId];
+    }) : [];
+    
+    if (hiddenSubgroups.length > 0) {
+      const firstHidden = hiddenSubgroups[0];
+      const subLabel = typeof firstHidden === 'string' ? firstHidden : (firstHidden.label || firstHidden.id);
+      
+      groupDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h3 style="margin: 0;">${groupLabels[groupKey] || groupKey}</h3>
+          <button class="add-subgroup-btn" data-group="${groupKey}" style="
+            padding: 8px 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+          ">
+            ➕ Thêm ${subLabel}
+          </button>
+        </div>
+      `;
+    } else {
+      groupDiv.innerHTML = `<h3>${groupLabels[groupKey] || groupKey}</h3>`;
+    }
 
     // ✅ Check if this group uses localStorage
     if (groupSources[groupKey] === "localStorage") {
@@ -276,15 +326,23 @@ async function renderGenericForm(placeholders, config, folderPath) {
       
       groupDiv.innerHTML += buttonsHtml;
     } else {
-      // Normal form rendering
-      
-      // Subgroups
+      // Normal form rendering - Subgroups only render visible ones
       const subgroupKeys = Object.keys(grouped[groupKey]).sort();
       
       subgroupKeys.forEach(subKey => {
+        // ✅ Skip if subgroup is not visible
+        if (!window.visibleSubgroups.has(subKey)) return;
+        
         const subgroupDiv = document.createElement("div");
         subgroupDiv.className = "form-subgroup";
-        subgroupDiv.innerHTML = `<h4>${subgroupLabels[subKey] || subKey}</h4>`;
+        subgroupDiv.style.cssText = `
+          border: 2px solid #2196F3;
+          border-radius: 8px;
+          padding: 15px;
+          margin-bottom: 20px;
+          background: #f8fbff;
+        `;
+        subgroupDiv.innerHTML = `<h4 style="margin-top: 0; color: #1976D2;">${subgroupLabels[subKey] || subKey}</h4>`;
         
         // ✅ Thêm dropdown "Tái sử dụng dữ liệu" cho từng subgroup
         const reuseDropdownHtml = renderReuseDataDropdown(groupKey, subKey, config);
@@ -321,6 +379,40 @@ async function renderGenericForm(placeholders, config, folderPath) {
     sectionDiv.appendChild(groupDiv);
     area.appendChild(sectionDiv);
   } // End of for loop
+
+  // ✅ Setup "Add Subgroup" buttons
+  document.querySelectorAll('.add-subgroup-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const groupKey = btn.dataset.group;
+      
+      // Tìm groupMapping để lấy danh sách subgroups
+      const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
+      
+      if (groupMapping && groupMapping.subgroups) {
+        // Tìm subgroup ẩn TIẾP THEO
+        const nextHidden = groupMapping.subgroups.find(sg => {
+          const subId = typeof sg === 'string' ? sg : sg.id;
+          return !window.visibleSubgroups.has(subId) && grouped[groupKey] && grouped[groupKey][subId];
+        });
+        
+        if (nextHidden) {
+          const subgroupId = typeof nextHidden === 'string' ? nextHidden : nextHidden.id;
+          window.visibleSubgroups.add(subgroupId);
+          
+          // Re-render toàn bộ form để subgroup mới xuất hiện
+          await renderGenericForm(placeholders, config, folderPath);
+          
+          // Auto scroll to the new subgroup
+          setTimeout(() => {
+            const newSubgroup = document.querySelector(`[data-subgroup-id="${subgroupId}"]`);
+            if (newSubgroup) {
+              newSubgroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
+        }
+      }
+    });
+  });
 
   // Setup taskbar navigation
   document.querySelectorAll('.taskbar-btn').forEach(btn => {

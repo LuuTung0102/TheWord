@@ -392,9 +392,13 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     }
     
     // ✅ Show dialog to choose output folder
+    // Use last selected folder or Downloads as default
+    const { app } = require('electron');
+    const defaultFolder = global.lastOutputFolder || app.getPath('downloads');
+    
     const result = await dialog.showOpenDialog({
       title: 'Chọn thư mục lưu văn bản',
-      defaultPath: projectRoot,
+      defaultPath: defaultFolder,
       properties: ['openDirectory', 'createDirectory']
     });
     
@@ -403,6 +407,9 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     }
     
     const outputFolder = result.filePaths[0];
+    
+    // ✅ Save last selected folder for next time
+    global.lastOutputFolder = outputFolder;
     
     // ✅ Generate single document with output path
     const outputFileName = fileName; // Keep original filename
