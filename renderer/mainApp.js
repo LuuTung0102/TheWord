@@ -292,6 +292,7 @@ class MainApp {
       
       // Load folder config to determine which template/group this file belongs to
       const folderConfig = await this.loadConfig(folderPath);
+      this.currentConfig = folderConfig; // Lưu config để dùng sau
       
       if (folderConfig && folderConfig.templates) {
         // Find which template this file belongs to based on placeholders
@@ -487,10 +488,23 @@ class MainApp {
       // Collect form data
       const formData = this.collectFormData();
       
-      // ✅ Save to session storage for reuse
+      // ✅ Save to session storage for reuse (only if data changed AND not reused from elsewhere)
       if (window.sessionStorageManager && this.selectedFile) {
-        window.sessionStorageManager.saveFormData(this.selectedFile, formData);
-        console.log(`💾 Saved session data for: ${this.selectedFile}`);
+        const saved = window.sessionStorageManager.saveFormData(
+          this.selectedFile, 
+          formData, 
+          window.__reusedGroups,
+          window.__reusedGroupSources,
+          this.currentConfig // Pass config để check localStorage groups
+        );
+        if (saved) {
+          console.log(`💾 Saved new session data for: ${this.selectedFile}`);
+        }
+        
+        // Reset flags
+        window.__formDataReused = false;
+        if (window.__reusedGroups) window.__reusedGroups.clear();
+        if (window.__reusedGroupSources) window.__reusedGroupSources.clear();
       }
       
       // ✅ Get folder path from template config

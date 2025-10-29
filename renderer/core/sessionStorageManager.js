@@ -1,34 +1,97 @@
 (function() {
-  console.log('🔧 Initializing sessionStorageManager...');
-  
   const STORAGE_KEY = 'theword_session_data';
 
-  /**
-   * Lưu dữ liệu form vào sessionStorage
-   * @param {string} fileName - Tên file Word (vd: "Giấy ủy quyền.docx")
-   * @param {object} formData - Dữ liệu form đã collect
-   */
-  function saveFormData(fileName, formData) {
+  function normalizeDataForComparison(data) {
+    const normalized = {};
+    Object.keys(data).forEach(key => {
+      let value = data[key];
+      if (key.includes('CCCD') && typeof value === 'string') {
+        value = value.replace(/\./g, '');
+      } else if (key.includes('Money') && typeof value === 'string') {
+        value = value.replace(/,/g, '');
+      }
+      normalized[key] = value;
+    });
+    return normalized;
+  }
+
+  function saveFormData(fileName, formData, reusedGroups, reusedGroupSources, config) {
     try {
-      // Lấy data hiện có
       const existingData = getAllSessionData();
+      let menGroups = parseFormDataToMenGroups(formData);
       
-      // Phân tích formData thành các MEN groups
-      const menGroups = parseFormDataToMenGroups(formData);
+      if (config && config.fieldMappings) {
+        config.fieldMappings.forEach(mapping => {
+          if (mapping.source === 'localStorage' && mapping.subgroups) {
+            mapping.subgroups.forEach(subgroup => {
+              const groupId = typeof subgroup === 'string' ? subgroup : subgroup.id;
+              if (menGroups[groupId]) delete menGroups[groupId];
+            });
+          }
+        });
+      }
       
-      // Lưu với key là fileName
+      const groupsToRemove = [];
+      if (reusedGroups && reusedGroups.size > 0) {
+        reusedGroups.forEach(reusedKey => {
+          const isFromLocalStorage = reusedKey.startsWith('localStorage:');
+          const groupKey = isFromLocalStorage ? reusedKey.replace('localStorage:', '') : reusedKey;
+          
+          if (menGroups[groupKey]) {
+            if (isFromLocalStorage) {
+              groupsToRemove.push(groupKey);
+              return;
+            }
+            
+            const sourceData = window.sessionStorageManager.findGroupDataFromAnyFile(groupKey);
+            if (sourceData) {
+              const normalizedCurrent = normalizeDataForComparison(menGroups[groupKey]);
+              const normalizedSource = normalizeDataForComparison(sourceData);
+              
+              if (JSON.stringify(normalizedCurrent) === JSON.stringify(normalizedSource)) {
+                groupsToRemove.push(groupKey);
+              }
+            }
+          }
+        });
+      }
+      
+      groupsToRemove.forEach(groupKey => delete menGroups[groupKey]);
+      
+      if (Object.keys(menGroups).length === 0) {
+        return false;
+      }
+      
       existingData[fileName] = {
-        timestamp: new Date().toISOString(),
         fileName: fileName,
         menGroups: menGroups,
         rawData: formData
       };
       
-      // Lưu vào sessionStorage
+      if (reusedGroupSources && reusedGroupSources.size > 0) {
+        reusedGroupSources.forEach((sourceInfo, targetGroupKey) => {
+          const { sourceFileName, sourceGroupKey, sourceData } = sourceInfo;
+          if (!sourceFileName || !sourceGroupKey || !sourceData) return;
+          
+          const targetData = menGroups[targetGroupKey];
+          if (!targetData) return;
+          
+          const sourceFields = Object.keys(sourceData).filter(k => sourceData[k] && sourceData[k] !== '');
+          const targetFields = Object.keys(targetData).filter(k => targetData[k] && targetData[k] !== '');
+          
+          if (targetFields.length > sourceFields.length) {
+            if (existingData[sourceFileName] && existingData[sourceFileName].menGroups[sourceGroupKey]) {
+              delete existingData[sourceFileName].menGroups[sourceGroupKey];
+              
+              if (Object.keys(existingData[sourceFileName].menGroups).length === 0) {
+                delete existingData[sourceFileName];
+              }
+            }
+          }
+        });
+      }
+      
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
-      
-      console.log(`💾 Saved session data for: ${fileName}`, menGroups);
-      
       return true;
     } catch (error) {
       console.error('❌ Error saving session data:', error);
@@ -36,36 +99,20 @@
     }
   }
 
-  /**
-   * Phân tích formData thành các groups (MEN, LAND, INFO...)
-   * Ví dụ: 
-   * - {Name1: "A", CCCD1: "123"} → {MEN1: {Name: "A", CCCD: "123"}}
-   * - {QSH: "AA", S: "100"} → {LAND: {QSH: "AA", S: "100"}}
-   */
   function parseFormDataToMenGroups(formData) {
     const groups = {};
-    
     Object.keys(formData).forEach(key => {
-      // 1. Tìm suffix số ở cuối key (vd: Name1 → suffix=1, CCCD7 → suffix=7)
       const matchWithSuffix = key.match(/^([A-Za-z_]+?)(\d+)$/);
-      
       if (matchWithSuffix) {
-        const fieldName = matchWithSuffix[1]; // vd: "Name", "CCCD", "Address"
-        const suffix = matchWithSuffix[2];    // vd: "1", "7"
-        const groupKey = `MEN${suffix}`;
-        
-        if (!groups[groupKey]) {
-          groups[groupKey] = {};
-        }
-        
-        groups[groupKey][fieldName] = formData[key];
+        const groupKey = `MEN${matchWithSuffix[2]}`;
+        if (!groups[groupKey]) groups[groupKey] = {};
+        groups[groupKey][matchWithSuffix[1]] = formData[key];
       } else {
         const groupKey = determineGroupByFieldName(key);
         if (!groups[groupKey]) groups[groupKey] = {};
         groups[groupKey][key] = formData[key];
       }
     });
-    
     return groups;
   }
 
@@ -76,97 +123,75 @@
     return landFields.includes(fieldName) ? 'LAND' : 'OTHER';
   }
 
-  /**
-   * Lấy tất cả session data
-   */
   function getAllSessionData() {
     try {
       const data = sessionStorage.getItem(STORAGE_KEY);
       return data ? JSON.parse(data) : {};
     } catch (error) {
-      console.error('❌ Error loading session data:', error);
       return {};
     }
   }
 
-  /**
-   * Lấy danh sách các groups đã lưu (MEN1, MEN2, LAND, INFO...) từ tất cả files
-   * @returns {Array} [{fileName, groupKey, data, timestamp, displayName}]
-   */
   function getAvailableMenGroups() {
     const allData = getAllSessionData();
     const available = [];
     
     Object.keys(allData).forEach(fileName => {
       const fileData = allData[fileName];
-      
       if (fileData.menGroups) {
         Object.keys(fileData.menGroups).forEach(groupKey => {
           const groupData = fileData.menGroups[groupKey];
+          const shortFileName = fileName.replace('.docx', '');
           
-          // Tạo display name đẹp hơn
-          let displayName = groupKey;
-          
-          // Nếu là MEN → hiển thị tên người (nếu có)
-          if (groupKey.startsWith('MEN') && groupData.Name) {
-            displayName = `${groupKey} - ${groupData.Name}`;
-          }
-          // Nếu là LAND → hiển thị địa chỉ hoặc số thửa
-          else if (groupKey === 'LAND' && groupData.AddressD) {
-            displayName = `LAND - ${groupData.AddressD}`;
-          }
+          const displayName = groupKey.startsWith('MEN')
+            ? `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName})`
+            : `${groupKey} (${shortFileName})`;
           
           available.push({
-            fileName: fileName,
-            groupKey: groupKey,    // Đổi từ menKey → groupKey
-            menKey: groupKey,      // Giữ menKey để backward compatible
+            fileName,
+            groupKey,
+            menKey: groupKey,
             data: groupData,
-            timestamp: fileData.timestamp,
-            displayName: `${displayName} (${fileName.replace('.docx', '')})`
+            displayName
           });
         });
       }
     });
-    
-    // Sort by timestamp (newest first)
-    available.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
     return available;
   }
 
-  /**
-   * Lấy dữ liệu của 1 MEN group cụ thể
-   * @param {string} fileName 
-   * @param {string} menKey - vd: "MEN1", "MEN2"
-   */
   function getMenGroupData(fileName, menKey) {
     const allData = getAllSessionData();
-    
     if (allData[fileName] && allData[fileName].menGroups && allData[fileName].menGroups[menKey]) {
       return allData[fileName].menGroups[menKey];
     }
-    
     return null;
   }
 
-  /**
-   * Xóa toàn bộ session data
-   */
-  function clearAllSessionData() {
-    sessionStorage.removeItem(STORAGE_KEY);
-    console.log('🗑️ Cleared all session data');
+  function findGroupDataFromAnyFile(groupKey) {
+    const allData = getAllSessionData();
+    for (const fileName in allData) {
+      const fileData = allData[fileName];
+      if (fileData.menGroups && fileData.menGroups[groupKey]) {
+        return fileData.menGroups[groupKey];
+      }
+    }
+    return null;
   }
 
-  // Make functions available globally
+  function clearAllSessionData() {
+    sessionStorage.removeItem(STORAGE_KEY);
+  }
+
   if (typeof window !== 'undefined') {
     window.sessionStorageManager = {
       saveFormData,
       getAllSessionData,
       getAvailableMenGroups,
       getMenGroupData,
+      findGroupDataFromAnyFile,
       clearAllSessionData
     };
-    console.log('✅ sessionStorageManager is now available');
   }
 })();
 

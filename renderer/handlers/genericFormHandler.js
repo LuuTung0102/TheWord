@@ -121,6 +121,13 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
  */
 async function renderGenericForm(placeholders, config, folderPath) {
   console.log("🎨 Rendering GENERIC form", { placeholders, config });
+  window.__formDataReused = false;
+  window.__reusedGroups = new Set(); // Track các group đã reuse
+  window.__reusedGroupSources = new Map(); // Track source của các group đã reuse
+  
+  document.querySelectorAll('input[data-ph], select[data-ph], textarea[data-ph]').forEach(el => {
+    el.value = '';
+  });
   
   // 🗑️ CLEANUP old event listeners FIRST
   if (typeof window.cleanupAllEventListeners === 'function') {
@@ -385,8 +392,8 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
   if (allGroups.length === 0) return null;
   
   // ✅ Lọc groups phù hợp:
-  // - Nếu là LAND/INFO (không có suffix) → chỉ hiển thị LAND/INFO
-  // - Nếu là MEN (có suffix) → chỉ hiển thị MEN groups
+  // - Nếu là MEN (có suffix) → chỉ hiển thị MEN groups, KHÔNG bao gồm LAND từ cùng file
+  // - Nếu là LAND/INFO (không có suffix) → chỉ hiển thị LAND/OTHER từ CÙNG tên file (config)
   const availableGroups = allGroups.filter(group => {
     if (targetSuffix) {
       // Subgroup này có suffix → chỉ lấy MEN groups
@@ -395,6 +402,38 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
       // Subgroup này không có suffix → chỉ lấy LAND/OTHER
       return !group.groupKey.startsWith('MEN');
     }
+  }).map(group => {
+      let finalDisplayName = group.displayName;
+      
+      
+      if (!group.groupKey.startsWith('MEN')) {
+        let groupLabel = null;
+        
+        if (config.groups) {
+          const groupDef = config.groups.find(g => g.id === group.groupKey);
+          if (groupDef && groupDef.label) {
+            groupLabel = groupDef.label;
+          }
+        }
+        
+        if (!groupLabel && config.fieldMappings) {
+          const mapping = config.fieldMappings.find(m => 
+            m.subgroups && m.subgroups.includes(group.groupKey)
+          );
+          if (mapping && mapping.label) {
+            groupLabel = mapping.label;
+          }
+        }
+        
+        if (groupLabel) {
+          finalDisplayName = group.displayName.replace(group.groupKey, groupLabel);
+        }
+      }
+      
+      return {
+        ...group,
+        displayName: finalDisplayName
+      };
   });
   
   if (availableGroups.length === 0) return null;
@@ -418,7 +457,7 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
         <option value="">-- Nhập mới --</option>
         ${availableGroups.map(group => `
           <option value="${group.fileName}|${group.menKey}">
-            ${group.displayName} - ${new Date(group.timestamp).toLocaleString('vi-VN')}
+            ${group.displayName}
           </option>
         `).join('')}
       </select>
@@ -462,6 +501,10 @@ function setupPersonSelectionListeners(groupSources, grouped) {
         clickedButton.style.background = '#4CAF50';
         clickedButton.style.color = 'white';
         
+        // Set flag: group này được reuse từ localStorage
+        if (!window.__reusedGroups) window.__reusedGroups = new Set();
+        window.__reusedGroups.add(`localStorage:${groupKey}`); // Prefix để phân biệt
+        
         // Get person data
         const person = window.getPersonById ? window.getPersonById(personId) : null;
         
@@ -504,7 +547,8 @@ function setupReuseDataListeners() {
       console.log(`🔄 Reuse data selected: ${value} for group ${targetGroup} (suffix ${targetSuffix})`);
       
       if (!value) {
-        // User chọn "Nhập mới" → Không làm gì
+        // User chọn "Nhập mới" → Xóa flag
+        window.__formDataReused = false;
         return;
       }
       
@@ -525,6 +569,14 @@ function setupReuseDataListeners() {
       }
       
       console.log(`✅ Loading data from ${fileName} - ${menKey}:`, menData);
+      
+      // Set flag: group này được reuse từ session storage
+      if (!window.__reusedGroups) window.__reusedGroups = new Set();
+      window.__reusedGroups.add(menKey); // Track groupKey đã reuse (MEN1, MEN2, LAND...)
+      
+      // Track source để sau này có thể xóa nếu target có nhiều fields hơn
+      if (!window.__reusedGroupSources) window.__reusedGroupSources = new Map();
+      window.__reusedGroupSources.set(menKey, { sourceFileName: fileName, sourceGroupKey: menKey, sourceData: menData });
       
       // Fill form với dữ liệu
       fillFormWithMenData(menData, targetSuffix);

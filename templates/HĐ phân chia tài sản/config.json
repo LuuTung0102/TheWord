@@ -1,95 +1,80 @@
 {
-    "folder": {
-      "id": "phan-chia-tai-san",
-      "name": "HĐ phân chia tài sản",
-      "description": "Nhóm hợp đồng phân chia tài sản",
-      "icon": "📜"
-    },
-  
-    "templates": [
-      {
-        "id": "hd-pc-ts",
-        "filename": "Phân chia tài sản thừa kế.docx",
-        "name": "Hợp đồng phân chia tài sản thừa kế",
-        "description": "Phân chia tài sản thừa kế",
-        "groups": ["BCN", "NCN", "LAND"],
-        "placeholders": {
-          "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
-          "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
-          "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
-        }
-      }
-    ],
-    "groups": [
-        {
-          "id": "BCN",
-          "label": "Bên chuyển nhượng",
-          "order": 1,
-          "description": "Người chuyển nhượng tài sản"
-        },
-        {
-          "id": "BCT",
-          "label": "Bên công trình",
-          "order": 1,
-          "description": "Người chuyển nhượng công trình"
-        },
-        {
-          "id": "NCN",
-          "label": "Bên nhận chuyển nhượng",
-          "order": 2,
-          "description": "Người nhận chuyển nhượng tài sản"
-        },
-        {
-          "id": "LAND",
-          "label": "Thông tin thửa đất",
-          "order": 3,
-          "description": "Thông tin đất đai, nhà cửa"
-        }
-      ],
+  "folder": {
+    "id": "phan-chia-tai-san",
+    "name": "HĐ phân chia tài sản",
+    "description": "Nhóm hợp đồng phân chia tài sản",
+    "icon": "📜"
+  },
 
-      "fieldSchemas": {
+  "templates": [
+    {
+      "id": "hd-pc-ts",
+      "filename": "test.docx",
+      "name": "Hợp đồng phân chia tài sản thừa kế",
+      "description": "Phân chia tài sản thừa kế",
+      "groups": ["NTK", "NM", "MP", "LAND"],
+      "placeholders": {
+        "NTK": [
+          "Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1",
+          "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2",
+          "Gender3", "Name3", "Date3", "CCCD3", "Noi_Cap3", "Ngay_Cap3", "Address3",
+          "Gender4", "Name4", "Date4", "CCCD4", "Noi_Cap4", "Ngay_Cap4", "Address4",
+          "Gender5", "Name5", "Date5", "CCCD5", "Noi_Cap5", "Ngay_Cap5", "Address5",
+          "Gender6", "Name6", "Date6", "CCCD6", "Noi_Cap6", "Ngay_Cap6", "Address6"
+        ],
+        "NM": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
+        "MP": [
+          "Gender8", "Name8", "Date8", "CCCD8", "Noi_Cap8", "Ngay_Cap8", "Address8",
+          "Gender9", "Name9", "Date9", "CCCD9", "Noi_Cap9", "Ngay_Cap9", "Address9"
+        ],
+        "LAND": [
+          "AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText",
+          "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD",
+          "TTGLVD", "Thua_dat_so"
+        ]
+      }
+    }
+  ],
+
+  "groups": [
+    {
+      "id": "NTK",
+      "label": "Người thừa kế",
+      "order": 1,
+      "description": "Những người được thừa kế tài sản"
+    },
+    {
+      "id": "NM",
+      "label": "Người mất",
+      "order": 2,
+      "description": "Người để lại tài sản thừa kế"
+    },
+    {
+      "id": "MP",
+      "label": "Bố/mẹ người mất",
+      "order": 3,
+      "description": "Bố mẹ của người mất (nếu có)"
+    },
+    {
+      "id": "LAND",
+      "label": "Thông tin thửa đất",
+      "order": 4,
+      "description": "Thông tin đất đai, nhà cửa"
+    }
+  ],
+
+  "fieldSchemas": {
     "PersonalInfo": {
-      "description": "Thông tin cá nhân của các bên",
-      "applicableTo": ["BCN", "BCT", "NCN"],
+      "description": "Thông tin cá nhân",
+      "applicableTo": ["NTK", "NM", "MP"],
       "fields": [
-        {
-          "name": "Gender",
-          "label": "Giới tính",
-          "type": "select",
-          "options": ["Ông", "Bà"],
-          "defaultValue": "Ông"
-        },
-        {
-          "name": "Name",
-          "label": "Họ và tên",
-          "type": "text"
-        },
-        {
-          "name": "Date",
-          "label": "Ngày sinh",
-          "type": "date"
-        },
-        {
-          "name": "CCCD",
-          "label": "CCCD",
-          "type": "number"
-        },
-        {
-          "name": "Noi_Cap",
-          "label": "Nơi cấp",
-          "type": "select",
-          "options": ["Cục Cảnh sát QLHC về TTXH cấp", "Công an T. Đắk Lắk cấp"]
-        },
-        {
-          "name": "Ngay_Cap",
-          "label": "Ngày cấp",
-          "type": "date"
-        },
-        {
-          "name": "Address",
-          "label": "Địa chỉ thường trú",
-          "type": "address-select"
-        }
+        { "name": "Gender", "label": "Giới tính", "type": "select", "options": ["Ông", "Bà"], "defaultValue": "Ông" },
+        { "name": "Name", "label": "Họ và tên", "type": "text" },
+        { "name": "Date", "label": "Ngày sinh", "type": "date" },
+        { "name": "CCCD", "label": "CCCD", "type": "number" },
+        { "name": "Noi_Cap", "label": "Nơi cấp", "type": "select", "options": ["Cục Cảnh sát QLHC về TTXH cấp", "Công an T. Đắk Lắk cấp"] },
+        { "name": "Ngay_Cap", "label": "Ngày cấp", "type": "date" },
+        { "name": "Address", "label": "Địa chỉ thường trú", "type": "address-select" }
       ]
     },
 
@@ -97,130 +82,62 @@
       "description": "Thông tin đất đai",
       "applicableTo": ["LAND"],
       "fields": [
-        {
-          "name": "QSH",
-          "label": "Quyền sử dụng đất",
-          "type": "text"
-        },
-        {
-          "name": "So_so",
-          "label": "Số sổ",
-          "type": "text"   
-        },
-        {
-          "name": "Ngay_CapD",
-          "label": "Ngày cấp",
-          "type": "date"
-        },
-        {
-          "name": "Thua_dat_so",
-          "label": "Thửa đất số",
-          "type": "text"
-      
-        },
-        {
-          "name": "Ban_do_so",
-          "label": "Bản đồ số",
-          "type": "text"
-       
-        },
-        {
-          "name": "S",
-          "label": "Diện tích (m²)",
-          "type": "number"
-        },
-        {
-          "name": "Loai_Dat",
-          "label": "Loại đất",
-          "type": "land_type"
-        },
-        {
-          "name": "HTSD",
-          "label": "Hình thức sử dụng",
-          "type": "select",
-          "options": ["Sử dụng chung", "Sử dụng riêng"]
-        },
-        {
-          "name": "THSD",
-          "label": "Thời hạn sử dụng",
-          "type": "text"
-        },
-        {
-          "name": "AddressD",
-          "label": "Địa chỉ thửa đất",
-          "type": "address-select"
-        },
-        {
-          "name": "TTGLVD",
-          "label": "TT tài sản gắn liền",
-          "type": "textarea"
-        
-        },
-        {
-          "name": "Money",
-          "label": "Giá chuyển nhượng",
-          "type": "currency"
-        },  
-        {
-          "name": "MoneyText",
-          "label": "Giá chuyển nhượng (chữ)",
-          "type": "text",
-          "hidden": true
-        },
-        {
-          "name": "Responsibility",
-          "label": "Bên chịu trách nhiệm thuế phí",
-          "type": "select",
-          "options": ["A", "B"]
-        },
-        {
-          "name": "Note",
-          "label": "Ghi chú",
-          "type": "textarea"
-        }
+        { "name": "QSH", "label": "Quyền sử dụng đất", "type": "text" },
+        { "name": "So_so", "label": "Số sổ", "type": "text" },
+        { "name": "Ngay_CapD", "label": "Ngày cấp", "type": "date" },
+        { "name": "Thua_dat_so", "label": "Thửa đất số", "type": "text" },
+        { "name": "Ban_do_so", "label": "Bản đồ số", "type": "text" },
+        { "name": "S", "label": "Diện tích (m²)", "type": "number" },
+        { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type" },
+        { "name": "HTSD", "label": "Hình thức sử dụng", "type": "select", "options": ["Sử dụng chung", "Sử dụng riêng"] },
+        { "name": "THSD", "label": "Thời hạn sử dụng", "type": "text" },
+        { "name": "AddressD", "label": "Địa chỉ thửa đất", "type": "address-select" },
+        { "name": "TTGLVD", "label": "TT tài sản gắn liền", "type": "textarea" },
+        { "name": "Money", "label": "Giá chuyển nhượng", "type": "currency" },
+        { "name": "MoneyText", "label": "Giá chuyển nhượng (chữ)", "type": "text", "hidden": true },
+        { "name": "Responsibility", "label": "Bên chịu trách nhiệm thuế phí", "type": "select", "options": ["A", "B"] },
+        { "name": "Note", "label": "Ghi chú", "type": "textarea" }
       ]
-    } 
-   
+    }
   },
 
   "fieldMappings": [
     {
-      "group": "BCN",
+      "group": "NTK",
       "schema": "PersonalInfo",
       "subgroups": [
-          { "id": "MEN1", "label": "Thông tin cá nhân" },
-          { "id": "MEN2", "label": "Thông tin cá nhân" }
+        { "id": "MEN1", "label": "Người thừa kế 1", "visible": true },
+        { "id": "MEN2", "label": "Người thừa kế 2", "visible": false },
+        { "id": "MEN3", "label": "Người thừa kế 3", "visible": false },
+        { "id": "MEN4", "label": "Người thừa kế 4", "visible": false },
+        { "id": "MEN5", "label": "Người thừa kế 5", "visible": false },
+        { "id": "MEN6", "label": "Người thừa kế 6", "visible": false }
       ],
-      "suffixes": ["1", "2"],
-      "defaultGenders": ["Ông", "Bà"],
-      "defaultNoi_Cap": ["Cục Cảnh sát QLHC về TTXH cấp", "Cục Cảnh sát QLHC về TTXH cấp"]
+      "suffixes": ["1", "2", "3", "4", "5", "6"]
     },
     {
-      "group": "BCT",
+      "group": "NM",
       "schema": "PersonalInfo",
       "subgroups": [
-          { "id": "MEN1", "label": "Thông tin cá nhân" },
-          { "id": "MEN2", "label": "Thông tin cá nhân" }
+        { "id": "MEN7", "label": "Người mất", "visible": true }
       ],
-      "suffixes": ["1", "2"],
-      "defaultGenders": ["Ông", "Bà"]
+      "suffixes": ["7"]
     },
     {
-      "group": "NCN",
+      "group": "MP",
       "schema": "PersonalInfo",
       "subgroups": [
-          { "id": "MEN7", "label": "Thông tin cá nhân" }
+        { "id": "MEN8", "label": "Cha người mất", "visible": true },
+        { "id": "MEN9", "label": "Mẹ người mất", "visible": true }
       ],
-      "suffixes": ["7"],
-      "defaultGenders": ["Ông"],
-      "defaultNoi_Cap": ["Cục Cảnh sát QLHC về TTXH cấp"]
+      "suffixes": ["8", "9"]
     },
     {
       "group": "LAND",
+      "schema": "LandInfo",
       "subgroups": [
-        {"id": "INFO", "label": "Thông tin đất đai"}
-      ],
-      "schema": "LandInfo"
+        { "id": "INFO", "label": "Thông tin đất đai", "visible": true }
+      ]
     }
   ]
 }
