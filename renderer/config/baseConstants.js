@@ -98,7 +98,7 @@ const BASE_PLACEHOLDERS = {
     type: "number",
     validation: {
       min: 1,
-      max: 100000,
+      max: 1000000000000000000000,
       decimalPlaces: 2
     },
     order: 6
@@ -144,7 +144,7 @@ const BASE_PLACEHOLDERS = {
     type: "currency",
     validation: {
       min: 1000,
-      max: 100000000000
+      max: 1000000000000000000000000000000000000000
     },
     order: 13
   },
