@@ -71,8 +71,10 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
     inputHtml = `
       ${wrapperStart}
       <label for="${safeId}"><b>${label}</b></label>
-      <input type="text" id="${safeId}" data-ph="${ph}" class="input-field land-type-input" placeholder="${placeholder}">
-      <div id="${safeId}_dropdown" class="land-type-dropdown" style="display:none; position:absolute; background:white; border:1px solid #ccc; max-height:200px; overflow-y:auto; z-index:1000; width:300px;"></div>
+      <div style="position: relative;">
+        <input type="text" id="${safeId}" data-ph="${ph}" class="input-field land-type-input" placeholder="${placeholder}">
+        <div id="${safeId}_dropdown" class="land-type-dropdown"></div>
+      </div>
       ${wrapperEnd}
     `;
   } else if (type === "money" || type === "currency") {

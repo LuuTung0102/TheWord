@@ -1,4 +1,3 @@
-
 function setupNumericInput(el, maxLength) {
   el.addEventListener("input", (e) => {
     const v = e.target.value.replace(/\D/g, "").slice(0, maxLength);
@@ -19,42 +18,29 @@ function setupNumericInput(el, maxLength) {
 }
 
 function setupCCCDInput(el) {
-  // ✅ Khi đang gõ - chỉ cho phép nhập số và giới hạn 12 số
   el.addEventListener("input", (e) => {
-    let value = e.target.value.replace(/\D/g, ""); // Chỉ giữ số
-    value = value.slice(0, 12); // Giới hạn 12 số
-    e.target.value = value; // Không format, chỉ hiển thị số thuần
-  });
-  
-  // ✅ Khi focus - xóa dấu chấm để dễ chỉnh sửa
-  el.addEventListener("focus", (e) => {
-    let value = e.target.value.replace(/\D/g, ""); // Loại bỏ dấu chấm
+    let value = e.target.value.replace(/\D/g, "").slice(0, 12);
     e.target.value = value;
   });
   
-  // ✅ Khi blur (mất focus) - format với dấu chấm sử dụng utils.js
+  el.addEventListener("focus", (e) => {
+    e.target.value = e.target.value.replace(/\D/g, "");
+  });
+  
   el.addEventListener("blur", (e) => {
-    let value = e.target.value.replace(/\D/g, "");
-    value = value.slice(0, 12);
+    let value = e.target.value.replace(/\D/g, "").slice(0, 12);
+    if (value.length === 0) return;
     
-    if (value.length === 0) return; // Không format nếu rỗng
-    
-    // ✅ Sử dụng hàm formatCCCD từ utils.js
     if (value.length === 12 && window.formatCCCD) {
-      const formatted = window.formatCCCD(value);
-      // Nếu formatCCCD trả về chuỗi rỗng, giữ nguyên value
-      e.target.value = formatted || value;
-      console.log(`🆔 CCCD formatted: ${value} -> ${formatted || value}`);
+      e.target.value = window.formatCCCD(value) || value;
     } else {
-      // Nếu chưa đủ 12 số, giữ nguyên
       e.target.value = value;
     }
   });
   
-  // ✅ Khi paste - giữ số thuần, không format
   el.addEventListener("paste", (e) => {
     e.preventDefault();
-    let text = (e.clipboardData || window.clipboardData)
+    const text = (e.clipboardData || window.clipboardData)
       .getData("text")
       .replace(/\D/g, "")
       .slice(0, 12);
@@ -74,11 +60,8 @@ function setupEmailInput(el) {
   el.addEventListener("blur", (e) => {
     const email = e.target.value.trim();
     if (email && !isValidEmail(email)) {
-      // Hiển thị cảnh báo nhẹ nhưng không chặn form
       e.target.style.borderColor = "#ffa500";
-      setTimeout(() => {
-        e.target.style.borderColor = "";
-      }, 2000);
+      setTimeout(() => e.target.style.borderColor = "", 2000);
     }
   });
 }
@@ -105,30 +88,22 @@ function setupNameInput(el) {
 }
 
 function setupLandTypeInput(el, id) {
-  // Prevent duplicate setup
-  if (el.dataset.landTypeSetup === 'true') {
-    console.log('⚠️ setupLandTypeInput already done for', id);
-    return;
-  }
+  if (el.dataset.landTypeSetup === 'true') return;
   
   const dropdown = document.getElementById(`${id}_dropdown`);
   
-  // ✅ NULL CHECK: If dropdown doesn't exist, retry after DOM render
   if (!dropdown) {
-    console.warn(`⚠️ Dropdown not found for ${id}, will retry...`);
     requestAnimationFrame(() => {
       setTimeout(() => {
         const retryDropdown = document.getElementById(`${id}_dropdown`);
         if (retryDropdown && !el.dataset.landTypeSetup) {
-          console.log(`✅ Retry successful for ${id}`);
-          setupLandTypeInput(el, id); // Retry
+          setupLandTypeInput(el, id);
         }
       }, 50);
     });
     return;
   }
   
-  // Mark as setup
   el.dataset.landTypeSetup = 'true';
   
   const landKeys = window.landTypeMap ? Object.keys(window.landTypeMap).sort() : [];
@@ -147,23 +122,19 @@ function setupLandTypeInput(el, id) {
   }
 
   function updateDropdown(query) {
-    // ✅ NULL CHECK
     if (!dropdown || !el) return;
+    selectedIndex = -1;
     
-    // Show all when no query (e.g., user presses ArrowDown)
     const selected = getSelectedCodes(el.value);
-    const filtered = landKeys.filter(
-      (key) => !selected.includes(key) && (!query || key.toUpperCase().includes(query))
-    );
+    const filtered = landKeys.filter(key => !selected.includes(key) && (!query || key.toUpperCase().includes(query)));
+    
     dropdown.innerHTML = filtered
-      .map((key) => {
+      .map(key => {
         const desc = window.landTypeMap ? window.landTypeMap[key] : key;
         return `<div class="suggestion-item" data-key="${key}">${key}: ${desc}</div>`;
       })
       .join("");
     dropdown.style.display = filtered.length ? "block" : "none";
-    dropdown.style.left = el.offsetLeft + "px";
-    dropdown.style.top = el.offsetTop + el.offsetHeight + "px";
   }
 
 
@@ -180,7 +151,11 @@ function setupLandTypeInput(el, id) {
     updateDropdown(query);
   });
 
+  let selectedIndex = -1;
+  
   el.addEventListener("keydown", (e) => {
+    const items = dropdown.querySelectorAll('.suggestion-item');
+    
     if (e.key === "+" && !el.value.endsWith("+")) {
       e.preventDefault();
       const cursorPos = e.target.selectionStart;
@@ -189,14 +164,44 @@ function setupLandTypeInput(el, id) {
       e.target.selectionStart = e.target.selectionEnd = cursorPos + 1;
       const query = "";
       updateDropdown(query);
+      selectedIndex = -1;
     } else if (e.key === "ArrowDown") {
-      // Open dropdown with all options when pressing ArrowDown
       e.preventDefault();
-      updateDropdown("");
+      if (dropdown.style.display === "none") {
+        updateDropdown("");
+        selectedIndex = -1;
+      } else if (items.length > 0) {
+        selectedIndex = (selectedIndex + 1) % items.length;
+        updateSelection(items, selectedIndex);
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (items.length > 0 && dropdown.style.display !== "none") {
+        selectedIndex = selectedIndex <= 0 ? items.length - 1 : selectedIndex - 1;
+        updateSelection(items, selectedIndex);
+      }
+    } else if (e.key === "Enter") {
+      if (selectedIndex >= 0 && items[selectedIndex]) {
+        e.preventDefault();
+        items[selectedIndex].click();
+        selectedIndex = -1;
+      }
     } else if (e.key === "Escape") {
       if (dropdown) dropdown.style.display = "none";
+      selectedIndex = -1;
     }
   });
+  
+  function updateSelection(items, index) {
+    items.forEach((item, i) => {
+      if (i === index) {
+        item.classList.add('selected');
+        item.scrollIntoView({ block: 'nearest' });
+      } else {
+        item.classList.remove('selected');
+      }
+    });
+  }
 
   // Click outside to hide dropdown - Use named function for cleanup
   const handleClickOutside = (e) => {

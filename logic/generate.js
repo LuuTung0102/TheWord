@@ -253,6 +253,25 @@ function generateDocx(templatePath, data, outputPath) {
 
     data.Loai_Dat_Full = landParts.join('; ');
     
+    // ✅ Expand Loai_Dat codes thành tên đầy đủ
+    if (data.Loai_Dat && data.Loai_Dat.trim()) {
+      try {
+        const landTypesPath = path.join(__dirname, '..', 'renderer', 'config', 'land_types.json');
+        const landTypeMap = JSON.parse(fs.readFileSync(landTypesPath, 'utf8'));
+        
+        const expandedNames = data.Loai_Dat
+          .split('+')
+          .map(s => s.trim().toUpperCase())
+          .filter(Boolean)
+          .map(code => landTypeMap[code] || code)
+          .join(' và ');
+        
+        data.Loai_Dat = expandedNames;
+      } catch (error) {
+        console.warn('⚠️ Could not expand Loai_Dat:', error.message);
+      }
+    }
+    
     console.log(`📊 Mục đích sử dụng: ${data.Loai_Dat_Full || '(trống)'}`);
     console.log(`📊 Tìm thấy ${landParts.length} loại đất có diện tích`);
     templatePhs.forEach(ph => {

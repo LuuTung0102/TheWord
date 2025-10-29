@@ -1,3 +1,15 @@
+let landTypeMap = {};
+
+(async function loadLandTypes() {
+  try {
+    const response = await fetch('./renderer/config/land_types.json');
+    landTypeMap = await response.json();
+    window.landTypeMap = landTypeMap;
+  } catch (error) {
+    console.error('❌ Error loading land_types.json:', error);
+  }
+})();
+
 function expandLandType(raw) {
   if (!raw) return "";
   return raw
@@ -107,12 +119,9 @@ function numberToVietnameseWords(number) {
     .trim();
 }
 
-// Make utility functions available globally
 window.expandLandType = expandLandType;
 window.formatCCCD = formatCCCD;
 window.formatPhoneNumber = formatPhoneNumber;
 window.formatDate = formatDate;
 window.formatWithCommas = formatWithCommas;
 window.numberToVietnameseWords = numberToVietnameseWords;
-
-console.log('✅ Utils functions loaded successfully');
