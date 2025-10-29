@@ -2,10 +2,6 @@
 
 > **Tạo văn bản Word chuyên nghiệp trong 1 phút** - Chọn file → Điền form → Xuất ngay
 
-![Version](https://img.shields.io/badge/version-4.0-blue) ![Electron](https://img.shields.io/badge/electron-38.2.2-green) ![Status](https://img.shields.io/badge/status-stable-success)
-
----
-
 ## ✨ Tính Năng Nổi Bật
 
 🚀 **Tự động hóa 100%** - Từ template Word đến văn bản hoàn chỉnh  
@@ -252,16 +248,6 @@ User Input → Form → collectGenericFormData()
 | `{Loai_Dat}` | Loại đất | ONT → "Đất ở nông thôn" |
 | `{Money}` | Giá (VNĐ) | 1000000 → "1,000,000" |
 | `{MoneyText}` | Giá (chữ) | → "một triệu đồng chẵn" |
-
-### **Tự động sinh (MENx_Ly)**
-
-```
-{MEN1_L1} → "Ông NGUYỄN VĂN A sinh ngày: 01/01/1990"
-{MEN1_L2} → "CCCD số: 123.456.789.012, do CA T. Đắk Lắk cấp, ngày 01/01/2020"
-{MEN1_L3} → "Địa chỉ thường trú tại: Xã ABC, H. XYZ, T. Đắk Lắk"
-```
-
----
 
 ## ⚙️ Tạo Template Mới
 
