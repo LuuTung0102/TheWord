@@ -107,7 +107,6 @@ function generateDocx(templatePath, data, outputPath) {
       if (key.startsWith('S_') && key !== 'S_Text' && key !== 'S_Chung') {
         const value = data[key];
         if (value && value.toString().trim() !== "" && value !== "0") {
-          // Lấy mã loại đất từ key (ví dụ: S_ONT -> ONT)
           const landCode = key.replace('S_', '');
           landParts.push(`${value}m²: ${landCode}`);
       } else {

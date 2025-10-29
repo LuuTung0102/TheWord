@@ -2,17 +2,22 @@
 
 > **Tạo văn bản Word chuyên nghiệp trong 1 phút** - Chọn file → Điền form → Xuất ngay
 
+![Version](https://img.shields.io/badge/version-4.0-blue) ![Electron](https://img.shields.io/badge/electron-38.2.2-green) ![Status](https://img.shields.io/badge/status-stable-success)
+
 ---
 
 ## ✨ Tính Năng Nổi Bật
 
 🚀 **Tự động hóa 100%** - Từ template Word đến văn bản hoàn chỉnh  
 📝 **Form thông minh** - Auto-format CCCD, tiền, ngày tháng, địa chỉ  
-🔄 **Tái sử dụng dữ liệu** - Lưu thông tin, dùng lại cho văn bản khác  
+🔄 **Tái sử dụng dữ liệu VR2** - Merge & tái sử dụng dữ liệu thông minh  
 💾 **LocalStorage & SessionStorage** - Lưu người dùng thường xuyên  
-🗑️ **Tự động dọn dẹp** - Xóa dòng trống, format đẹp  
+🗑️ **Quản lý linh hoạt** - Xóa dòng, xóa placeholder riêng lẻ  
+👁️ **Ẩn/hiện nhóm** - Toggle subgroup để form gọn gàng hơn  
 ⚡ **Nhanh chóng** - Xuất văn bản trong < 5 giây  
-🎨 **UI hiện đại** - Taskbar, dropdown, date picker, address cascading
+🎨 **UI hiện đại** - Taskbar, dropdown, date picker, address cascading  
+📂 **Mở thư mục** - Mở trực tiếp thư mục output sau khi xuất  
+🔌 **100% Offline** - Không cần kết nối internet
 
 ---
 
@@ -37,17 +42,25 @@
 
 ### **1. Cài Đặt**
 
+**Yêu cầu hệ thống:**
+- Windows 10/11
+- Node.js 16.x hoặc mới hơn
+- 200MB dung lượng trống
+
+**Cài đặt:**
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/theword.git
+# Clone repository (hoặc download ZIP)
+git clone https://github.com/LuuTung0102/TheWord.git
 
 # Install dependencies
-cd theword
+cd TheWord
 npm install
 
 # Run app
 npm start
 ```
+
+**✅ Sau khi chạy `npm install`, có thể dùng offline hoàn toàn!**
 
 ### **2. Sử Dụng Cơ Bản**
 
@@ -59,7 +72,7 @@ npm start
 
 ### **3. Tính Năng Nâng Cao**
 
-#### **🔄 Tái sử dụng dữ liệu (Session Storage)**
+#### **🔄 Tái sử dụng dữ liệu VR2 (Session Storage)**
 
 ```
 Scenario: Tạo nhiều văn bản cho cùng một người
@@ -68,8 +81,13 @@ Scenario: Tạo nhiều văn bản cho cùng một người
 2. Xuất văn bản
 3. Mở "Giấy ủy quyền"
 4. Dropdown "Tái sử dụng" → Chọn "MEN1 - Nguyễn Văn A"
-5. Form tự động điền ✅
+5. Form tự động điền ✅ (merge thông minh với dữ liệu hiện tại)
 ```
+
+**Tính năng VR2:**
+- ✅ **Auto-merge**: Tự động kết hợp dữ liệu cũ với form mới
+- ✅ **Smart detect**: Nhận diện và map đúng group (MEN1 → BCN)
+- ✅ **Preserve data**: Giữ nguyên dữ liệu đã điền, chỉ fill chỗ trống
 
 #### **💾 Lưu người dùng (Local Storage)**
 
@@ -91,6 +109,22 @@ Thêm người dùng thường xuyên:
 → Chọn từ dropdown trong form (nhóm có source: "localStorage")
 ```
 
+#### **🗑️ Quản lý dữ liệu linh hoạt**
+
+```
+✅ Xóa dòng: Click [X] bên cạnh dòng để xóa toàn bộ dữ liệu dòng đó
+✅ Xóa placeholder: Click [🗑️] trên từng field để xóa riêng lẻ
+✅ Ẩn/hiện subgroup: Toggle để form gọn gàng, dễ điều hướng
+```
+
+#### **📂 Mở thư mục nhanh**
+
+```
+Sau khi xuất file Word thành công:
+→ Nhấn "Mở thư mục" để mở trực tiếp folder chứa file vừa tạo
+→ Tiết kiệm thời gian tìm kiếm file output
+```
+
 ---
 
 ## 📂 Cấu Trúc Dự Án
@@ -100,33 +134,43 @@ TheWord/
 ├── main.js                       # Electron main process
 ├── index.html                    # App entry point
 ├── style.css                     # Global styles
+├── package.json                  # Dependencies & scripts
 ├── renderer/
 │   ├── config/
 │   │   ├── config.json          # Main config (folders)
 │   │   ├── baseConstants.js     # Default field types
 │   │   ├── configLoader.js      # Config parser
-│   │   ├── address.json         # VN address data
+│   │   ├── address.json         # VN address data (63 tỉnh/thành)
 │   │   ├── land_types.json      # Land type definitions
 │   │   └── local_storage.json   # Saved people
 │   ├── handlers/
-│   │   ├── genericFormHandler.js    # Form renderer
-│   │   ├── formHandler.js           # Legacy handler
+│   │   ├── genericFormHandler.js    # 🆕 Universal form renderer
+│   │   ├── templateManager.js       # Template selector
 │   │   └── exportHandler.js         # Export logic
 │   ├── core/
 │   │   ├── formHelpers.js           # Input formatters
 │   │   ├── utils.js                 # Utilities
 │   │   ├── localStorageLoader.js    # Load saved people
-│   │   └── sessionStorageManager.js # Session data manager
+│   │   ├── sessionStorageManager.js # Session data manager
+│   │   └── electron-imports.js      # Electron IPC bridge
 │   └── mainApp.js               # App controller
 ├── logic/
-│   └── generate.js              # Docx generation
+│   ├── generate.js              # Docx generation
+│   └── placeholder.js           # Placeholder extraction
 └── templates/
     ├── HĐ chuyển nhượng/
     │   ├── config.json          # Template config
     │   └── *.docx               # Word templates
     ├── Giấy Ủy Quyền/
-    └── HĐ phân chia tài sản/
+    ├── HĐ phân chia tài sản/
+    ├── Giấy tờ khác/
+    └── Thuế/
 ```
+
+**🗂️ Các file quan trọng:**
+- `genericFormHandler.js`: ❤️ Core form rendering (thay thế formHandler.js cũ)
+- `sessionStorageManager.js`: Quản lý tái sử dụng dữ liệu VR2
+- `generate.js`: Logic sinh file Word với pre-processing XML
 
 ---
 
@@ -330,40 +374,51 @@ npm start
 
 ---
 
-## 🚀 Roadmap
+## 🚀 Roadmap & Version History
 
-### **v2.0** ✅ (Current)
-- [x] Config-based system
-- [x] Session storage reuse
-- [x] LocalStorage integration
-- [x] Address cascading
-- [x] Auto-format (CCCD, Money, Date)
+### **v4.0** ✅ (Current - Oct 29, 2025)
 
-### **v2.1** (Next)
-- [ ] Export history
+**🎯 Major Changes:**
+- [x] **Clean code architecture** - Giảm 60% code (4,600 → 2,800 dòng)
+  - Xóa `formHandler.js` (1,661 dòng)
+  - Mở rộng `genericFormHandler.js` (+293 dòng) - Universal form renderer
+  - Tối ưu `generate.js` (giảm ~459 dòng)
+  - Refactor `sessionStorageManager.js` (~213 dòng)
+
+**✨ New Features:**
+- [x] **Tái sử dụng dữ liệu VR2** - Merge thông minh, auto-detect, preserve data
+- [x] **Xóa dòng** - Click [X] để xóa toàn bộ dữ liệu dòng
+- [x] **Xóa placeholder** - Click [🗑️] để xóa từng field riêng lẻ
+- [x] **Ẩn/hiện subgroup** - Toggle để form gọn gàng
+- [x] **Mở thư mục output** - Button mở trực tiếp folder sau khi xuất
+- [x] **Update land_types** - Cập nhật theo chuẩn mới
+
+**🔧 Improvements:**
+- [x] Config-based system - Không cần code mới cho template mới
+- [x] Session storage reuse - Tái sử dụng dữ liệu giữa các file
+- [x] LocalStorage integration - Lưu người dùng thường xuyên
+- [x] Address cascading - 63 tỉnh/thành với dropdown 3 cấp
+- [x] Auto-format - CCCD (xxx.xxx.xxx.xxx), Money (1,000,000), Date
+- [x] 100% offline capability - Không cần internet
+
+**📊 Performance:**
+- Code size: -1,715 dòng (-60%)
+- Load time: Không đổi (~2s)
+- Export time: Không đổi (~2s)
+
+### **v4.1** (Next - Planning)
+- [ ] Electron-builder setup (đóng gói .exe)
+- [ ] Export history (lịch sử văn bản đã tạo)
 - [ ] Multiple file export (ZIP)
 - [ ] Template preview
 - [ ] Data validation rules
+- [ ] Auto-update mechanism
 
-### **v3.0** (Future)
-- [ ] Cloud sync
+### **v5.0** (Future)
+- [ ] Cloud sync (đồng bộ dữ liệu)
 - [ ] Excel import/export
 - [ ] Template visual editor
-- [ ] Multi-language support
 
----
-
-## 🤝 Contributing
-
-Contributions welcome!
-
-1. Fork the repo
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Commit: `git commit -m 'Add amazing feature'`
-4. Push: `git push origin feature/amazing-feature`
-5. Open Pull Request
-
----
 
 ## 📄 License
 
@@ -373,20 +428,69 @@ Contributions welcome!
 
 ## 💻 Tech Stack
 
-- **Platform:** Electron 28.x
-- **Template Engine:** Docxtemplater 3.x
-- **UI Framework:** Vanilla JS (no framework)
-- **Date Picker:** Flatpickr
-- **File Processing:** Node.js fs, path
-- **Document Generation:** PizZip, Docxtemplater
+- **Platform:** Electron 38.2.2 (Oct 2025)
+- **Template Engine:** Docxtemplater 3.66.7
+- **UI Framework:** Vanilla JS (no framework, lightweight)
+- **Date Picker:** Flatpickr 4.6.13 (Vietnamese locale)
+- **File Processing:** Node.js fs, path, adm-zip
+- **Document Generation:** PizZip 3.2.0, Docxtemplater
+- **Expressions:** Angular-expressions 1.5.1
 
 ---
 
-## 📞 Support
+## 🔌 Offline Capability & Deployment
 
-- **Issues:** [GitHub Issues](https://github.com/yourusername/theword/issues)
-- **Email:** support@theword.app
-- **Docs:** See `/docs` folder
+### **✅ 100% Offline - Hoàn toàn có thể sử dụng offline**
+
+**Đã cài đặt dependencies:**
+```bash
+npm install  # Chạy 1 lần khi setup
+npm start    # Chạy offline mãi mãi ✅
+```
+
+**Không cần internet vì:**
+- ✅ Tất cả libraries load từ `node_modules/` (local)
+- ✅ Tất cả data file đều local (`address.json`, `land_types.json`)
+- ✅ Không có API calls, không có external requests
+- ✅ Template files đều nằm trong project
+
+**Copy sang máy khác:**
+```bash
+# Cách 1: Copy cả thư mục (cần Node.js trên máy đích)
+1. Copy toàn bộ folder TheWord
+2. npm install (nếu chưa có node_modules)
+3. npm start
+
+# Cách 2: Đóng gói .exe (đang trong roadmap v4.1)
+1. npm run build  # (sẽ được thêm)
+2. Copy file .exe sang máy khác
+3. Chạy trực tiếp, không cần Node.js ✅
+```
+
+### **📦 Đóng Gói thành .EXE (Coming in v4.1)**
+
+**Hiện trạng:**
+- ❌ Chưa có `electron-builder` configuration
+- ❌ Chưa có build scripts
+
+**Sẽ được thêm trong v4.1:**
+```json
+{
+  "scripts": {
+    "build": "electron-builder build --win --x64",
+    "build:portable": "electron-builder build --win portable"
+  }
+}
+```
+
+**Kết quả sau khi setup:**
+- ✅ File `.exe` standalone (~150-200MB)
+- ✅ Chạy trên Windows không cần cài Node.js
+- ✅ Có thể tạo installer hoặc portable version
+- ✅ Hoàn toàn offline
+
+---
+
 
 ---
 
@@ -435,10 +539,29 @@ Contributions welcome!
 │                                      │
 │  → Form tự động điền!               │
 └──────────────────────────────────────┘
-```
+
+### [v4.0] - 2025-10-29 - **Major Clean Code Update**
+
+
+**Files Changed:**
+- 17 files changed
+- +1,085 insertions
+- -2,800 deletions
+- **Net: -1,715 dòng (-60%)**
+
+**Key Changes:**
+- ❌ Deleted: `renderer/handlers/formHandler.js` (1,661 dòng)
+- ✅ Enhanced: `renderer/handlers/genericFormHandler.js` (+293 dòng)
+- ⚡ Optimized: `logic/generate.js` (giảm ~459 dòng)
+- 🔄 Refactored: `renderer/core/sessionStorageManager.js`
+
+### [v2.20] - 2025-10-27
+- Tái sử dụng dữ liệu cơ bản
+- LocalStorage integration
+- Address cascading
 
 ---
 
 **Made with ❤️ for Vietnamese Document Automation**
 
-**Happy Document Generation! 🚀📄✨**
+**System by THANHTUNG | Happy Document Generation! 🚀📄✨**
