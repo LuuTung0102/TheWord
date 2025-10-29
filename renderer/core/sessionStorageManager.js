@@ -48,6 +48,8 @@
               const normalizedCurrent = normalizeDataForComparison(menGroups[groupKey]);
               const normalizedSource = normalizeDataForComparison(sourceData);
               
+              // ✅ CHỈ xóa nếu HOÀN TOÀN GIỐNG NHAU (không có thay đổi)
+              // Nếu có thay đổi → GIỮ LẠI để ghi đè lên session cũ
               if (JSON.stringify(normalizedCurrent) === JSON.stringify(normalizedSource)) {
                 groupsToRemove.push(groupKey);
               }
@@ -76,16 +78,18 @@
           const targetData = menGroups[targetGroupKey];
           if (!targetData) return;
           
-          const sourceFields = Object.keys(sourceData).filter(k => sourceData[k] && sourceData[k] !== '');
-          const targetFields = Object.keys(targetData).filter(k => targetData[k] && targetData[k] !== '');
+          // ✅ So sánh dữ liệu đã normalize để kiểm tra có thay đổi không
+          const normalizedTarget = normalizeDataForComparison(targetData);
+          const normalizedSource = normalizeDataForComparison(sourceData);
           
-          if (targetFields.length > sourceFields.length) {
-            if (existingData[sourceFileName] && existingData[sourceFileName].menGroups[sourceGroupKey]) {
-              delete existingData[sourceFileName].menGroups[sourceGroupKey];
-              
-              if (Object.keys(existingData[sourceFileName].menGroups).length === 0) {
-                delete existingData[sourceFileName];
-              }
+          const hasChanges = JSON.stringify(normalizedTarget) !== JSON.stringify(normalizedSource);
+          
+          // ✅ Nếu có BẤT KỲ thay đổi nào (sửa hoặc thêm field) → XÓA bản cũ
+          if (hasChanges && existingData[sourceFileName] && existingData[sourceFileName].menGroups[sourceGroupKey]) {
+            delete existingData[sourceFileName].menGroups[sourceGroupKey];
+            
+            if (Object.keys(existingData[sourceFileName].menGroups).length === 0) {
+              delete existingData[sourceFileName];
             }
           }
         });
