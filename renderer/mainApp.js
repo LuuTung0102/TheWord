@@ -490,6 +490,13 @@ class MainApp {
       
       // ✅ Save to session storage for reuse (only if data changed AND not reused from elsewhere)
       if (window.sessionStorageManager && this.selectedFile) {
+        console.log(`🔍 Before saveFormData:`, {
+          selectedFile: this.selectedFile,
+          formData,
+          reusedGroups: Array.from(window.__reusedGroups || []),
+          reusedGroupSources: window.__reusedGroupSources
+        });
+        
         const saved = window.sessionStorageManager.saveFormData(
           this.selectedFile, 
           formData, 
@@ -497,6 +504,9 @@ class MainApp {
           window.__reusedGroupSources,
           this.currentConfig // Pass config để check localStorage groups
         );
+        
+        console.log(`🔍 saveFormData returned:`, saved);
+        
         if (saved) {
           console.log(`💾 Saved new session data for: ${this.selectedFile}`);
         }

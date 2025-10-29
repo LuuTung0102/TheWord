@@ -486,14 +486,17 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
   if (allGroups.length === 0) return null;
   
   // ✅ Lọc groups phù hợp:
-  // - Nếu là MEN (có suffix) → chỉ hiển thị MEN groups, KHÔNG bao gồm LAND từ cùng file
-  // - Nếu là LAND/INFO (không có suffix) → chỉ hiển thị LAND/OTHER từ CÙNG tên file (config)
+  // - Nếu là MEN (có suffix) → chỉ hiển thị MEN groups
+  // - Nếu là LAND/INFO (không có suffix) → chỉ hiển thị groups khác (không bao gồm MEN và OTHER)
   const availableGroups = allGroups.filter(group => {
+    // ❌ Luôn loại bỏ group "OTHER"
+    if (group.groupKey === 'OTHER') return false;
+    
     if (targetSuffix) {
       // Subgroup này có suffix → chỉ lấy MEN groups
       return group.groupKey.startsWith('MEN');
     } else {
-      // Subgroup này không có suffix → chỉ lấy LAND/OTHER
+      // Subgroup này không có suffix → chỉ lấy groups khác (trừ MEN và OTHER)
       return !group.groupKey.startsWith('MEN');
     }
   }).map(group => {

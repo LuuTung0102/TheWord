@@ -28,7 +28,7 @@
           "Gender9", "Name9", "Date9", "CCCD9", "Noi_Cap9", "Ngay_Cap9", "Address9"
         ],
         "LAND": [
-          "AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText",
+          "AddressD", "Ban_do_so", "HTSD_C", "HTSD_R", "Loai_Dat", "Money", "MoneyText",
           "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD",
           "TTGLVD", "Thua_dat_so"
         ]
