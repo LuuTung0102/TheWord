@@ -205,42 +205,45 @@ async function renderGenericForm(placeholders, config, folderPath) {
   
   // ✅ Track visible state of subgroups
   // ⚠️ CRITICAL: Reset visibleSubgroups when rendering new form
-  // This prevents old visible state from carrying over to new file
-  window.visibleSubgroups = new Set();
-  console.log('🔄 Reset visibleSubgroups for new form');
-  
-  // Initialize visible subgroups from fieldMappings
-  // ⚠️ RULE: Only FIRST subgroup of each mapping is visible by default
-  //          Other subgroups must be added via "Thêm người" button
-  if (config.fieldMappings) {
-    config.fieldMappings.forEach(mapping => {
-      if (mapping.subgroups && mapping.subgroups.length > 0) {
-        mapping.subgroups.forEach((subgroup, index) => {
-          const subgroupId = typeof subgroup === 'string' ? subgroup : subgroup.id;
-          
-          // Check explicit visible property
-          const hasExplicitVisible = typeof subgroup === 'object' && subgroup.hasOwnProperty('visible');
-          
-          if (hasExplicitVisible) {
-            // Use explicit visible value from config
-            if (subgroup.visible === true) {
-              window.visibleSubgroups.add(subgroupId);
-            }
-          } else {
-            // Default: Only first subgroup is visible
-            if (index === 0) {
-              window.visibleSubgroups.add(subgroupId);
-              console.log(`✅ Default visible (first): ${subgroupId}`);
+  // Only reset visibleSubgroups when loading a NEW file (not when re-rendering)
+  // When re-rendering after clicking "Thêm" button, preserve existing visibleSubgroups
+  if (!window.visibleSubgroups || window.visibleSubgroups.size === 0) {
+    window.visibleSubgroups = new Set();
+    console.log('🔄 Initialize visibleSubgroups for new form');
+    
+    // Initialize visible subgroups from fieldMappings
+    if (config.fieldMappings) {
+      config.fieldMappings.forEach(mapping => {
+        if (mapping.subgroups && mapping.subgroups.length > 0) {
+          mapping.subgroups.forEach((subgroup, index) => {
+            const subgroupId = typeof subgroup === 'string' ? subgroup : subgroup.id;
+            
+            // Check explicit visible property
+            const hasExplicitVisible = typeof subgroup === 'object' && subgroup.hasOwnProperty('visible');
+            
+            if (hasExplicitVisible) {
+              // Use explicit visible value from config
+              if (subgroup.visible === true) {
+                window.visibleSubgroups.add(subgroupId);
+              }
             } else {
-              console.log(`⏭️ Default hidden (not first): ${subgroupId}`);
+              // Default: Only first subgroup is visible
+              if (index === 0) {
+                window.visibleSubgroups.add(subgroupId);
+                console.log(`✅ Default visible (first): ${subgroupId}`);
+              } else {
+                console.log(`⏭️ Default hidden (not first): ${subgroupId}`);
+              }
             }
-          }
-        });
-      }
-    });
+          });
+        }
+      });
+    }
+  } else {
+    console.log('♻️ Re-rendering with existing visibleSubgroups:', Array.from(window.visibleSubgroups));
   }
   
-  console.log('✅ Initialized visibleSubgroups:', Array.from(window.visibleSubgroups));
+  console.log('✅ Current visibleSubgroups:', Array.from(window.visibleSubgroups));
 
   // 🎨 RENDER TASKBAR
   const taskbarHtml = `
@@ -282,7 +285,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
     const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
     const hiddenSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups.filter(sg => {
       const subId = typeof sg === 'string' ? sg : sg.id;
-      return !window.visibleSubgroups.has(subId) && grouped[groupKey] && grouped[groupKey][subId];
+      // ✅ Chỉ check visible status từ window.visibleSubgroups
+      // Không check grouped vì subgroup có thể không có placeholders nhưng vẫn cần button "Thêm"
+      return !window.visibleSubgroups.has(subId);
     }) : [];
     
     if (hiddenSubgroups.length > 0) {
@@ -372,7 +377,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
       groupDiv.innerHTML += buttonsHtml;
     } else {
       // Normal form rendering - Subgroups only render visible ones
-      const subgroupKeys = Object.keys(grouped[groupKey]).sort();
+      // ✅ Lấy từ config thay vì grouped để bao gồm cả subgroups không có placeholders
+      const allSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups : [];
+      const subgroupKeys = allSubgroups.map(sg => typeof sg === 'string' ? sg : sg.id);
       
       subgroupKeys.forEach(subKey => {
         // ✅ Skip if subgroup is not visible
@@ -395,7 +402,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
           subgroupDiv.innerHTML += reuseDropdownHtml;
         }
 
-        const items = grouped[groupKey][subKey];
+        // ✅ Lấy items từ grouped (có thể rỗng nếu subgroup không có placeholders trong template)
+        const items = (grouped[groupKey] && grouped[groupKey][subKey]) ? grouped[groupKey][subKey] : [];
         
         // Sort fields
         const sortedItems = sortGenericFields(items);
@@ -437,7 +445,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
         // Tìm subgroup ẩn TIẾP THEO
         const nextHidden = groupMapping.subgroups.find(sg => {
           const subId = typeof sg === 'string' ? sg : sg.id;
-          return !window.visibleSubgroups.has(subId) && grouped[groupKey] && grouped[groupKey][subId];
+          // ✅ Chỉ check visible status, không cần check grouped
+          return !window.visibleSubgroups.has(subId);
         });
         
         if (nextHidden) {

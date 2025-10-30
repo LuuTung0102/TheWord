@@ -11,7 +11,7 @@ class MainApp {
     this.files = [];
     this.formData = {};
     this.isLoading = false;
-    this.lastExportedPath = null; // Track last exported file path
+    this.lastExportedPath = null;
   }
 
   /**
@@ -313,6 +313,10 @@ class MainApp {
           };
           console.log('✅ MainApp: Saved currentTemplate for validation:', window.currentTemplate);
           
+          // ✅ Reset visibleSubgroups when loading a NEW file
+          window.visibleSubgroups = new Set();
+          console.log('🔄 MainApp: Reset visibleSubgroups for new file');
+          
           // Render form using the matched template's groups
           if (window.renderGenericForm) {
             await window.renderGenericForm(placeholders, filteredConfig, folderPath);
@@ -383,11 +387,6 @@ class MainApp {
         
         // Calculate match percentage
         const matchPercentage = intersection.size / filePlaceholdersSet.size;
-        
-        console.log(`🔍 MainApp: Template ${template.id} (${template.filename})`);
-        console.log(`   Groups: ${template.groups.join(', ')}`);
-        console.log(`   Match: ${intersection.size}/${filePlaceholdersSet.size} (${(matchPercentage * 100).toFixed(1)}%)`);
-        console.log(`   Missing:`, [...filePlaceholdersSet].filter(ph => !templatePlaceholders.has(ph)));
         
         if (matchPercentage > bestScore) {
           bestScore = matchPercentage;

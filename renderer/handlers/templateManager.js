@@ -146,28 +146,13 @@ async function updateForm() {
   }
 
   const phSet = new Set();
-  // Alias MENx_Ly -> concrete placeholders
-  const menAliasMap = { 1: "Gender", 2: "Name", 3: "Date", 4: "CCCD", 5: "Noi_Cap", 6: "Ngay_Cap" };
-  const ensureFullGroup = (groupIdx) => {
-    Object.values(menAliasMap).forEach((base) => phSet.add(`${base}${groupIdx}`));
-  };
   
   // Lấy placeholders từ folder (thay vì từ files)
   for (const folderName of selectedTemplates) {
     console.log(`📋 Loading placeholders from folder: ${folderName}`);
     const ph = await window.ipcRenderer.invoke("get-folder-placeholders", folderName);
     if (Array.isArray(ph)) {
-      ph.forEach((p) => {
-        phSet.add(p);
-        const m = p && p.match && p.match(/^MEN([3-6])_L([1-6])$/);
-        if (m) {
-          const groupIdx = m[1];
-          const fieldIdx = Number(m[2]);
-          const base = menAliasMap[fieldIdx];
-          if (base) phSet.add(`${base}${groupIdx}`);
-          ensureFullGroup(groupIdx);
-        }
-      });
+      ph.forEach((p) => phSet.add(p));
     }
   }
 

@@ -8,8 +8,33 @@
 
   "templates": [
     {
-      "id": "hd-pc-ts",
+      "id": "hd-pc-testtest",
       "filename": "test.docx",
+      "name": "Hợp đồng phân chia tài sản thừa kế",
+      "description": "Phân chia tài sản thừa kế",
+      "groups": ["NTK", "NM", "MP", "LAND"],
+      "placeholders": {
+        "NTK": [
+          "Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1",
+          "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2",
+          "Gender3", "Name3", "Date3", "CCCD3", "Noi_Cap3", "Ngay_Cap3", "Address3",
+          "Gender4", "Name4", "Date4", "CCCD4", "Noi_Cap4", "Ngay_Cap4", "Address4",
+          "Gender5", "Name5", "Date5", "CCCD5", "Noi_Cap5", "Ngay_Cap5", "Address5",
+          "Gender6", "Name6", "Date6", "CCCD6", "Noi_Cap6", "Ngay_Cap6", "Address6"
+        ],
+        "NM": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
+        "MP": [
+          "Gender8", "Name8", "Date8", "CCCD8", "Noi_Cap8", "Ngay_Cap8", "Address8",
+          "Gender9", "Name9", "Date9", "CCCD9", "Noi_Cap9", "Ngay_Cap9", "Address9"
+        ],
+        "LAND": [
+           "HTSD_C", "HTSD_R",  "THSD"
+        ]
+      }
+    },
+    {
+      "id": "hd-pc-ts",
+      "filename": "Phân chia tài sản.docx",
       "name": "Hợp đồng phân chia tài sản thừa kế",
       "description": "Phân chia tài sản thừa kế",
       "groups": ["NTK", "NM", "MP", "LAND"],
@@ -41,29 +66,25 @@
       "id": "NTK",
       "label": "Người thừa kế",
       "order": 1,
-      "visible": true,
       "description": "Những người được thừa kế tài sản"
     },
     {
       "id": "NM",
       "label": "Người mất",
       "order": 2,
-      "visible": true,
       "description": "Người để lại tài sản thừa kế"
     },
     {
       "id": "MP",
       "label": "Bố/mẹ người mất",
       "order": 3,
-      "visible": true,
       "description": "Bố mẹ của người mất (nếu có)"
     },
     {
       "id": "LAND",
       "label": "Thông tin thửa đất",
       "order": 4,
-      "visible": true,
-      "description": "Thông tin đất đai, nhà cửa"
+      "description": "Thông tin đất đai"
     }
   ],
 
@@ -111,12 +132,12 @@
       "group": "NTK",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN1", "label": "Người thừa kế" },
-        { "id": "MEN2", "label": "Người thừa kế" },
-        { "id": "MEN3", "label": "Người thừa kế" },
-        { "id": "MEN4", "label": "Người thừa kế" },
-        { "id": "MEN5", "label": "Người thừa kế" },
-        { "id": "MEN6", "label": "Người thừa kế" }
+        { "id": "MEN1", "label": "Người thừa kế", "visible": true },
+        { "id": "MEN2", "label": "Người thừa kế", "visible": false },
+        { "id": "MEN3", "label": "Người thừa kế", "visible": false },
+        { "id": "MEN4", "label": "Người thừa kế", "visible": false },
+        { "id": "MEN5", "label": "Người thừa kế", "visible": false },
+        { "id": "MEN6", "label": "Người thừa kế", "visible": false }
       ],
       "suffixes": ["1", "2", "3", "4", "5", "6"]
     },
@@ -124,7 +145,7 @@
       "group": "NM",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN7", "label": "Người mất", "visible": false }
+        { "id": "MEN7", "label": "Người mất", "visible": true}
       ],
       "suffixes": ["7"]
     },
