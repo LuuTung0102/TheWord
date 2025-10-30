@@ -1,7 +1,10 @@
 # 📄 TheWord - Hệ Thống Tự Động Hóa Văn Bản
 
 > **Tạo văn bản Word chuyên nghiệp trong 1 phút** - Chọn file → Điền form → Xuất ngay
+<<<<<<< HEAD
 ---
+=======
+>>>>>>> 09418c90d5577af22195beb70a05670cb6741149
 
 ## ✨ Tính Năng Nổi Bật
 
@@ -508,8 +511,11 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
 | `{Money}` | Giá (VNĐ) | 1000000 → "1,000,000" |
 | `{MoneyText}` | Giá (chữ) | → "một triệu đồng chẵn" |
 
+<<<<<<< HEAD
 ---
 
+=======
+>>>>>>> 09418c90d5577af22195beb70a05670cb6741149
 ## ⚙️ Tạo Template Mới
 
 ### **Bước 1: Tạo file Word**
