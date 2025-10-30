@@ -146,7 +146,6 @@ function generateDocx(templatePath, data, outputPath) {
       else if (typeof data[k] !== 'string') data[k] = String(data[k]);
     });
 
-    // ✅ Expand Loai_Dat codes thành tên đầy đủ (PHẢI THỰC HIỆN SAU KHI normalize)
     if (data.Loai_Dat && data.Loai_Dat.trim()) {
       try {
         const landTypesPath = path.join(__dirname, '..', 'renderer', 'config', 'land_types.json');
@@ -171,19 +170,6 @@ function generateDocx(templatePath, data, outputPath) {
     const fullData = {};
     templatePhs.forEach(ph => {
       fullData[ph] = data[ph] !== undefined ? data[ph] : '';
-    });
-    
-    // ✅ Auto-fix: Add space before Name values (AFTER merging to fullData)
-    // Template structure: "{{Gender1}}:{{Name1}}" (no space after colon)
-    // We add leading space to Name so result is "Ông: Name" not "Ông:Name"
-    Object.keys(fullData).forEach(key => {
-      if (key.match(/^Name\d+$/) && fullData[key]) {
-        const value = fullData[key].toString();
-        if (value && !value.startsWith(' ')) {
-          fullData[key] = ' ' + value;  // Add leading space
-          console.log(`✅ Auto-fix: Added space before ${key}: "${value}" → "${fullData[key]}"`);
-        }
-      }
     });
 
     try {
