@@ -2,9 +2,6 @@
 
 > **Tạo văn bản Word chuyên nghiệp trong 1 phút** - Chọn file → Điền form → Xuất ngay
 <<<<<<< HEAD
----
-=======
->>>>>>> 09418c90d5577af22195beb70a05670cb6741149
 
 ## ✨ Tính Năng Nổi Bật
 
