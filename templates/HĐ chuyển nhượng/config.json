@@ -14,7 +14,7 @@
       "description": "Chuyển nhượng quyền sử dụng đất",
       "groups": ["BCN", "NCN", "LAND"],
       "placeholders": {
-        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
+        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2"],
         "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
         "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
       }
@@ -26,7 +26,7 @@
       "description": "Chuyển nhượng nhà ở, công trình xây dựng",
       "groups": ["BCT", "NCN", "LAND"],
       "placeholders": {
-        "BCT": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
+        "BCT": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2"],
         "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
         "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
       }
@@ -38,7 +38,7 @@
       "description": "Chuyển nhượng đất kèm nhà, công trình",
       "groups": ["BCN", "NCN", "LAND"],
       "placeholders": {
-        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
+        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2"],
         "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
         "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
       }
@@ -95,8 +95,8 @@
       "group": "BCN",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN1", "label": "Thông tin cá nhân" },
-        { "id": "MEN2", "label": "Thông tin cá nhân" }
+        { "id": "MEN1", "label": "Thông tin cá nhân","visible": true},
+        { "id": "MEN2", "label": "Thông tin cá nhân","visible": true }
       ],
       "suffixes": ["1", "2"],
       "defaultGenders": ["Ông", "Bà"]
@@ -105,8 +105,8 @@
       "group": "BCT",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN1", "label": "Thông tin cá nhân" },
-        { "id": "MEN2", "label": "Thông tin cá nhân" }
+        { "id": "MEN1", "label": "Thông tin cá nhân" ,"visible": true},
+        { "id": "MEN2", "label": "Thông tin cá nhân" ,"visible": true}
       ],
       "suffixes": ["1", "2"],
       "defaultGenders": ["Ông", "Bà"]
@@ -115,7 +115,7 @@
       "group": "NCN",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN7", "label": "Thông tin cá nhân" }
+        { "id": "MEN7", "label": "Thông tin cá nhân" ,"visible": true}
       ],
       "suffixes": ["7"],
       "defaultGenders": ["Ông"]

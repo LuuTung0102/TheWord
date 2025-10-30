@@ -46,13 +46,17 @@ async function loadFolderConfig(folderPath) {
 /**
  * Build placeholder mapping từ config JSON mới
  * @param {Object} config - Config object từ config.json
+ * @param {Array} actualPlaceholders - Danh sách placeholders thực tế từ template Word file
  * @returns {Object} Placeholder mapping
  */
-function buildPlaceholderMapping(config) {
+function buildPlaceholderMapping(config, actualPlaceholders = null) {
   if (!config) return {};
   
   const mapping = {};
   const basePlaceholders = window.BASE_PLACEHOLDERS || {};
+  
+  // ✅ Convert actualPlaceholders to Set for fast lookup
+  const actualPhSet = actualPlaceholders ? new Set(actualPlaceholders) : null;
   
   // 0. Đầu tiên, lấy tất cả các field từ fieldSchemas để có thể tham chiếu trực tiếp
   const schemaFields = {};
@@ -87,6 +91,13 @@ function buildPlaceholderMapping(config) {
         // Process each field in schema
         schemaDef.fields.forEach(fieldDef => {
           const placeholder = `${fieldDef.name}${suffix}`;
+          
+          // ✅ CRITICAL: Skip if placeholder not in actual template
+          if (actualPhSet && !actualPhSet.has(placeholder)) {
+            console.log(`⏭️ Skip mapping ${placeholder}: not in template Word file`);
+            return;
+          }
+          
           const baseFieldName = fieldDef.name;
           const baseField = basePlaceholders[baseFieldName] || {};
           

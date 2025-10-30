@@ -12,6 +12,23 @@ function generateDocx(templatePath, data, outputPath) {
     try {
       if (zip.files['word/document.xml']) {
         let xml = zip.files['word/document.xml'].asText();
+        // ✅ Step 1: Clean placeholders broken by XML formatting
+        // Word thường split placeholders do user format (bold/italic/etc) một phần của placeholder
+        // Ví dụ: {{So</w:t><w:t xml:space="preserve">_so}} → {{So_so}}
+        
+        // ❌ DISABLED: Sub-step 1a - Xóa tags chứa whitespace
+        // Problem: Template có "<w:t>:</w:t><w:t> </w:t><w:t>Name</w:t>"
+        //          → Xóa mất space → ":<w:t>Name</w:t>" → ":Name" (không có khoảng trắng)
+        // Solution: KHÔNG xóa whitespace, để docxtemplater và Word xử lý
+        // xml = xml.replace(/<w:t[^>]*>\s*<\/w:t>/g, '');
+        
+        // Sub-step 1b: Fix placeholders split by tags (multiple passes to handle nesting)
+        for (let i = 0; i < 5; i++) {
+          xml = xml.replace(/\{\{([^}]*)<\/w:t><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
+          xml = xml.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
+        }
+        
+        // Sub-step 1c: Clean remaining broken placeholders
         xml = xml.replace(/\{\{[^}]*<[^>]*>[^}]*\}\}/g, (match) => {
           const textContent = match.replace(/<[^>]*>/g, '').replace(/[{}]/g, '');
           if (textContent.trim() && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(textContent.trim())) {
@@ -19,7 +36,12 @@ function generateDocx(templatePath, data, outputPath) {
           }
           return ''; 
         });
-        xml = xml.replace(/<\/w:t>\s*<\/w:r>\s*<w:r[^>]*>\s*<w:t[^>]*>/g, '');
+        
+        // ❌ KHÔNG merge các <w:r> hoặc <w:t> tags khác nhau
+        // Lý do: Giữa các tags có thể có TEXT CONTENT quan trọng
+        // Ví dụ: <w:t>{{QSH}}</w:t></w:r><w:r><w:t>, vào sổ số: </w:t>
+        //        ↑ KHÔNG được xóa ", vào sổ số: "!
+        
         xml = xml.replace(/\}\}+}/g, '}}');
         xml = xml.replace(/\{\{[^a-zA-Z_][^}]*\}\}/g, '');
         xml = xml.replace(/\{\{[^}]*\s+[^}]*\}\}/g, (match) => {
@@ -150,6 +172,19 @@ function generateDocx(templatePath, data, outputPath) {
     templatePhs.forEach(ph => {
       fullData[ph] = data[ph] !== undefined ? data[ph] : '';
     });
+    
+    // ✅ Auto-fix: Add space before Name values (AFTER merging to fullData)
+    // Template structure: "{{Gender1}}:{{Name1}}" (no space after colon)
+    // We add leading space to Name so result is "Ông: Name" not "Ông:Name"
+    Object.keys(fullData).forEach(key => {
+      if (key.match(/^Name\d+$/) && fullData[key]) {
+        const value = fullData[key].toString();
+        if (value && !value.startsWith(' ')) {
+          fullData[key] = ' ' + value;  // Add leading space
+          console.log(`✅ Auto-fix: Added space before ${key}: "${value}" → "${fullData[key]}"`);
+        }
+      }
+    });
 
     try {
       doc.render(fullData);
@@ -167,22 +202,34 @@ function generateDocx(templatePath, data, outputPath) {
     }
 
     // ✅ Post-processing: Xóa từ nối dư ("và", dấu phẩy) khi placeholders trống
+    // ⚠️ CHÚ Ý: Chỉ xóa các pattern cụ thể, KHÔNG xóa tất cả dấu phẩy!
     try {
       let xml = zip.files['word/document.xml'].asText();
       
-      // Xóa "và" + dấu phẩy ở cuối dòng (trước dấu xuống dòng hoặc end)
-      xml = xml.replace(/và\s*,*\s*(?=<\/w:t>|<w:br\/?>)/g, '');
+      // ❌ DISABLED: Các regex này đang xóa cả dấu phẩy hợp lệ trong nội dung
+      // Ví dụ: "số: sad, vào sổ số: 8987, được UBND" → "số: sadvào sổ số: 8987được UBND"
       
-      // Xóa "và" đứng trước khoảng trắng + end tag
-      xml = xml.replace(/\s*và\s*,*\s*(?=\s*<\/w:t>)/g, '');
+      // Chỉ xóa các pattern SAU KHI placeholder đã được thay thế
+      // Pattern 1: Xóa ", và" khi cả 2 đều có (dư thừa)
+      xml = xml.replace(/,\s*và\s*,/g, ', ');
       
-      // Xóa dấu phẩy + "và" khi đứng cạnh nhau
-      xml = xml.replace(/,\s*và\s*,/g, ',');
+      // Pattern 2: Xóa "và ," (sai thứ tự)
+      xml = xml.replace(/và\s*,/g, 'và');
       
-      // Xóa dấu phẩy dư ở cuối (trước end tag)
-      xml = xml.replace(/,\s*(?=<\/w:t>)/g, '');
+      // Pattern 3: Xóa ", và" ở cuối câu (trước dấu chấm/xuống dòng)
+      xml = xml.replace(/,\s*và\s*(?=\.|\?|\!|<\/w:p>|<w:br)/g, '');
+      
+      // Pattern 4: Xóa "và" đơn độc ở cuối câu
+      xml = xml.replace(/\s+và\s*(?=\.|\?|\!|<\/w:p>|<w:br)/g, '');
+      
+      // Pattern 5: Xóa dấu phẩy kép ", ,"
+      xml = xml.replace(/,\s*,+/g, ',');
+      
+      // Pattern 6: Xóa nhiều khoảng trắng liên tiếp
+      xml = xml.replace(/(<w:t[^>]*>)(\s{3,})/g, '$1 ');
       
       zip.file('word/document.xml', xml);
+      console.log('✅ Post-processing: Cleaned up conjunctions (safe mode)');
     } catch (err) {
       console.warn('⚠️ Could not clean up conjunctions:', err.message);
     }

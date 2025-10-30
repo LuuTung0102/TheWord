@@ -615,6 +615,57 @@ body {
 }
 
 /* ========================================
+   FORM VALIDATION
+   ======================================== */
+
+/* Validation error highlight */
+input.validation-error,
+select.validation-error,
+textarea.validation-error {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+  animation: shake 0.3s ease-in-out;
+}
+
+/* Shake animation */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Error icon for required fields */
+.field-row.has-error::before {
+  content: "⚠️";
+  position: absolute;
+  left: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Required field indicator */
+label.required::after {
+  content: " *";
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* Error message below field */
+.field-error-message {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.field-error-message::before {
+  content: "⚠️";
+  font-size: 0.875rem;
+}
+
+/* ========================================
    RESPONSIVE
    ======================================== */
 

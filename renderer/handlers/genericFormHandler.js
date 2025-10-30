@@ -1,3 +1,18 @@
+/**
+ * ✅ SINGLE SOURCE OF TRUTH ARCHITECTURE
+ * 
+ * Hệ thống sử dụng config.json làm nguồn dữ liệu duy nhất cho:
+ * 1. UI rendering (hiển thị dấu * cho required fields)
+ * 2. Form validation (kiểm tra fields trước khi xuất)
+ * 
+ * Khi thêm/sửa field:
+ * - Chỉnh config.json: "required": true/false
+ * - UI tự động cập nhật (có/không dấu *)
+ * - Validator tự động sync (validate/skip)
+ * 
+ * Không cần hard-code required fields trong UI hay validator!
+ */
+
 let idToPhGeneric = {};
 
 function renderGenericInputField(ph, fieldDef, group, subgroup) {
@@ -11,6 +26,11 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
   const placeholder = fieldDef.placeholder || `Nhập ${label.toLowerCase()}`;
   const isHidden = fieldDef.hidden === true;
   
+  // ✅ Single source of truth: Read required from config.json
+  // This is used to add class="required" to labels → CSS shows red asterisk (*)
+  // Validator (formValidator.js) reads the SAME config.json to check validation
+  const isRequired = fieldDef.required === true;
+  const requiredClass = isRequired ? ' class="required"' : '';
   
   const hiddenStyle = isHidden ? 'style="display: none;"' : '';
   
@@ -22,7 +42,7 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
     const defaultValue = fieldDef.defaultValue || '';
     inputHtml = `
       ${wrapperStart}
-      <label for="${safeId}"><b>${label}</b></label>
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <select id="${safeId}" data-ph="${ph}" class="input-field" data-default="${defaultValue}">
         <option value="">-- Chọn --</option>
         ${options.map((opt) => `<option value="${opt}" ${opt === defaultValue ? 'selected' : ''}>${opt}</option>`).join("")}
@@ -32,7 +52,7 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
   } else if (type === "date") {
     inputHtml = `
       ${wrapperStart}
-      <label for="${safeId}"><b>${label}</b></label>
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <input type="text" id="${safeId}" data-ph="${ph}" class="date-picker input-field" placeholder="dd/mm/yyyy" />
       ${wrapperEnd}
     `;
@@ -40,7 +60,7 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
     // Address with province/district/ward/village dropdowns
     inputHtml = `
       ${wrapperStart}
-      <label for="${safeId}"><b>${label}</b></label>
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <div class="address-group">
         <select id="${safeId}_province" data-main="${safeId}" data-level="province" class="address-select input-field">
           <option value="">-- Chọn tỉnh/thành --</option>
@@ -63,14 +83,14 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
     const maxLength = fieldDef.maxLength || '';
     inputHtml = `
       ${wrapperStart}
-      <label for="${safeId}"><b>${label}</b></label>
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <input type="text" id="${safeId}" data-ph="${ph}" class="input-field" placeholder="${placeholder}" ${maxLength ? `maxlength="${maxLength}"` : ''} />
       ${wrapperEnd}
     `;
   } else if (type === "land-type" || type === "land_type") {
     inputHtml = `
       ${wrapperStart}
-      <label for="${safeId}"><b>${label}</b></label>
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <div style="position: relative;">
         <input type="text" id="${safeId}" data-ph="${ph}" class="input-field land-type-input" placeholder="${placeholder}">
         <div id="${safeId}_dropdown" class="land-type-dropdown"></div>
@@ -80,7 +100,7 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
   } else if (type === "money" || type === "currency") {
     inputHtml = `
       ${wrapperStart}
-      <label for="${safeId}"><b>${label}</b></label>
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <input type="text" id="${safeId}" data-ph="${ph}" class="input-field money-input" placeholder="${placeholder}" />
       ${wrapperEnd}
     `;
@@ -88,28 +108,28 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
     const rows = fieldDef.rows || 3;
     inputHtml = `
       ${wrapperStart}
-      <label for="${safeId}"><b>${label}</b></label>
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <textarea id="${safeId}" data-ph="${ph}" rows="${rows}" class="input-field" placeholder="${placeholder}"></textarea>
       ${wrapperEnd}
     `;
   } else if (type === "tel") {
     inputHtml = `
       ${wrapperStart}
-      <label for="${safeId}"><b>${label}</b></label>
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <input type="tel" id="${safeId}" data-ph="${ph}" class="input-field" placeholder="${placeholder}" />
       ${wrapperEnd}
     `;
   } else if (type === "email") {
     inputHtml = `
       ${wrapperStart}
-      <label for="${safeId}"><b>${label}</b></label>
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <input type="email" id="${safeId}" data-ph="${ph}" class="input-field" placeholder="${placeholder}" />
       ${wrapperEnd}
     `;
   } else {
     inputHtml = `
       ${wrapperStart}
-      <label for="${safeId}"><b>${label}</b></label>
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <input type="text" id="${safeId}" data-ph="${ph}" class="input-field" placeholder="${placeholder}" />
       ${wrapperEnd}
     `;
@@ -153,7 +173,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
   }
 
   // Build placeholder mapping
-  const phMapping = window.buildPlaceholderMapping(config);
+  // ✅ CRITICAL: Pass actual placeholders to only map existing ones
+  const phMapping = window.buildPlaceholderMapping(config, placeholders);
   const groupLabels = window.getGroupLabels(config);
   const subgroupLabels = window.getSubgroupLabels(config);
 
@@ -161,7 +182,10 @@ async function renderGenericForm(placeholders, config, folderPath) {
   const grouped = {};
   placeholders.forEach(ph => {
     const def = phMapping[ph];
-    if (!def) return;
+    if (!def) {
+      console.warn(`⚠️ Placeholder ${ph} not in mapping (not in schema or filtered out)`);
+      return;
+    }
     
     const groupKey = def.group;
     const subKey = def.subgroup;
@@ -180,22 +204,43 @@ async function renderGenericForm(placeholders, config, folderPath) {
     .map(group => group.id);
   
   // ✅ Track visible state of subgroups
-  if (!window.visibleSubgroups) window.visibleSubgroups = new Set();
+  // ⚠️ CRITICAL: Reset visibleSubgroups when rendering new form
+  // This prevents old visible state from carrying over to new file
+  window.visibleSubgroups = new Set();
+  console.log('🔄 Reset visibleSubgroups for new form');
   
   // Initialize visible subgroups from fieldMappings
+  // ⚠️ RULE: Only FIRST subgroup of each mapping is visible by default
+  //          Other subgroups must be added via "Thêm người" button
   if (config.fieldMappings) {
     config.fieldMappings.forEach(mapping => {
-      if (mapping.subgroups) {
-        mapping.subgroups.forEach(subgroup => {
+      if (mapping.subgroups && mapping.subgroups.length > 0) {
+        mapping.subgroups.forEach((subgroup, index) => {
           const subgroupId = typeof subgroup === 'string' ? subgroup : subgroup.id;
-          const isVisible = typeof subgroup === 'string' ? true : (subgroup.visible !== false);
-          if (isVisible) {
-            window.visibleSubgroups.add(subgroupId);
+          
+          // Check explicit visible property
+          const hasExplicitVisible = typeof subgroup === 'object' && subgroup.hasOwnProperty('visible');
+          
+          if (hasExplicitVisible) {
+            // Use explicit visible value from config
+            if (subgroup.visible === true) {
+              window.visibleSubgroups.add(subgroupId);
+            }
+          } else {
+            // Default: Only first subgroup is visible
+            if (index === 0) {
+              window.visibleSubgroups.add(subgroupId);
+              console.log(`✅ Default visible (first): ${subgroupId}`);
+            } else {
+              console.log(`⏭️ Default hidden (not first): ${subgroupId}`);
+            }
           }
         });
       }
     });
   }
+  
+  console.log('✅ Initialized visibleSubgroups:', Array.from(window.visibleSubgroups));
 
   // 🎨 RENDER TASKBAR
   const taskbarHtml = `

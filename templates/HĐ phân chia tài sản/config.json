@@ -111,12 +111,12 @@
       "group": "NTK",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN1", "label": "Người thừa kế", "visible": true },
-        { "id": "MEN2", "label": "Người thừa kế", "visible": false },
-        { "id": "MEN3", "label": "Người thừa kế", "visible": false },
-        { "id": "MEN4", "label": "Người thừa kế", "visible": false },
-        { "id": "MEN5", "label": "Người thừa kế", "visible": false },
-        { "id": "MEN6", "label": "Người thừa kế", "visible": false }
+        { "id": "MEN1", "label": "Người thừa kế" },
+        { "id": "MEN2", "label": "Người thừa kế" },
+        { "id": "MEN3", "label": "Người thừa kế" },
+        { "id": "MEN4", "label": "Người thừa kế" },
+        { "id": "MEN5", "label": "Người thừa kế" },
+        { "id": "MEN6", "label": "Người thừa kế" }
       ],
       "suffixes": ["1", "2", "3", "4", "5", "6"]
     },
@@ -124,7 +124,7 @@
       "group": "NM",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN7", "label": "Người mất", "visible": true }
+        { "id": "MEN7", "label": "Người mất", "visible": false }
       ],
       "suffixes": ["7"]
     },
@@ -132,16 +132,17 @@
       "group": "MP",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN8", "label": "Cha người mất", "visible": true },
-        { "id": "MEN9", "label": "Mẹ người mất", "visible": true }
+        { "id": "MEN8", "label": "Cha người mất", "visible": false },
+        { "id": "MEN9", "label": "Mẹ người mất", "visible": false }
       ],
-      "suffixes": ["8", "9"]
+      "suffixes": ["8", "9"],
+      "comment": "Cả bố và mẹ đều visible mặc định (khác với rule thông thường)"
     },
     {
       "group": "LAND",
       "schema": "LandInfo",
       "subgroups": [
-        { "id": "INFO", "label": "Thông tin đất đai", "visible": true }
+        { "id": "INFO", "label": "Thông tin đất đai", "visible": false }
       ]
     }
   ]

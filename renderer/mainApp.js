@@ -304,6 +304,15 @@ class MainApp {
           // Build filtered config limited to matched template groups
           const filteredConfig = this.buildFilteredConfig(folderConfig, matchedTemplate);
           
+          // ✅ Save to window.currentTemplate for validator
+          window.currentTemplate = {
+            config: filteredConfig,
+            selectedFile: matchedTemplate,
+            fileName: fileName,
+            folderPath: folderPath
+          };
+          console.log('✅ MainApp: Saved currentTemplate for validation:', window.currentTemplate);
+          
           // Render form using the matched template's groups
           if (window.renderGenericForm) {
             await window.renderGenericForm(placeholders, filteredConfig, folderPath);
@@ -478,6 +487,19 @@ class MainApp {
     if (!this.selectedFolder || !this.selectedFile) {
       this.showError('Vui lòng chọn folder và file trước');
       return;
+    }
+
+    // ✅ Validate form first before exporting
+    if (window.validateForm && typeof window.validateForm === 'function') {
+      console.log('🔍 MainApp: Validating form before export...');
+      const isValid = window.validateForm();
+      if (!isValid) {
+        console.log('❌ MainApp: Form validation failed, stopping export');
+        return; // Stop export if validation fails
+      }
+      console.log('✅ MainApp: Form validation passed, proceeding with export');
+    } else {
+      console.warn('⚠️ MainApp: validateForm not available, skipping validation');
     }
 
     try {
