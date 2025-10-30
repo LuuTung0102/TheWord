@@ -684,9 +684,10 @@ function setupReuseDataListeners() {
     select.addEventListener('change', (e) => {
       const value = e.target.value;
       const targetGroup = e.target.getAttribute('data-target-group');
+      const targetSubgroup = e.target.getAttribute('data-target-subgroup'); // MEN1, MEN2, LAND...
       const targetSuffix = e.target.getAttribute('data-target-suffix');
       
-      console.log(`🔄 Reuse data selected: ${value} for group ${targetGroup} (suffix ${targetSuffix})`);
+      console.log(`🔄 Reuse data selected: ${value} for ${targetSubgroup} (suffix ${targetSuffix})`);
       
       if (!value) {
         // User chọn "Nhập mới" → Xóa flag
@@ -694,34 +695,39 @@ function setupReuseDataListeners() {
         return;
       }
       
-      // Parse value: "fileName|menKey"
-      const [fileName, menKey] = value.split('|');
+      // Parse value: "fileName|sourceGroupKey"
+      const [fileName, sourceGroupKey] = value.split('|');
       
-      if (!fileName || !menKey) {
+      if (!fileName || !sourceGroupKey) {
         console.error('❌ Invalid reuse data value:', value);
         return;
       }
       
       // Lấy dữ liệu từ session storage
-      const menData = window.sessionStorageManager.getMenGroupData(fileName, menKey);
+      const sourceData = window.sessionStorageManager.getMenGroupData(fileName, sourceGroupKey);
       
-      if (!menData) {
-        console.error(`❌ No data found for ${fileName} - ${menKey}`);
+      if (!sourceData) {
+        console.error(`❌ No data found for ${fileName} - ${sourceGroupKey}`);
         return;
       }
       
-      console.log(`✅ Loading data from ${fileName} - ${menKey}:`, menData);
+      console.log(`✅ Loading data: ${sourceGroupKey} (${fileName}) → ${targetSubgroup}`);
+      console.log(`   Source data:`, sourceData);
       
-      // Set flag: group này được reuse từ session storage
+      // Set flag: targetSubgroup được reuse từ session storage
       if (!window.__reusedGroups) window.__reusedGroups = new Set();
-      window.__reusedGroups.add(menKey); // Track groupKey đã reuse (MEN1, MEN2, LAND...)
+      window.__reusedGroups.add(targetSubgroup); // Track TARGET groupKey (MEN1, MEN2, LAND...)
       
-      // Track source để sau này có thể xóa nếu target có nhiều fields hơn
+      // Track source: targetGroupKey → {sourceFileName, sourceGroupKey, sourceData}
       if (!window.__reusedGroupSources) window.__reusedGroupSources = new Map();
-      window.__reusedGroupSources.set(menKey, { sourceFileName: fileName, sourceGroupKey: menKey, sourceData: menData });
+      window.__reusedGroupSources.set(targetSubgroup, { 
+        sourceFileName: fileName, 
+        sourceGroupKey: sourceGroupKey,  // MEN7, MEN2, LAND...
+        sourceData: sourceData 
+      });
       
       // Fill form với dữ liệu
-      fillFormWithMenData(menData, targetSuffix);
+      fillFormWithMenData(sourceData, targetSuffix);
     });
   });
 }
