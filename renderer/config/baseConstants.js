@@ -117,27 +117,22 @@ const BASE_PLACEHOLDERS = {
     order: 8
   },
   
-  THSD: {
-    type: "text",
-    order: 9
-  },
-  
+ 
   HTSD: {
     type: "select",
     options: ["Sử dụng chung", "Sử dụng riêng"],
-    order: 10
+    order: 9
   },
   
   Responsibility: {
     type: "select",
     options: ["A", "B"],
-    order: 11
+    order: 10
   },
   
-  // Địa chỉ thửa đất
   AddressD: {
     type: "address-select",
-    order: 12
+    order: 11
   },
   
   Money: {
@@ -146,17 +141,22 @@ const BASE_PLACEHOLDERS = {
       min: 1000,
       max: 1000000000000000000000000000000000000000
     },
+    order: 12
+  },
+
+  THSD: {
+    type: "textarea",
     order: 13
   },
    
   TTGLVD: {
     type: "textarea",
-    order: 15
+    order: 14
   },
   
   Note: {
     type: "textarea",
-    order: 16
+    order: 15
   },
 };
 

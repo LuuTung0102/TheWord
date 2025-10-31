@@ -79,12 +79,12 @@
         { "name": "S", "label": "Diện tích (m²)", "type": "number", "required": true },
         { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "required": true },
         { "name": "HTSD", "label": "Hình thức sử dụng", "type": "select", "options": ["Sử dụng chung", "Sử dụng riêng"], "required": true },
-        { "name": "THSD", "label": "Thời hạn sử dụng", "type": "text", "required": true },
+        { "name": "THSD", "label": "Thời hạn sử dụng", "type": "textarea", "required": true },
         { "name": "AddressD", "label": "Địa chỉ thửa đất", "type": "address-select", "required": true },
         { "name": "TTGLVD", "label": "TT tài sản gắn liền", "type": "textarea" },
         { "name": "Money", "label": "Giá chuyển nhượng", "type": "currency", "required": true },
         { "name": "MoneyText", "label": "Giá chuyển nhượng (chữ)", "type": "text", "hidden": true },
-        { "name": "Responsibility", "label": "Bên chịu trách nhiệm thuế phí", "type": "select", "options": ["A", "B"], "required": true },
+        { "name": "Responsibility", "label": "Trách nhiệm thuế phí", "type": "select", "options": ["A", "B"], "required": true },
         { "name": "Note", "label": "Ghi chú", "type": "textarea" }
       ]
     }
@@ -124,7 +124,7 @@
       "group": "LAND",
       "schema": "LandInfo",
       "subgroups": [
-        { "id": "INFO", "label": "Thông tin đất đai" }
+        { "id": "INFO", "label": "Thông tin đất đai", "visible": true}
       ]
     }
   ]
