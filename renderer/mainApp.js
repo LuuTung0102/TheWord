@@ -313,9 +313,10 @@ class MainApp {
           };
           console.log('✅ MainApp: Saved currentTemplate for validation:', window.currentTemplate);
           
-          // ✅ Reset visibleSubgroups when loading a NEW file
+          // ✅ Reset visibleSubgroups and defaultVisibleSubgroups when loading a NEW file
           window.visibleSubgroups = new Set();
-          console.log('🔄 MainApp: Reset visibleSubgroups for new file');
+          window.defaultVisibleSubgroups = new Set();
+          console.log('🔄 MainApp: Reset visibleSubgroups and defaultVisibleSubgroups for new file');
           
           // Render form using the matched template's groups
           if (window.renderGenericForm) {
