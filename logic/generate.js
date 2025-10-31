@@ -12,17 +12,7 @@ function generateDocx(templatePath, data, outputPath) {
     try {
       if (zip.files['word/document.xml']) {
         let xml = zip.files['word/document.xml'].asText();
-        // ✅ Step 1: Clean placeholders broken by XML formatting
-        // Word thường split placeholders do user format (bold/italic/etc) một phần của placeholder
-        // Ví dụ: {{So</w:t><w:t xml:space="preserve">_so}} → {{So_so}}
-        
-        // ❌ DISABLED: Sub-step 1a - Xóa tags chứa whitespace
-        // Problem: Template có "<w:t>:</w:t><w:t> </w:t><w:t>Name</w:t>"
-        //          → Xóa mất space → ":<w:t>Name</w:t>" → ":Name" (không có khoảng trắng)
-        // Solution: KHÔNG xóa whitespace, để docxtemplater và Word xử lý
-        // xml = xml.replace(/<w:t[^>]*>\s*<\/w:t>/g, '');
-        
-        // Sub-step 1b: Fix placeholders split by tags (multiple passes to handle nesting)
+
         for (let i = 0; i < 5; i++) {
           xml = xml.replace(/\{\{([^}]*)<\/w:t><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
           xml = xml.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
@@ -37,10 +27,6 @@ function generateDocx(templatePath, data, outputPath) {
           return ''; 
         });
         
-        // ❌ KHÔNG merge các <w:r> hoặc <w:t> tags khác nhau
-        // Lý do: Giữa các tags có thể có TEXT CONTENT quan trọng
-        // Ví dụ: <w:t>{{QSH}}</w:t></w:r><w:r><w:t>, vào sổ số: </w:t>
-        //        ↑ KHÔNG được xóa ", vào sổ số: "!
         
         xml = xml.replace(/\}\}+}/g, '}}');
         xml = xml.replace(/\{\{[^a-zA-Z_][^}]*\}\}/g, '');
@@ -124,21 +110,6 @@ function generateDocx(templatePath, data, outputPath) {
     }
     // ✅ FATHER/MOTHER và MEN logic đã được thay thế bằng pre-processing XML
 
-    const landParts = [];
-    Object.keys(data).forEach(key => {
-      if (key.startsWith('S_') && key !== 'S_Text' && key !== 'S_Chung') {
-        const value = data[key];
-        if (value && value.toString().trim() !== "" && value !== "0") {
-          const landCode = key.replace('S_', '');
-          landParts.push(`${value}m²: ${landCode}`);
-      } else {
-          data[key] = "";  
-        }
-      }
-    });
-    
-
-    data.Loai_Dat_Full = landParts.join('; ');
     
     // Normalize data values
     Object.keys(data).forEach(k => {
@@ -164,7 +135,6 @@ function generateDocx(templatePath, data, outputPath) {
         console.warn('⚠️ Could not expand Loai_Dat:', error.message);
       }
     }
-
     // ✅ Get all placeholders from template and ensure they all have values
     const templatePhs = getPlaceholders(templatePath);
     const fullData = {};
@@ -185,39 +155,6 @@ function generateDocx(templatePath, data, outputPath) {
       }
       console.error(msg);
       throw new Error(msg);
-    }
-
-    // ✅ Post-processing: Xóa từ nối dư ("và", dấu phẩy) khi placeholders trống
-    // ⚠️ CHÚ Ý: Chỉ xóa các pattern cụ thể, KHÔNG xóa tất cả dấu phẩy!
-    try {
-      let xml = zip.files['word/document.xml'].asText();
-      
-      // ❌ DISABLED: Các regex này đang xóa cả dấu phẩy hợp lệ trong nội dung
-      // Ví dụ: "số: sad, vào sổ số: 8987, được UBND" → "số: sadvào sổ số: 8987được UBND"
-      
-      // Chỉ xóa các pattern SAU KHI placeholder đã được thay thế
-      // Pattern 1: Xóa ", và" khi cả 2 đều có (dư thừa)
-      xml = xml.replace(/,\s*và\s*,/g, ', ');
-      
-      // Pattern 2: Xóa "và ," (sai thứ tự)
-      xml = xml.replace(/và\s*,/g, 'và');
-      
-      // Pattern 3: Xóa ", và" ở cuối câu (trước dấu chấm/xuống dòng)
-      xml = xml.replace(/,\s*và\s*(?=\.|\?|\!|<\/w:p>|<w:br)/g, '');
-      
-      // Pattern 4: Xóa "và" đơn độc ở cuối câu
-      xml = xml.replace(/\s+và\s*(?=\.|\?|\!|<\/w:p>|<w:br)/g, '');
-      
-      // Pattern 5: Xóa dấu phẩy kép ", ,"
-      xml = xml.replace(/,\s*,+/g, ',');
-      
-      // Pattern 6: Xóa nhiều khoảng trắng liên tiếp
-      xml = xml.replace(/(<w:t[^>]*>)(\s{3,})/g, '$1 ');
-      
-      zip.file('word/document.xml', xml);
-      console.log('✅ Post-processing: Cleaned up conjunctions (safe mode)');
-    } catch (err) {
-      console.warn('⚠️ Could not clean up conjunctions:', err.message);
     }
 
     const buffer = doc.getZip().generate({

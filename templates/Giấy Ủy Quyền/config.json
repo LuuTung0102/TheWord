@@ -52,38 +52,44 @@
             "label": "Giới tính",
             "type": "select",
             "options": ["Ông", "Bà"],
-            "defaultValue": "Ông"
+            "required": true
           },
           {
             "name": "Name",
             "label": "Họ và tên",
-            "type": "text"
+            "type": "text",
+            "required": true
           },
           {
             "name": "Date",
             "label": "Ngày sinh",
-            "type": "date"
+            "type": "date",
+            "required": true
           },
           {
             "name": "CCCD",
             "label": "CCCD",
-            "type": "number"
+            "type": "number",
+            "required": true
           },
           {
             "name": "Noi_Cap",
             "label": "Nơi cấp",
             "type": "select",
-            "options": ["Cục Cảnh sát QLHC về TTXH cấp", "Công an T. Đắk Lắk cấp"]
+            "options": ["Cục Cảnh sát QLHC về TTXH cấp", "Công an T. Đắk Lắk cấp"],
+            "required": true
           },
           {
             "name": "Ngay_Cap",
             "label": "Ngày cấp",
-            "type": "date"
+            "type": "date",
+            "required": true
           },
           {
             "name": "Address",
             "label": "Địa chỉ thường trú",
-            "type": "address-select"
+            "type": "address-select",
+            "required": true
           }
         ]
       },
@@ -94,34 +100,38 @@
           {
             "name": "QSH",
             "label": "Quyền sử dụng đất",
-            "type": "text"
+            "type": "text",
+            "required": true
           },
           {
             "name": "So_so",
             "label": "Số sổ",
-            "type": "text"   
+            "type": "text",
+            "required": true
           },
           {
             "name": "Ngay_CapD",
             "label": "Ngày cấp",
-            "type": "date"
+            "type": "date",
+            "required": true
           },
           {
             "name": "Thua_dat_so",
             "label": "Thửa đất số",
-            "type": "text"
-        
+            "type": "text",
+            "required": true
           },
           {
             "name": "Ban_do_so",
             "label": "Bản đồ số",
-            "type": "text"
-         
+            "type": "text",
+            "required": true
           },
           {
             "name": "S",
             "label": "Diện tích (m²)",
-            "type": "number"
+            "type": "number",
+            "required": true
           },
           {
             "name": "Loai_Dat",
@@ -132,28 +142,33 @@
             "name": "HTSD",
             "label": "Hình thức sử dụng",
             "type": "select",
-            "options": ["Sử dụng chung", "Sử dụng riêng"]
+            "options": ["Sử dụng chung", "Sử dụng riêng"],
+            "required": true
           },
           {
             "name": "THSD",
             "label": "Thời hạn sử dụng",
-            "type": "text"
+            "type": "text",
+            "required": true
           },
           {
             "name": "AddressD",
             "label": "Địa chỉ thửa đất",
-            "type": "address-select"
+            "type": "address-select",
+            "required": true
           },
           {
             "name": "TTGLVD",
             "label": "TT tài sản gắn liền",
-            "type": "textarea"
+            "type": "textarea",
+            "required": true
           
           },
           {
             "name": "Money",
             "label": "Giá chuyển nhượng",
-            "type": "currency"
+            "type": "currency",
+            "required": true
           },  
           {
             "name": "MoneyText",
@@ -165,12 +180,14 @@
             "name": "Responsibility",
             "label": "Bên chịu trách nhiệm thuế phí",
             "type": "select",
-            "options": ["Bên A", "Bên B"]
+            "options": ["Bên A", "Bên B"],
+            "required": true
           },
           {
             "name": "Note",
             "label": "Ghi chú",
-            "type": "textarea"
+            "type": "textarea",
+            "required": true
           }
         ]
       }    
@@ -181,16 +198,16 @@
         "group": "BUQ",
         "schema": "UQInfo",
         "subgroups": [
-          {"id": "MEN1", "label": "Người ủy quyền"}
+          {"id": "MEN1", "label": "Người ủy quyền","visible": true}
         ],
         "suffixes": ["1"],
-        "defaultGenders": ["Ông", "Bà"]
+        "defaultGenders": ["Ông"]
       },
       {
       "group": "BNUQ",
       "schema": "UQInfo",
       "subgroups": [
-        {"id": "MEN2", "label": "Người nhận ủy quyền"}
+        {"id": "MEN2", "label": "Người nhận ủy quyền","visible": true}
       ],
       "source": "localStorage",
       "suffixes": ["2"],
@@ -199,7 +216,7 @@
     {
       "group": "LAND",
       "subgroups": [
-        {"id": "INFO", "label": "Thông tin đất đai"}
+        {"id": "INFO", "label": "Thông tin đất đai","visible": true}
       ],
       "schema": "LandInfo"
     }
