@@ -21,23 +21,41 @@
     let hasModifications = false;
     let hasAdditions = false;
 
-    const allKeys = new Set([
-      ...Object.keys(sourceData),
-      ...Object.keys(currentData),
-    ]);
-
-    for (const key of allKeys) {
+    // Chỉ so sánh các key có trong currentData (template mới có thể có ít trường hơn)
+    // Bỏ qua các trường có trong sourceData nhưng không có trong currentData
+    const currentKeys = Object.keys(currentData);
+    
+    // Debug: Track các field có vấn đề
+    const differences = [];
+    
+    for (const key of currentKeys) {
       const sourceValue = sourceData[key];
       const currentValue = currentData[key];
 
       const sourceEmpty = isEmpty(sourceValue);
       const currentEmpty = isEmpty(currentValue);
 
+      // Nếu cả 2 đều có giá trị và khác nhau → modification
       if (!sourceEmpty && !currentEmpty && sourceValue !== currentValue) {
         hasModifications = true;
-      } else if (sourceEmpty && !currentEmpty) {
-        hasAdditions = true;
+        differences.push({ key, type: 'MODIFICATION', source: sourceValue, current: currentValue });
       }
+      // Nếu source rỗng (hoặc không có) nhưng current có giá trị → addition
+      else if (sourceEmpty && !currentEmpty) {
+        hasAdditions = true;
+        differences.push({ key, type: 'ADDITION', source: sourceValue || '(undefined)', current: currentValue });
+      }
+      // Nếu source có giá trị nhưng current rỗng → modification (xóa dữ liệu)
+      else if (!sourceEmpty && currentEmpty) {
+        hasModifications = true;
+        differences.push({ key, type: 'DELETION', source: sourceValue, current: currentValue || '(empty)' });
+      }
+      // Nếu cả 2 đều rỗng hoặc không có → không thay đổi (không làm gì)
+    }
+    
+    // Debug log nếu có differences
+    if (differences.length > 0) {
+      console.log(`   🔍 Found ${differences.length} differences:`, differences);
     }
 
     if (!hasModifications && !hasAdditions)
@@ -66,23 +84,32 @@
 
       const groupsToRemove = [];
 
+      console.log(`📋 Reused groups:`, Array.from(reusedGroups || []));
+      
       if (reusedGroups?.size > 0) {
         reusedGroups.forEach((reusedKey) => {
+          console.log(`   🔄 Processing reusedKey: ${reusedKey}`);
           const isFromLocalStorage = reusedKey.startsWith("localStorage:");
           const groupKey = isFromLocalStorage
             ? reusedKey.replace("localStorage:", "")
             : reusedKey;
 
-          if (!dataGroups[groupKey]) return;
+          console.log(`   🔍 Checking groupKey: ${groupKey}, dataGroups keys:`, Object.keys(dataGroups));
+          
+          if (!dataGroups[groupKey]) {
+            console.log(`   ⚠️ groupKey ${groupKey} not found in dataGroups, skipping`);
+            return;
+          }
+          
+          console.log(`   ✅ Found ${groupKey} in dataGroups`);
 
-          // Nếu lấy từ localStorage -> không lưu
           if (isFromLocalStorage) {
             groupsToRemove.push(groupKey);
             return;
           }
 
-          // 🔍 Lấy thông tin source từ reusedGroupSources
-          const sourceInfo = reusedGroupSources?.get?.(reusedKey); // {sourceFileName, sourceGroupKey, sourceData}
+        
+          const sourceInfo = reusedGroupSources?.get?.(reusedKey); 
           
           if (!sourceInfo || !sourceInfo.sourceData) {
             console.warn(`⚠️ No source info for ${reusedKey}, skipping analysis`);
@@ -98,14 +125,19 @@
             dataGroups[groupKey]
           );
           const normalizedSource = normalizeDataForComparison(sourceData);
+          
+         
+          
           const changeAnalysis = analyzeChanges(
             normalizedSource,
             normalizedCurrent
           );
 
-          console.log(`📊 ${sourceGroupKey} (${sourceFileName}) → ${groupKey} (${fileName})`);
           console.log(`   Change type: ${changeAnalysis.type}`);
           console.log(`   Same file: ${isSameFile}`);
+          
+        
+       
 
           // ======== Xử lý MEN ==========
           if (groupKey.startsWith("MEN")) {
@@ -138,32 +170,30 @@
                 }
               }
             } else {
-              // HAS_MODIFICATIONS → Giữ session nguồn, tạo session mới
               console.log(`📘 MEN: Copy và sửa → Giữ cả 2 sessions (không merge)`);
-              // dataGroups[groupKey] giữ nguyên current data (không merge source)
-              // Session nguồn vẫn tồn tại trong file nguồn
             }
           }
 
-          // ======== Xử lý LAND ==========
-          else if (groupKey.startsWith("LAND")) {
+          // ======== Xử lý INFO (subgroup của LAND) ==========
+          else if (groupKey === "INFO") {
             if (changeAnalysis.type === "NO_CHANGE") {
               if (isSameFile) {
-                console.log(`🌍 LAND: Copy không sửa + cùng file → Giữ nguyên session`);
+                console.log(`📋 INFO: Copy không sửa + cùng file → Giữ nguyên session`);
                 // Không xóa, giữ nguyên session
               } else {
-                console.log(`🌍 LAND: Copy không sửa + khác file → Không lưu duplicate`);
+                console.log(`📋 INFO: Copy không sửa + khác file → Không lưu duplicate`);
                 groupsToRemove.push(groupKey);
+                console.log(`   ✅ Added ${groupKey} to groupsToRemove`);
               }
             } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
               if (isSameFile) {
-                console.log(`🌍 LAND: Copy và thêm field mới + cùng file → Gộp dữ liệu`);
+                console.log(`📋 INFO: Copy và thêm field mới + cùng file → Gộp dữ liệu`);
                 dataGroups[groupKey] = {
                   ...normalizedSource,
                   ...normalizedCurrent,
                 };
               } else {
-                console.log(`🌍 LAND: Copy và thêm field mới + khác file → Tạo session mới, xóa session cũ`);
+                console.log(`📋 INFO: Copy và thêm field mới + khác file → Tạo session mới, xóa session cũ`);
                 dataGroups[groupKey] = {
                   ...normalizedSource,
                   ...normalizedCurrent,
@@ -174,18 +204,14 @@
                 }
               }
             } else {
-              // HAS_MODIFICATIONS → Giữ session nguồn, tạo session mới
-              console.log(`🌍 LAND: Copy và sửa → Giữ cả 2 sessions (không merge)`);
-              // dataGroups[groupKey] giữ nguyên current data (không merge source)
+              console.log(`📋 INFO: Copy và sửa → Giữ cả 2 sessions (không merge)`);
             }
           }
 
-          // ======== Nhóm khác (INFO, OTHER...) ==========
           else {
             if (changeAnalysis.type === "NO_CHANGE") {
               if (isSameFile) {
                 console.log(`📦 ${groupKey}: Copy không sửa + cùng file → Giữ nguyên session`);
-                // Không xóa, giữ nguyên session
               } else {
                 console.log(`📦 ${groupKey}: Copy không sửa + khác file → Không lưu duplicate`);
                 groupsToRemove.push(groupKey);
@@ -209,18 +235,61 @@
                 }
               }
             } else {
-              // HAS_MODIFICATIONS → Giữ session nguồn, tạo session mới
               console.log(`📦 ${groupKey}: Copy và sửa → Giữ cả 2 sessions (không merge)`);
-              // dataGroups[groupKey] giữ nguyên current data (không merge source)
             }
           }
         });
       }
 
-      // ❌ Xoá nhóm không cần lưu
-      groupsToRemove.forEach((groupKey) => delete dataGroups[groupKey]);
+      console.log(`🗑️ Groups to remove:`, groupsToRemove);
+      groupsToRemove.forEach((groupKey) => {
+        console.log(`   🗑️ Removing ${groupKey} from dataGroups`);
+        delete dataGroups[groupKey];
+      });
+      console.log(`📊 Remaining groups after removal:`, Object.keys(dataGroups));
 
-      // 🧹 Cleanup: Xóa files không còn session nào
+      // ✅ Xử lý các groups không được reuse nhưng có thể trùng với session cũ
+      // Đặc biệt: INFO là subgroup của LAND, nếu INFO đã được xử lý trong reusedGroups
+      // thì có thể LAND cũng cần được kiểm tra tương tự
+      const remainingGroups = Object.keys(dataGroups);
+      const processedReusedKeys = new Set(Array.from(reusedGroups || []).map(key => 
+        key.startsWith("localStorage:") ? key.replace("localStorage:", "") : key
+      ));
+      
+      remainingGroups.forEach(groupKey => {
+        // Bỏ qua nếu đã được xử lý trong reusedGroups
+        if (processedReusedKeys.has(groupKey)) return;
+        
+        // Đặc biệt: INFO là subgroup của LAND, nếu INFO đã được xử lý trong reusedGroups
+        // thì LAND (nếu có) cũng cần được kiểm tra tương tự
+        // Nhưng thường LAND sẽ được xử lý thông qua INFO
+        
+        // Tìm xem có session nào của group này từ file khác không
+        const currentGroupData = dataGroups[groupKey];
+        const normalizedCurrent = normalizeDataForComparison(currentGroupData);
+        
+        // Kiểm tra tất cả files trong existingData
+        for (const [otherFileName, otherFileData] of Object.entries(existingData)) {
+          if (otherFileName === fileName) continue; // Bỏ qua cùng file
+          
+          const otherGroups = otherFileData.dataGroups || {};
+          if (otherGroups[groupKey]) {
+            const otherGroupData = otherGroups[groupKey];
+            const normalizedOther = normalizeDataForComparison(otherGroupData);
+            
+            const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
+            
+            // Nếu NO_CHANGE → không lưu duplicate
+            if (changeAnalysis.type === "NO_CHANGE") {
+              console.log(`🔍 ${groupKey} not in reusedGroups but matches ${otherFileName} → NO_CHANGE, removing duplicate`);
+              groupsToRemove.push(groupKey);
+              delete dataGroups[groupKey];
+              break; // Chỉ cần match với 1 file là đủ
+            }
+          }
+        }
+      });
+
       Object.keys(existingData).forEach(file => {
         const fileData = existingData[file];
         if (fileData.dataGroups && Object.keys(fileData.dataGroups).length === 0) {
