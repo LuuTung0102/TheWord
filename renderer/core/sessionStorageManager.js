@@ -65,6 +65,25 @@
     return { type: "HAS_MODIFICATIONS" };
   }
 
+  /**
+   * Kiểm tra xem groupKey có phải là subgroup trong config không
+   */
+  function isSubgroupInConfig(groupKey, config) {
+    if (!config || !config.fieldMappings) return false;
+    
+    for (const mapping of config.fieldMappings) {
+      if (mapping.subgroups && Array.isArray(mapping.subgroups)) {
+        for (const subgroup of mapping.subgroups) {
+          const subgroupId = typeof subgroup === 'string' ? subgroup : subgroup.id;
+          if (subgroupId === groupKey) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   function saveFormData(fileName, formData, reusedGroups, reusedGroupSources, config) {
     try {
       const existingData = getAllSessionData();
@@ -136,28 +155,28 @@
           console.log(`   Change type: ${changeAnalysis.type}`);
           console.log(`   Same file: ${isSameFile}`);
           
-        
-       
+          // ✅ Kiểm tra xem groupKey có phải là subgroup không (dựa vào config)
+          const isSubgroup = isSubgroupInConfig(groupKey, config);
 
-          // ======== Xử lý MEN ==========
-          if (groupKey.startsWith("MEN")) {
+          // ======== Xử lý chung cho tất cả subgroup ==========
+          if (isSubgroup) {
             if (changeAnalysis.type === "NO_CHANGE") {
               if (isSameFile) {
-                console.log(`📘 MEN: Copy không sửa + cùng file → Giữ nguyên session`);
+                console.log(`📘 ${groupKey}: Copy không sửa + cùng file → Giữ nguyên session`);
                 // Không xóa, giữ nguyên session
               } else {
-                console.log(`📘 MEN: Copy không sửa + khác file → Không lưu duplicate`);
+                console.log(`📘 ${groupKey}: Copy không sửa + khác file → Không lưu duplicate`);
                 groupsToRemove.push(groupKey);
               }
             } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
               if (isSameFile) {
-                console.log(`📘 MEN: Copy và thêm field mới + cùng file → Gộp dữ liệu`);
+                console.log(`📘 ${groupKey}: Copy và thêm field mới + cùng file → Gộp dữ liệu`);
                 dataGroups[groupKey] = {
                   ...normalizedSource,
                   ...normalizedCurrent,
                 };
               } else {
-                console.log(`📘 MEN: Copy và thêm field mới + khác file → Tạo session mới, xóa session cũ`);
+                console.log(`📘 ${groupKey}: Copy và thêm field mới + khác file → Tạo session mới, xóa session cũ`);
                 // Merge để giữ tất cả fields
                 dataGroups[groupKey] = {
                   ...normalizedSource,
@@ -170,45 +189,9 @@
                 }
               }
             } else {
-              console.log(`📘 MEN: Copy và sửa → Giữ cả 2 sessions (không merge)`);
+              console.log(`📘 ${groupKey}: Copy và sửa → Giữ cả 2 sessions (không merge)`);
             }
-          }
-
-          // ======== Xử lý INFO (subgroup của LAND) ==========
-          else if (groupKey === "INFO") {
-            if (changeAnalysis.type === "NO_CHANGE") {
-              if (isSameFile) {
-                console.log(`📋 INFO: Copy không sửa + cùng file → Giữ nguyên session`);
-                // Không xóa, giữ nguyên session
-              } else {
-                console.log(`📋 INFO: Copy không sửa + khác file → Không lưu duplicate`);
-                groupsToRemove.push(groupKey);
-                console.log(`   ✅ Added ${groupKey} to groupsToRemove`);
-              }
-            } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-              if (isSameFile) {
-                console.log(`📋 INFO: Copy và thêm field mới + cùng file → Gộp dữ liệu`);
-                dataGroups[groupKey] = {
-                  ...normalizedSource,
-                  ...normalizedCurrent,
-                };
-              } else {
-                console.log(`📋 INFO: Copy và thêm field mới + khác file → Tạo session mới, xóa session cũ`);
-                dataGroups[groupKey] = {
-                  ...normalizedSource,
-                  ...normalizedCurrent,
-                };
-                if (existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
-                  delete existingData[sourceFileName].dataGroups[sourceGroupKey];
-                  console.log(`   🗑️ Đã xóa ${sourceGroupKey} từ ${sourceFileName}`);
-                }
-              }
-            } else {
-              console.log(`📋 INFO: Copy và sửa → Giữ cả 2 sessions (không merge)`);
-            }
-          }
-
-          else {
+          } else {
             if (changeAnalysis.type === "NO_CHANGE") {
               if (isSameFile) {
                 console.log(`📦 ${groupKey}: Copy không sửa + cùng file → Giữ nguyên session`);
@@ -248,9 +231,7 @@
       });
       console.log(`📊 Remaining groups after removal:`, Object.keys(dataGroups));
 
-      // ✅ Xử lý các groups không được reuse nhưng có thể trùng với session cũ
-      // Đặc biệt: INFO là subgroup của LAND, nếu INFO đã được xử lý trong reusedGroups
-      // thì có thể LAND cũng cần được kiểm tra tương tự
+ 
       const remainingGroups = Object.keys(dataGroups);
       const processedReusedKeys = new Set(Array.from(reusedGroups || []).map(key => 
         key.startsWith("localStorage:") ? key.replace("localStorage:", "") : key
@@ -260,11 +241,11 @@
         // Bỏ qua nếu đã được xử lý trong reusedGroups
         if (processedReusedKeys.has(groupKey)) return;
         
-        // Đặc biệt: INFO là subgroup của LAND, nếu INFO đã được xử lý trong reusedGroups
-        // thì LAND (nếu có) cũng cần được kiểm tra tương tự
-        // Nhưng thường LAND sẽ được xử lý thông qua INFO
+        // ✅ Nếu là subgroup, đã được xử lý trong reusedGroups rồi → bỏ qua
+        // Nếu không phải subgroup, cần kiểm tra duplicate
+        const isSubgroup = isSubgroupInConfig(groupKey, config);
+        if (isSubgroup) return;
         
-        // Tìm xem có session nào của group này từ file khác không
         const currentGroupData = dataGroups[groupKey];
         const normalizedCurrent = normalizeDataForComparison(currentGroupData);
         
@@ -338,13 +319,16 @@
     Object.keys(formData).forEach((key) => {
       const match = key.match(/^([A-Za-z_]+?)(\d+)$/);
       if (match) {
+        // Field có suffix (ví dụ: Name1, CCCD2)
         const fieldName = match[1];
         const suffix = match[2];
         const groupKey = suffixToGroupMap[suffix] || `UNKNOWN_${suffix}`;
         if (!groups[groupKey]) groups[groupKey] = {};
         groups[groupKey][fieldName] = formData[key];
       } else {
-        const groupKey = determineGroupByFieldName(key);
+        // Field không có suffix (ví dụ: AddressD, Money, QSH)
+        // Nếu có subgroup với suffix rỗng (""), dùng subgroup đó (thường là INFO)
+        const groupKey = suffixToGroupMap[""] || "OTHER";
         if (!groups[groupKey]) groups[groupKey] = {};
         groups[groupKey][key] = formData[key];
       }
@@ -360,7 +344,7 @@
 
     Object.keys(allData).forEach(fileName => {
       const fileData = allData[fileName];
-      const groups = fileData.dataGroups || fileData.menGroups;
+      const groups = fileData.dataGroups;
 
       if (groups) {
         Object.keys(groups).forEach(groupKey => {
@@ -370,10 +354,8 @@
           let displayName;
           if (groupKey.startsWith('MEN')) {
             displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName})`;
-          } else if (groupKey === 'LAND') {
-            displayName = `Đất (${groupData.AddressD || groupData.Thua_dat_so || 'Chưa có địa chỉ'}) (${shortFileName})`;
           } else if (groupKey === 'INFO') {
-            displayName = `INFO (${shortFileName})`;
+            displayName = `TT Đất (${shortFileName})`;
           } else {
             displayName = `${groupKey} (${shortFileName})`;
           }
@@ -395,34 +377,12 @@
   function getMenGroupData(fileName, menKey) {
     const allData = getAllSessionData();
     if (allData[fileName]) {
-      const groups = allData[fileName].dataGroups || allData[fileName].menGroups;
+      const groups = allData[fileName].dataGroups;
       if (groups && groups[menKey]) {
         return groups[menKey];
       }
     }
     return null;
-  }
-
-  function determineGroupByFieldName(fieldName) {
-    const landFields = [
-      "QSH",
-      "So_so",
-      "Ngay_CapD",
-      "Thua_dat_so",
-      "Ban_do_so",
-      "S",
-      "Loai_Dat",
-      "HTSD",
-      "THSD",
-      "AddressD",
-      "TTGLVD",
-      "Money",
-      "MoneyText",
-      "Responsibility",
-      "Note",
-      "VTTD",
-    ];
-    return landFields.includes(fieldName) ? "LAND" : "OTHER";
   }
 
   function getAllSessionData() {
@@ -432,16 +392,6 @@
     } catch {
       return {};
     }
-  }
-
-  function findGroupDataFromAnyFile(groupKey) {
-    const allData = getAllSessionData();
-    for (const fileName in allData) {
-      const fileData = allData[fileName];
-      const groups = fileData.dataGroups || fileData.menGroups; // Backward compatibility
-      if (groups && groups[groupKey]) return groups[groupKey];
-    }
-    return null;
   }
 
   function clearAllSessionData() {
@@ -454,7 +404,6 @@
       getAllSessionData,
       getAvailableMenGroups,
       getMenGroupData,
-      findGroupDataFromAnyFile,
       clearAllSessionData,
     };
   }
