@@ -1,16 +1,18 @@
 # 📄 TheWord - Hệ Thống Tự Động Hóa Văn Bản
 
-> **Tạo văn bản Word chuyên nghiệp trong 1 phút** - Chọn file → Điền form → Xuất ngay
+> **Tạo văn bản Word chuyên nghiệp trong 1 phút** 
 
 ## ✨ Tính Năng Nổi Bật
 
 🚀 **Tự động hóa 100%** - Từ template Word đến văn bản hoàn chỉnh  
-📝 **Form thông minh** - Auto-format CCCD, tiền, ngày tháng, địa chỉ  
+📝 **Form thông minh** - Auto-format CCCD, tiền, ngày tháng, địa chỉ, diện tích  
 🔄 **Tái sử dụng dữ liệu** - Merge & tái sử dụng dữ liệu thông minh giữa các template  
 💾 **LocalStorage & SessionStorage** - Lưu người dùng thường xuyên và session data  
-🗑️ **Quản lý linh hoạt** - Xóa dòng, xóa placeholder riêng lẻ  
-👁️ **Ẩn/hiện nhóm** - Toggle subgroup để form gọn gàng hơn  
+🗑️ **Quản lý linh hoạt** - Xóa dòng, xóa placeholder riêng lẻ, thêm/xóa subgroup động  
+👁️ **Ẩn/hiện nhóm** - Toggle subgroup để form gọn gàng, không mất dữ liệu khi thêm/xóa  
 ✅ **Smart Validation** - Single source of truth từ config.json, chỉ validate subgroup visible  
+📊 **Tự động chuyển đổi** - Money → MoneyText, S (diện tích) → S_Text (bằng chữ)  
+🧹 **Tự động dọn dẹp** - Xóa dòng trống của subgroup ẩn khi xuất Word  
 ⚡ **Nhanh chóng** - Xuất văn bản trong < 5 giây  
 🎨 **UI hiện đại** - Taskbar, dropdown, date picker, address cascading  
 📂 **Mở thư mục** - Mở trực tiếp thư mục output sau khi xuất  
@@ -117,9 +119,27 @@ Thêm người dùng thường xuyên:
 #### **🗑️ Quản lý dữ liệu linh hoạt**
 
 ```
+✅ Thêm/xóa subgroup: Click "➕ Thêm" để thêm subgroup mới, "❌ Xóa" để xóa
+   → Không mất dữ liệu đã nhập (DOM manipulation, không reload)
 ✅ Xóa dòng: Click [X] bên cạnh dòng để xóa toàn bộ dữ liệu dòng đó
 ✅ Xóa placeholder: Click [🗑️] trên từng field để xóa riêng lẻ
 ✅ Ẩn/hiện subgroup: Toggle để form gọn gàng, dễ điều hướng
+```
+
+#### **📊 Tự động chuyển đổi số sang chữ**
+
+```
+✅ Money → MoneyText:
+   - Nhập: 1234567
+   - UI hiển thị: 1,234,567
+   - Word nhận: 1,234,567
+   - MoneyText tự động: "một triệu hai trăm ba mươi bốn nghìn năm trăm sáu mươi bảy đồng chẵn"
+
+✅ S (diện tích) → S_Text:
+   - Nhập: 500
+   - UI hiển thị: 500 (có thể có dấu phẩy: 5,000)
+   - Word nhận: 500 (số thuần, không dấu phẩy)
+   - S_Text tự động: "năm trăm mét vuông"
 ```
 
 #### **📂 Mở thư mục nhanh**
@@ -149,13 +169,13 @@ Sau khi xuất file Word thành công:
           "name": "Name", 
           "label": "Họ và tên", 
           "type": "text", 
-          "required": true    // ← Nguồn dữ liệu duy nhất
+          "required": true   
         },
         { 
           "name": "Note", 
           "label": "Ghi chú", 
           "type": "textarea", 
-          "required": false   // ← Không bắt buộc
+          "required": false   
         }
       ]
     }
@@ -166,29 +186,29 @@ Sau khi xuất file Word thành công:
 **2️⃣ UI tự động đọc từ config:**
 
 ```javascript
-// ✅ Đọc từ config.json
+
 const isRequired = fieldDef.required === true;
 const requiredClass = isRequired ? ' class="required"' : '';
 
-// Render label
-<label class="required"><b>Họ và tên</b></label>  // → "Họ và tên *"
+
+<label class="required"><b>Họ và tên</b></label>  
 ```
 
 **3️⃣ Validator đọc cùng config + check visibility:**
 
 ```javascript
-// ✅ CHỈ validate subgroup VISIBLE
+
 function validateFormData(formData, fieldMappings, fieldSchemas) {
   for (const mapping of fieldMappings) {
-    const schema = fieldSchemas[mapping.schema]; // ← Đọc từ config.json
+    const schema = fieldSchemas[mapping.schema]; 
     
     for (const subgroup of mapping.subgroups) {
       if (!visibleSubgroups.has(subgroup.id)) {
-        continue; // ⚠️ Bỏ qua subgroup ẩn
+        continue; 
       }
       
       for (const field of schema.fields) {
-        if (field.required && !data[field.name]) {  // ← Check required từ config
+        if (field.required && !data[field.name]) {  
           errors.push({ ... });
         }
       }
@@ -362,8 +382,23 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
 - **Không cần code mới** cho file Word mới
 - Chỉ cần cập nhật `config.json`
 - Form tự động render theo config
+- **Thêm/xóa subgroup động** - DOM manipulation, không reload, giữ nguyên dữ liệu
 
-### **4. Session Storage Management**
+### **4. Auto-Format & Conversion**
+
+**Money field:**
+- Input: Số thuần (1234567)
+- UI: Format với dấu phẩy (1,234,567)
+- Word: Giữ format với dấu phẩy
+- MoneyText: Tự động tạo "một triệu hai trăm ba mươi bốn nghìn năm trăm sáu mươi bảy đồng chẵn"
+
+**S (Area) field:**
+- Input: Số thuần (500)
+- UI: Format với dấu phẩy nếu > 1000 (5,000)
+- Word: Số thuần không dấu phẩy (5000) - để dễ tính toán
+- S_Text: Tự động tạo "năm nghìn mét vuông"
+
+### **5. Session Storage Management**
 
 **Logic tái sử dụng dữ liệu:**
 
@@ -382,6 +417,32 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
    - ONLY_ADDITIONS → Merge data, xóa session cũ nếu khác file
    - HAS_MODIFICATIONS → Giữ cả 2 sessions
 ```
+
+### **6. Smart Line Removal (Auto-cleanup)**
+
+**Logic xóa dòng tự động khi xuất Word:**
+
+```
+1. Subgroup có visible = false (ẩn):
+   → Xóa dòng nếu TẤT CẢ placeholders của subgroup đều rỗng
+   
+2. Subgroup có visible = true (hiện):
+   → KHÔNG xóa dòng
+   → Placeholder rỗng thay bằng "" (empty string)
+   → Dòng vẫn giữ nguyên trong Word
+```
+
+**Ví dụ:**
+- Template có MEN1 (visible), MEN2-6 (hidden)
+- Người dùng không thêm MEN2 → Tất cả placeholders MEN2 rỗng
+- → Dòng chứa {Name2}, {CCCD2}... sẽ bị xóa tự động ✅
+- MEN1 có Name1="Nguyễn Văn A" nhưng CCCD1 rỗng
+- → Dòng vẫn giữ, CCCD1 = "" ✅
+
+**Technical:**
+- Sử dụng `phMapping` và `visibleSubgroups` để xác định subgroup
+- Pre-process XML trước khi render với Docxtemplater
+- Chỉ xóa paragraph nếu TẤT CẢ subgroups trong đó đều thỏa điều kiện xóa
 
 ---
 
@@ -419,13 +480,13 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
           "name": "Field1",
           "label": "Label hiển thị",
           "type": "text",
-          "required": true     // ← UI sẽ hiện *, Validator sẽ check
+          "required": true     
         },
         {
           "name": "Field2",
           "label": "Ghi chú",
           "type": "textarea",
-          "required": false    // ← UI không có *, Validator bỏ qua
+          "required": false   
         }
       ]
     }
@@ -445,7 +506,6 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
       "subgroups": [
         { "id": "INFO", "label": "Thông tin đất đai", "visible": true }
       ]
-      // Không có suffixes → field không suffix sẽ map vào INFO
     }
   ]
 }
@@ -470,12 +530,12 @@ npm start → Template sẵn sàng! ✅
 | Type | Description | Example |
 |------|-------------|---------|
 | `text` | Text input | Name, Address |
-| `number` | Number input | CCCD, Phone |
+| `number` | Number input | CCCD, Phone, S (diện tích) |
 | `date` | Date picker | Birth date |
 | `select` | Dropdown | Gender, Options |
 | `address-select` | Cascading address | Province → District → Ward |
 | `land_type` | Land type selector | ONT, LUK, TSC |
-| `currency` | Money input | 1,000,000 |
+| `currency` | Money input | 1,000,000 (tự động tạo MoneyText) |
 | `textarea` | Multi-line text | Notes |
 
 ---
@@ -539,7 +599,22 @@ npm start
 
 ## 🚀 Version History
 
-### **v4.1** ✅ (Current)
+### **v4.2** ✅ (Current)
+
+**🎯 Major Changes:**
+- [x] **S_Text tự động** - Field `S` (diện tích) tự động tạo `S_Text` (bằng chữ) tương tự MoneyText
+- [x] **Dynamic form không reload** - Thêm/xóa subgroup không làm mất dữ liệu, chỉ DOM manipulation
+- [x] **Auto-remove empty lines** - Tự động xóa dòng chứa placeholders trống của subgroup ẩn (visible=false)
+- [x] **S field không format** - Xuất số thuần (không dấu phẩy) cho field S trong Word
+
+**✨ Improvements:**
+- [x] UI vẫn format S với dấu phẩy (1,234) nhưng xuất Word là số thuần (1234)
+- [x] Subgroup visible = true: placeholder rỗng thay bằng "" (không xóa dòng)
+- [x] Subgroup visible = false: xóa dòng nếu tất cả placeholders đều rỗng
+- [x] Preserve data khi thêm/xóa subgroup - không mất dữ liệu đã nhập
+- [x] Tối ưu performance - DOM manipulation thay vì full re-render
+
+### **v4.1** ✅
 
 **🎯 Major Changes:**
 - [x] **Rút gọn code session** - Xóa code không dùng (findGroupDataFromAnyFile, menGroups backward compatibility)
