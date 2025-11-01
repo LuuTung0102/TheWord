@@ -523,8 +523,6 @@ npm start
 ✅ Kiểm tra config.json có định nghĩa subgroup đúng không
 ✅ Xem console logs: analyzeChanges() type là gì?
 ✅ Subgroup phải được định nghĩa trong fieldMappings
-```
-
 ---
 
 ## 📊 Performance Benchmarks

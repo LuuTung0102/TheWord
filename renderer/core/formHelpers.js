@@ -89,9 +89,7 @@ function setupNameInput(el) {
 
 function setupLandTypeInput(el, id) {
   if (el.dataset.landTypeSetup === 'true') return;
-  
   const dropdown = document.getElementById(`${id}_dropdown`);
-  
   if (!dropdown) {
     requestAnimationFrame(() => {
       setTimeout(() => {
@@ -105,9 +103,7 @@ function setupLandTypeInput(el, id) {
   }
   
   el.dataset.landTypeSetup = 'true';
-  
   const landKeys = window.landTypeMap ? Object.keys(window.landTypeMap).sort() : [];
-
   function getSelectedCodes(value) {
     return value
       .split("+")
@@ -124,7 +120,6 @@ function setupLandTypeInput(el, id) {
   function updateDropdown(query) {
     if (!dropdown || !el) return;
     selectedIndex = -1;
-    
     const selected = getSelectedCodes(el.value);
     const filtered = landKeys.filter(key => !selected.includes(key) && (!query || key.toUpperCase().includes(query)));
     
@@ -145,17 +140,14 @@ function setupLandTypeInput(el, id) {
   });
 
   el.addEventListener("focus", (e) => {
-    // Khi focus, hiện TẤT CẢ options
     const cursorPos = e.target.selectionStart;
     const query = getCurrentQuery(e.target.value, cursorPos);
     updateDropdown(query);
   });
 
   let selectedIndex = -1;
-  
   el.addEventListener("keydown", (e) => {
     const items = dropdown.querySelectorAll('.suggestion-item');
-    
     if (e.key === "+" && !el.value.endsWith("+")) {
       e.preventDefault();
       const cursorPos = e.target.selectionStart;
@@ -203,9 +195,7 @@ function setupLandTypeInput(el, id) {
     });
   }
 
-  // Click outside to hide dropdown - Use named function for cleanup
   const handleClickOutside = (e) => {
-    // ✅ NULL CHECK
     if (!el || !dropdown) return;
     if (!el.contains(e.target) && !dropdown.contains(e.target)) {
       dropdown.style.display = "none";
@@ -213,13 +203,11 @@ function setupLandTypeInput(el, id) {
   };
   document.addEventListener("click", handleClickOutside);
   
-  // Store for cleanup
   if (!el._cleanupFunctions) el._cleanupFunctions = [];
   el._cleanupFunctions.push(() => {
     document.removeEventListener("click", handleClickOutside);
   });
 
-  // Delegate click on suggestions
   dropdown.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -227,60 +215,42 @@ function setupLandTypeInput(el, id) {
     if (e.target.classList.contains("suggestion-item")) {
       const key = e.target.dataset.key;
       const currentValue = el.value.trim();
-      
       if (!currentValue) {
-        // Trống: Chỉ thêm key
         el.value = key;
       } else {
-        // Có giá trị: Kiểm tra xem có dấu "+" không
-        const lastPlusIndex = currentValue.lastIndexOf('+');
-        
+        const lastPlusIndex = currentValue.lastIndexOf('+');      
         if (lastPlusIndex >= 0) {
-          // Có "+": Replace phần sau dấu "+" cuối cùng
           el.value = currentValue.substring(0, lastPlusIndex + 1) + key;
         } else {
-          // Không có "+": Replace toàn bộ (vì đang là query)
           el.value = key;
         }
       }
-      
-      // Đóng dropdown
       dropdown.style.display = "none";
     }
   });
 }
 
 function setupMoneyInput(el) {
-  // ✅ Khi đang gõ - chỉ cho phép nhập số
   el.addEventListener("input", (e) => {
-    let value = e.target.value.replace(/\D/g, ""); // Chỉ giữ số
-    e.target.value = value; // Không format, chỉ hiển thị số thuần
+    let value = e.target.value.replace(/\D/g, ""); 
+    e.target.value = value; 
   });
-  
-  // ✅ Khi focus - xóa dấu phẩy để dễ chỉnh sửa
   el.addEventListener("focus", (e) => {
-    let value = e.target.value.replace(/\D/g, ""); // Loại bỏ dấu phẩy
+    let value = e.target.value.replace(/\D/g, "");
     e.target.value = value;
   });
   
-  // ✅ Khi blur (mất focus) - format với dấu phẩy và cập nhật MoneyText
   el.addEventListener("blur", (e) => {
     let value = e.target.value.replace(/\D/g, "");
-    
     if (value.length === 0) {
-      // Nếu rỗng, clear MoneyText
       const moneyTextField = document.querySelector('[data-ph="MoneyText"]');
       if (moneyTextField) {
         moneyTextField.value = "";
       }
       return;
     }
-    
-    // ✅ Sử dụng hàm formatWithCommas từ utils.js
     const formatted = window.formatWithCommas ? window.formatWithCommas(value) : value;
     e.target.value = formatted;
-    
-    // ✅ Sử dụng hàm numberToVietnameseWords từ utils.js
     const moneyText = window.numberToVietnameseWords ? window.numberToVietnameseWords(value) : "";
     const moneyTextField = document.querySelector('[data-ph="MoneyText"]');
     if (moneyTextField && moneyText) {
@@ -291,36 +261,28 @@ function setupMoneyInput(el) {
 }
 
 function setupAreaInput(el) {
-  // ✅ Khi đang gõ - chỉ cho phép nhập số
   el.addEventListener("input", (e) => {
-    let value = e.target.value.replace(/\D/g, ""); // Chỉ giữ số
-    e.target.value = value; // Không format, chỉ hiển thị số thuần
+    let value = e.target.value.replace(/\D/g, ""); 
+    e.target.value = value; 
   });
-  
-  // ✅ Khi focus - xóa dấu phẩy để dễ chỉnh sửa
+
   el.addEventListener("focus", (e) => {
-    let value = e.target.value.replace(/\D/g, ""); // Loại bỏ dấu phẩy
+    let value = e.target.value.replace(/\D/g, ""); 
     e.target.value = value;
   });
-  
-  // ✅ Khi blur (mất focus) - format với dấu phẩy và cập nhật S_Text
+
   el.addEventListener("blur", (e) => {
     let value = e.target.value.replace(/\D/g, "");
     
     if (value.length === 0) {
-      // Nếu rỗng, clear S_Text
       const sTextField = document.querySelector('[data-ph="S_Text"]');
       if (sTextField) {
         sTextField.value = "";
       }
       return;
     }
-    
-    // ✅ Sử dụng hàm formatWithCommas từ utils.js
     const formatted = window.formatWithCommas ? window.formatWithCommas(value) : value;
     e.target.value = formatted;
-    
-    // ✅ Sử dụng hàm numberToAreaWords từ utils.js
     const sText = window.numberToAreaWords ? window.numberToAreaWords(value) : "";
     const sTextField = document.querySelector('[data-ph="S_Text"]');
     if (sTextField && sText) {
@@ -345,8 +307,6 @@ function setupDatePickers() {
       console.warn("⚠️ Flatpickr not loaded");
       return;
     }
-    
-    // Tìm tất cả các trường date-input và date-picker
     const dateInputs = document.querySelectorAll(".date-input, .date-picker");
     if (dateInputs.length === 0) {
       console.warn("⚠️ No date inputs found");
@@ -355,7 +315,6 @@ function setupDatePickers() {
     console.log(`✅ Found ${dateInputs.length} date inputs`);
     
     dateInputs.forEach((input) => {
-      // Destroy existing flatpickr instance if any
       if (input._flatpickr) {
         input._flatpickr.destroy();
       }
@@ -383,7 +342,6 @@ function setupDatePickers() {
             );
             return;
           }
-          // If user typed a value like d/m/yyyy, normalize it
           const raw = (instance.input.value || "").trim();
           const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
           if (m) {
@@ -404,14 +362,11 @@ function setupAddressSelects() {
   document.querySelectorAll(".address-select").forEach((select) => {
     select.addEventListener("change", (e) => {
       const level = e.target.dataset.level;
-      // Get mainId from data-main attribute or extract from id
       let mainId = e.target.dataset.main;
       if (!mainId) {
-        // Extract mainId from id like "Address1_province" -> "Address1"
         const idParts = e.target.id.split("_");
         mainId = idParts.slice(0, -1).join("_");
       }
-      
       const provinceSelect = document.getElementById(`${mainId}_province`);
       const districtSelect = document.getElementById(`${mainId}_district`);
       const wardSelect = document.getElementById(`${mainId}_ward`);
@@ -470,81 +425,63 @@ function setupAddressSelects() {
   });
 }
 
-// Re-setup all form inputs (called after form is rendered)
 function reSetupAllInputs() {
-  // Setup date pickers and address selects first
   setupDatePickers();
   setupAddressSelects();
-  
-  // Setup CCCD inputs
   const cccdInputs = document.querySelectorAll('input[data-ph*="CCCD"]');
   cccdInputs.forEach(input => {
-    // ✅ Remove maxlength attribute to allow formatted value (12 digits + 3 dots = 15 chars)
     input.removeAttribute('maxlength');
     setupCCCDInput(input);
   });
   
-  // Setup phone inputs
   const phoneInputs = document.querySelectorAll('input[data-ph*="SDT"], input[data-ph*="Phone"]');
   phoneInputs.forEach(input => {
     setupPhoneInput(input);
   });
   
-  // Setup MST inputs
   const mstInputs = document.querySelectorAll('input[data-ph*="MST"]');
   mstInputs.forEach(input => {
     setupMSTInput(input);
   });
   
-  // Setup email inputs
   const emailInputs = document.querySelectorAll('input[data-ph*="Email"], input[data-ph*="EMAIL"]');
   emailInputs.forEach(input => {
     setupEmailInput(input);
   });
   
-  // Setup name inputs
   const nameInputs = document.querySelectorAll('input[data-ph*="Name"]');
   nameInputs.forEach(input => {
     setupNameInput(input);
   });
   
-  // Setup money inputs
   document.querySelectorAll('input[data-ph="Money"]').forEach(input => {
     setupMoneyInput(input);
   });
   
-  // Setup area inputs
   document.querySelectorAll('input[data-ph="S"]').forEach(input => {
     setupAreaInput(input);
   });
   
-  // Setup note textareas
   document.querySelectorAll('textarea[data-ph="Note"]').forEach(textarea => {
     setupNoteTextarea(textarea);
   });
   
-  // Setup land type inputs
   document.querySelectorAll('input[data-ph="Loai_Dat"]').forEach(input => {
     const id = input.id;
     if (id) setupLandTypeInput(input, id);
   });
 }
 
-// 🗑️ Cleanup all event listeners before rendering new form
 function cleanupAllEventListeners() {
   console.log('🗑️ Cleaning up old event listeners...');
-  
-  // Cleanup land type inputs
   document.querySelectorAll('input[data-ph="Loai_Dat"]').forEach(input => {
     if (input._cleanupFunctions) {
       input._cleanupFunctions.forEach(fn => fn());
       input._cleanupFunctions = [];
     }
-    // ✅ REMOVE flag, not just set to false
     delete input.dataset.landTypeSetup;
   });
   
-  // Hide all dropdowns
   document.querySelectorAll('.land-type-dropdown').forEach(dropdown => {
     dropdown.style.display = 'none';
   });
@@ -552,19 +489,15 @@ function cleanupAllEventListeners() {
   console.log('✅ Cleanup completed');
 }
 
-// Export to window
+
 if (typeof window !== 'undefined') {
   window.cleanupAllEventListeners = cleanupAllEventListeners;
 }
 
 function formatInputValue(value, ph, map) {
   if (!value || !map) return value || '';
-  
   let formatted = value;
-  
-  // Format based on type
   if (map.type === "date") {
-    // Format date
     const dmMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     const isoMatch = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
     
@@ -582,7 +515,6 @@ function formatInputValue(value, ph, map) {
       formatted = window.formatDate(value);
     }
   } else if (map.type === "number") {
-    // Format CCCD
     if (ph.includes('CCCD') && value) {
       const digits = value.replace(/\D/g, "");
       if (/^\d{12}$/.test(digits)) {
@@ -596,7 +528,7 @@ function formatInputValue(value, ph, map) {
   return formatted;
 }
 
-// Export to window for global access
+
 window.setupNumericInput = setupNumericInput;
 window.setupCCCDInput = setupCCCDInput;
 window.setupPhoneInput = setupPhoneInput;
