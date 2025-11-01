@@ -7,7 +7,7 @@ const BASE_PLACEHOLDERS = {
   
   Name: {
     type: "text",
-    order: 3
+    order: 2
   },
   
   Date: {
@@ -62,7 +62,7 @@ const BASE_PLACEHOLDERS = {
   Relation: {
     type: "select",
     options: ["Con", "Vợ", "Chồng"],
-    order: 2
+    order: 3
   },
   
   // ===== THỬA ĐẤT =====
@@ -78,20 +78,30 @@ const BASE_PLACEHOLDERS = {
     },
     order: 2
   },
-  
+
+  Noi_CapD: {
+    type: "text",
+    order: 3
+  },
+
   Ngay_CapD: {
     type: "date",
-    order: 3
+    order: 4
+  },
+
+  TDCSPL: {
+    type: "date",
+    order: 5
   },
   
   Thua_dat_so: {
     type: "text",
-    order: 4
+    order: 6
   },
   
   Ban_do_so: {
     type: "text",
-    order: 5
+    order: 7
   },
   
   S: {
@@ -101,38 +111,38 @@ const BASE_PLACEHOLDERS = {
       max: 1000000000000000000000,
       decimalPlaces: 2
     },
-    order: 6
-  },
+    order: 8
+  },    
   
   Loai_Dat: {
     type: "land-type",
     validation: {
       pattern: "^[A-Z]+(\\+[A-Z]+)*$"
     },
-    order: 7
+    order: 9
   },
   
   VTTD: {
     type: "textarea",
-    order: 8
+    order: 10
   },
   
  
   HTSD: {
     type: "select",
     options: ["Sử dụng chung", "Sử dụng riêng"],
-    order: 9
+    order: 11
   },
   
   Responsibility: {
     type: "select",
     options: ["A", "B"],
-    order: 10
+    order: 12
   },
   
   AddressD: {
     type: "address-select",
-    order: 11
+    order: 13
   },
   
   Money: {
@@ -141,22 +151,27 @@ const BASE_PLACEHOLDERS = {
       min: 1000,
       max: 1000000000000000000000000000000000000000
     },
-    order: 12
+    order: 14
+  },
+
+  NG: {
+    type: "text",
+    order: 15
   },
 
   THSD: {
     type: "textarea",
-    order: 13
+    order: 16
   },
    
   TTGLVD: {
     type: "textarea",
-    order: 14
+    order: 17
   },
   
   Note: {
     type: "textarea",
-    order: 15
+    order: 18
   },
 };
 

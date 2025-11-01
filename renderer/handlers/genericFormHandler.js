@@ -1152,11 +1152,12 @@ function collectGenericFormData() {
       const rawArea = value.replace(/\D/g, '');
       if (rawArea) {
         if (!value.includes(',')) {
-          value = window.formatWithCommas ? window.formatWithCommas(rawArea) : rawArea;
-          el.value = value;
+          const formatted = window.formatWithCommas ? window.formatWithCommas(rawArea) : rawArea;
+          el.value = formatted;
         }
         const sText = window.numberToAreaWords ? window.numberToAreaWords(rawArea) : "";
         if (sText) data['S_Text'] = sText;
+        value = rawArea;
       }
     }
     
