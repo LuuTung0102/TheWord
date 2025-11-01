@@ -194,58 +194,6 @@ const requiredClass = isRequired ? ' class="required"' : '';
 <label class="required"><b>Họ và tên</b></label>  
 ```
 
-**3️⃣ Validator đọc cùng config + check visibility:**
-
-```javascript
-
-function validateFormData(formData, fieldMappings, fieldSchemas) {
-  for (const mapping of fieldMappings) {
-    const schema = fieldSchemas[mapping.schema]; 
-    
-    for (const subgroup of mapping.subgroups) {
-      if (!visibleSubgroups.has(subgroup.id)) {
-        continue; 
-      }
-      
-      for (const field of schema.fields) {
-        if (field.required && !data[field.name]) {  
-          errors.push({ ... });
-        }
-      }
-    }
-  }
-}
-```
-
-**Cách hoạt động - 3 Layers Validation:**
-
-**Layer 1: Schema (config.json)**
-- ✅ Field có `required: true` trong schema
-- ✅ Nếu field không có `required: true` → Skip validation hoàn toàn
-
-**Layer 2: Visibility**
-- ✅ Subgroup phải trong `visibleSubgroups` (user đã thêm)
-- ✅ Default: Chỉ subgroup có `visible = true` (hoặc subgroup đầu tiên nếu không có explicit visible)
-- ✅ Reset `visibleSubgroups` khi load file mới (tránh state cũ)
-- ✅ Nếu subgroup hidden → Skip validation toàn bộ subgroup đó
-
-**Layer 3: Template Placeholders**
-- ✅ Placeholder phải **TỒN TẠI** trong template Word file
-- ✅ Ví dụ: 
-  - Schema có `Address` + suffix `2` = `Address2`
-  - Nhưng template Word **KHÔNG** khai báo `{Address2}` placeholder
-  - → **KHÔNG validate** cho `Address2` ✅
-
-**Result:**
-- ✅ **UI**: Label có dấu `*` nếu `required: true`
-- ✅ **Validator**: Check `required` ∧ `visible` ∧ `exists in template`
-- ✅ Subgroup ẩn → không validate
-- ✅ Placeholder không có trong template Word → không validate
-- ✅ Field không required → không validate
-- ✅ Scroll tự động đến field lỗi đầu tiên
-- ✅ Highlight field lỗi với màu đỏ + animation shake
-
----
 
 ## 📂 Cấu Trúc Dự Án
 
