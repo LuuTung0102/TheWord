@@ -68,7 +68,7 @@
         { "name": "S", "label": "Diện tích (m²)", "type": "number", "required": true },
         { "name": "S_Text", "label": "Diện tích (chữ)", "type": "text", "hidden": true, "required": false },
         { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "required": true },
-        { "name": "Noi_CapD", "label": "Nơi cấp", "type": "text", "required": true },
+        { "name": "Noi_CapD", "label": "Nơi cấp", "type": "textarea", "required": true },
         { "name": "NG", "label": "Nguồn gốc", "type": "textarea", "required": true },
         { "name": "TDCSPL", "label": "Thay đổi cơ sở pháp lý", "type": "date", "required": true },
         { "name": "HTSD", "label": "Hình thức sử dụng", "type": "select", "options": ["Sử dụng chung", "Sử dụng riêng"], "required": true },
