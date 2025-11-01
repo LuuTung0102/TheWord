@@ -18,7 +18,6 @@ function generateDocx(templatePath, data, outputPath, options = {}) {
           xml = xml.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
         }
         
-        // Sub-step 1c: Clean remaining broken placeholders
         xml = xml.replace(/\{\{[^}]*<[^>]*>[^}]*\}\}/g, (match) => {
           const textContent = match.replace(/<[^>]*>/g, '').replace(/[{}]/g, '');
           if (textContent.trim() && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(textContent.trim())) {
@@ -38,16 +37,11 @@ function generateDocx(templatePath, data, outputPath, options = {}) {
           return '';
         });
         
-        // ✅ Xóa các dòng chứa TOÀN BỘ placeholders trống của subgroups ẩn (visible=false)
         if (options && options.phMapping && options.visibleSubgroups) {
           xml = xml.replace(/<w:p\b[^>]*>([\s\S]*?)<\/w:p>/g, (matchP, contentP) => {
-            // Extract tất cả placeholders trong paragraph
             const placeholderMatches = contentP.match(/\{\{([^}]+)\}\}/g);
             if (!placeholderMatches) return matchP;
-
             const placeholders = placeholderMatches.map(m => m.replace(/[{}]/g, ''));
-            
-            // Lấy tất cả subgroups có trong paragraph
             const subgroupsInParagraph = new Set();
             placeholders.forEach(ph => {
               const phDef = options.phMapping[ph];
@@ -58,28 +52,18 @@ function generateDocx(templatePath, data, outputPath, options = {}) {
 
             if (subgroupsInParagraph.size === 0) return matchP;
 
-            // ✅ Logic mới:
-            // - Subgroup có visible = false -> Xóa dòng nếu TẤT CẢ placeholders đều rỗng
-            // - Subgroup có visible = true -> KHÔNG xóa dòng (placeholder rỗng sẽ thay bằng "")
             const shouldRemoveLine = Array.from(subgroupsInParagraph).every(subgroupId => {
               const isVisible = options.visibleSubgroups.has(subgroupId);
-              
-              // Lấy tất cả placeholders của subgroup này
               const subgroupPhs = placeholders.filter(ph => {
                 const phDef = options.phMapping[ph];
                 return phDef && phDef.subgroup === subgroupId;
               });
 
-              if (subgroupPhs.length === 0) return false; // Không có placeholder thì không xóa
-
-              // Kiểm tra tất cả placeholders có rỗng không
-              const allEmpty = subgroupPhs.every(ph => !data[ph] || data[ph].toString().trim() === '');
-              
-              if (!isVisible) {
-                // Subgroup ẩn (visible=false) -> Xóa nếu tất cả rỗng
+              if (subgroupPhs.length === 0) return false; 
+              const allEmpty = subgroupPhs.every(ph => !data[ph] || data[ph].toString().trim() === '');  
+              if (!isVisible) {        
                 return allEmpty;
               } else {
-                // Subgroup visible (visible=true) -> KHÔNG xóa dòng
                 return false;
               }
             });
@@ -94,19 +78,15 @@ function generateDocx(templatePath, data, outputPath, options = {}) {
             return matchP;
           });
         } else {
-          // Fallback: Xóa các dòng chứa TOÀN BỘ placeholders trống của MEN2-6 (backward compatibility)
           xml = xml.replace(/<w:p\b[^>]*>([\s\S]*?)<\/w:p>/g, (matchP, contentP) => {
             const placeholderMatches = contentP.match(/\{\{([^}]+)\}\}/g);
             if (!placeholderMatches) return matchP;
-
             const placeholders = placeholderMatches.map(m => m.replace(/[{}]/g, ''));
             const menNumbers = placeholders
               .map(ph => ph.match(/\d+$/)?.[0])
               .filter(Boolean)
               .filter((v, i, a) => a.indexOf(v) === i);
-
             if (menNumbers.length === 0) return matchP;
-
             const allMenEmpty = menNumbers.every(num => {
               return num >= 2 && num <= 6 && (
                 !data[`Name${num}`] && 
@@ -160,9 +140,6 @@ function generateDocx(templatePath, data, outputPath, options = {}) {
       throw new Error(msg);
     }
    
-
-    
-    // Normalize data values
     Object.keys(data).forEach(k => {
       if (data[k] === null || data[k] === undefined) data[k] = "";
       else if (typeof data[k] !== 'string') data[k] = String(data[k]);
@@ -186,7 +163,6 @@ function generateDocx(templatePath, data, outputPath, options = {}) {
         console.warn('⚠️ Could not expand Loai_Dat:', error.message);
       }
     }
-    // ✅ Get all placeholders from template and ensure they all have values
     const templatePhs = getPlaceholders(templatePath);
     const fullData = {};
     templatePhs.forEach(ph => {

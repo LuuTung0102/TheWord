@@ -32,13 +32,11 @@ const BASE_PLACEHOLDERS = {
     order: 7
   },
   
-  // Địa chỉ - Base cho tất cả các trường địa chỉ
   Address: {
     type: "address-select",
     order: 8
   },
   
-  // Thông tin bổ sung (thường ẩn)
   MST: {
     type: "number",
     maxLength: 13,
@@ -58,14 +56,13 @@ const BASE_PLACEHOLDERS = {
     order: 11
   },
   
-  // Quan hệ (dùng cho phân chia tài sản)
+
   Relation: {
     type: "select",
     options: ["Con", "Vợ", "Chồng"],
     order: 3
   },
   
-  // ===== THỬA ĐẤT =====
   QSH: {
     type: "text",
     order: 1

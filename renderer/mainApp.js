@@ -1,6 +1,3 @@
-// ========================================
-// MAIN APP - Quản lý giao diện chính v4.0
-// ========================================
 
 class MainApp {
   constructor() {
@@ -14,22 +11,13 @@ class MainApp {
     this.lastExportedPath = null;
   }
 
-  /**
-   * Khởi tạo ứng dụng
-   */
   async init() {
     console.log('🚀 MainApp: Initializing...');
     
     try {
-      // Load templates
       await this.loadTemplates();
-      
-      // Setup event listeners
       this.setupEventListeners();
-      
-      // Update UI
       this.updateUI();
-      
       console.log('✅ MainApp: Initialized successfully');
     } catch (error) {
       console.error('❌ MainApp: Initialization failed:', error);
@@ -37,14 +25,10 @@ class MainApp {
     }
   }
 
-  /**
-   * Load templates từ config.json
-   */
   async loadTemplates() {
     try {
       console.log('📁 MainApp: Loading templates from config...');
-      
-      // Load config from renderer/config/config.json
+    
       const config = await this.loadMainConfig();
       
       if (config && config.folders) {
@@ -52,18 +36,14 @@ class MainApp {
         this.templates = await Promise.all(config.folders.map(async (folderConfig) => {
           try {
             const templatesRoot = await window.ipcRenderer.invoke("get-templates-root");
-            // ✅ Sửa lại: Thêm dấu \ giữa templatesRoot và folderConfig.path
             const folderPath = `${templatesRoot}\\${folderConfig.path.replace(/\//g, '\\')}`;
             console.log(`🔍 MainApp: Checking folder path: ${folderPath}`);
-            
-            // Check if folder exists and get files
             const folderExists = await window.ipcRenderer.invoke("check-folder-exists", folderPath);
             if (!folderExists) {
               console.warn(`⚠️ MainApp: Folder not found: ${folderConfig.path}`);
               return null;
             }
             
-            // Get files in folder
             const files = await window.ipcRenderer.invoke("get-files-in-folder", folderPath);
             
             return {
@@ -95,15 +75,11 @@ class MainApp {
     }
   }
 
-  /**
-   * Load main config from renderer/config/config.json
-   */
   async loadMainConfig() {
     try {
       if (window.ipcRenderer) {
         return await window.ipcRenderer.invoke("load-main-config");
       } else {
-        // Fallback for development
         return {
           folders: [
             {
@@ -120,22 +96,13 @@ class MainApp {
     }
   }
 
-  /**
-   * Get folder icon from config
-   */
   getFolderIcon(folderConfig) {
-    // Try to get icon from folder config first
     if (folderConfig.icon) {
       return folderConfig.icon;
     }
-    
-    // Fallback to default icon
     return '📁';
   }
 
-  /**
-   * Setup event listeners
-   */
   setupEventListeners() {
     // Export button
     const exportBtn = document.getElementById('exportBtn');
@@ -143,21 +110,15 @@ class MainApp {
       exportBtn.addEventListener('click', () => this.handleExport());
     }
 
-    // Template selection (will be added dynamically)
     this.setupTemplateListeners();
   }
 
-  /**
-   * Setup template selection listeners
-   */
   setupTemplateListeners() {
     const templateList = document.getElementById('templateList');
     if (!templateList) return;
 
-    // Remove existing listeners
     templateList.removeEventListener('click', this.handleTemplateClick);
     
-    // Add new listener
     this.handleTemplateClick = (event) => {
       const folderItem = event.target.closest('.folder-item');
       if (!folderItem) return;
@@ -169,41 +130,31 @@ class MainApp {
     templateList.addEventListener('click', this.handleTemplateClick);
   }
 
-  /**
-   * Select folder (toggle expansion)
-   */
   async selectFolder(folderName) {
     try {
       console.log('📁 MainApp: Toggling folder:', folderName);
       
-      // Toggle expansion
       if (this.expandedFolder === folderName) {
-        // Collapse folder
         this.expandedFolder = null;
         this.selectedFolder = null;
         this.selectedFile = null;
         this.files = [];
       } else {
-        // Expand folder
         this.expandedFolder = folderName;
         this.selectedFolder = folderName;
-        this.selectedFile = null; // Reset selected file
+        this.selectedFile = null; 
         
-        // Load files in this folder
         await this.loadFilesInFolder(folderName);
       }
       
-      // Update UI
       this.updateFolderSelection();
       this.updateFormStatus();
-      this.renderTemplates(); // Re-render to show/hide files
+      this.renderTemplates(); 
       
-      // Clear form area if collapsed
       if (!this.expandedFolder) {
         this.clearFormArea();
       }
       
-      // Update export button
       this.updateExportButton();
       
     } catch (error) {
@@ -212,24 +163,13 @@ class MainApp {
     }
   }
 
-  /**
-   * Select file
-   */
   async selectFile(fileName) {
     try {
       console.log('📄 MainApp: Selecting file:', fileName);
-      
-      // Update selected file
       this.selectedFile = fileName;
-      
-      // Update UI
       this.updateFileSelection();
       this.updateFormStatus();
-      
-      // Load form for this file
       await this.loadFormForFile(fileName);
-      
-      // Enable export button
       this.updateExportButton();
       
     } catch (error) {
@@ -238,9 +178,6 @@ class MainApp {
     }
   }
 
-  /**
-   * Load files in selected folder
-   */
   async loadFilesInFolder(folderName) {
     try {
       console.log('📁 MainApp: Loading files in folder:', folderName);
@@ -262,49 +199,30 @@ class MainApp {
     }
   }
 
-  /**
-   * Load form for selected file
-   */
+
   async loadFormForFile(fileName) {
     try {
       console.log('📝 MainApp: Loading form for file:', fileName);
-      
-      // Show loading state
       this.showFormLoading();
-      
-      // Get templates root path
       const templatesRoot = window.ipcRenderer ? 
         await window.ipcRenderer.invoke("get-templates-root") : 
         'templates';
-      
-      // ✅ Use path from template config instead of folder name
       const selectedTemplate = this.templates.find(t => t.name === this.selectedFolder);
       if (!selectedTemplate) {
         throw new Error(`Template not found: ${this.selectedFolder}`);
       }
-      
-      // ✅ Sửa lại: Thêm dấu \ giữa templatesRoot và selectedTemplate.path
       const folderPath = `${templatesRoot}\\${selectedTemplate.path.replace(/\//g, '\\')}`;
       console.log(`🔍 MainApp: Loading form for file in path: ${folderPath}`);
-      
-      // Load placeholders for this specific file
       const placeholders = await this.loadPlaceholdersForFile(folderPath, fileName);
-      
-      // Load folder config to determine which template/group this file belongs to
       const folderConfig = await this.loadConfig(folderPath);
-      this.currentConfig = folderConfig; // Lưu config để dùng sau
+      this.currentConfig = folderConfig; 
       
       if (folderConfig && folderConfig.templates) {
-        // Find which template this file belongs to based on placeholders
         const matchedTemplate = this.findMatchingTemplate(placeholders, folderConfig.templates, fileName);
         
         if (matchedTemplate) {
           console.log('📝 MainApp: File matches template:', matchedTemplate.id);
-          
-          // Build filtered config limited to matched template groups
           const filteredConfig = this.buildFilteredConfig(folderConfig, matchedTemplate);
-          
-          // ✅ Save to window.currentTemplate for validator
           window.currentTemplate = {
             config: filteredConfig,
             selectedFile: matchedTemplate,
@@ -312,13 +230,9 @@ class MainApp {
             folderPath: folderPath
           };
           console.log('✅ MainApp: Saved currentTemplate for validation:', window.currentTemplate);
-          
-          // ✅ Reset visibleSubgroups and defaultVisibleSubgroups when loading a NEW file
           window.visibleSubgroups = new Set();
           window.defaultVisibleSubgroups = new Set();
           console.log('🔄 MainApp: Reset visibleSubgroups and defaultVisibleSubgroups for new file');
-          
-          // Render form using the matched template's groups
           if (window.renderGenericForm) {
             await window.renderGenericForm(placeholders, filteredConfig, folderPath);
           } else if (window.renderForm) {
@@ -328,7 +242,6 @@ class MainApp {
           }
         } else {
           console.warn('⚠️ MainApp: No template matches for file:', fileName);
-          // Fallback to generic form
           if (window.renderForm) {
             window.renderForm(placeholders);
           } else {
@@ -336,7 +249,6 @@ class MainApp {
           }
         }
       } else {
-        // Fallback if no config
         if (window.renderForm) {
           window.renderForm(placeholders);
         } else {
@@ -352,14 +264,9 @@ class MainApp {
     }
   }
 
-  /**
-   * Find matching template based on filename and placeholders
-   */
   findMatchingTemplate(placeholders, templates, fileName) {
     console.log('🔍 MainApp: Finding matching template for file:', fileName);
     console.log('🔍 MainApp: File placeholders:', placeholders);
-    
-    // First try to match by filename
     for (const template of templates) {
       if (template.filename === fileName) {
         console.log(`✅ MainApp: Exact filename match found: ${template.id}`);
@@ -368,7 +275,6 @@ class MainApp {
       }
     }
     
-    // If no exact filename match, try placeholder matching
     console.log('⚠️ MainApp: No exact filename match, trying placeholder-based matching...');
     
     const filePlaceholdersSet = new Set(placeholders);
@@ -377,16 +283,11 @@ class MainApp {
     
     for (const template of templates) {
       if (template.placeholders) {
-        // Get all placeholders from this template
         const templatePlaceholders = new Set();
         Object.values(template.placeholders).forEach(groupPlaceholders => {
           groupPlaceholders.forEach(ph => templatePlaceholders.add(ph));
         });
-        
-        // Check if file placeholders match template placeholders
         const intersection = new Set([...filePlaceholdersSet].filter(ph => templatePlaceholders.has(ph)));
-        
-        // Calculate match percentage
         const matchPercentage = intersection.size / filePlaceholdersSet.size;
         
         if (matchPercentage > bestScore) {
@@ -396,7 +297,6 @@ class MainApp {
       }
     }
     
-    // If match percentage is high enough (>70%), consider it a match
     if (bestMatch && bestScore > 0.7) {
       console.log(`✅ MainApp: Best match found: ${bestMatch.id} with score ${(bestScore * 100).toFixed(1)}%`);
       return bestMatch;
@@ -406,20 +306,14 @@ class MainApp {
     return null;
   }
 
-  /**
-   * Build filtered config with only matched template's groups
-   */
+
   buildFilteredConfig(folderConfig, matchedTemplate) {
     try {
       const allowedGroups = new Set(matchedTemplate.groups || []);
       const filtered = JSON.parse(JSON.stringify(folderConfig));
-
-      // Filter groups array to only include matched groups in correct order
       if (Array.isArray(filtered.groups)) {
         filtered.groups = filtered.groups.filter(g => allowedGroups.has(g.id));
       }
-
-      // Optionally, could filter fieldMappings to only those referencing allowed groups
       if (Array.isArray(filtered.fieldMappings)) {
         filtered.fieldMappings = filtered.fieldMappings.filter(m => allowedGroups.has(m.group));
       }
@@ -431,15 +325,12 @@ class MainApp {
     }
   }
 
-  /**
-   * Load placeholders for specific file
-   */
+
   async loadPlaceholdersForFile(folderPath, fileName) {
     try {
       if (window.ipcRenderer) {
         return await window.ipcRenderer.invoke("get-file-placeholders", folderPath, fileName);
       } else {
-        // Fallback for development
         return ['Name1', 'Name2', 'Name7', 'Date1', 'Date2', 'Date7', 'CCCD1', 'CCCD2', 'CCCD7'];
       }
     } catch (error) {
@@ -448,15 +339,11 @@ class MainApp {
     }
   }
 
-  /**
-   * Load placeholders for template
-   */
   async loadPlaceholders(folderPath) {
     try {
       if (window.ipcRenderer) {
         return await window.ipcRenderer.invoke("get-template-placeholders", folderPath);
       } else {
-        // Fallback for development
         return ['Name1', 'Name2', 'Name7', 'Date1', 'Date2', 'Date7', 'CCCD1', 'CCCD2', 'CCCD7'];
       }
     } catch (error) {
@@ -465,9 +352,6 @@ class MainApp {
     }
   }
 
-  /**
-   * Load config for template
-   */
   async loadConfig(folderPath) {
     try {
       if (window.loadFolderConfig) {
@@ -480,22 +364,19 @@ class MainApp {
     }
   }
 
-  /**
-   * Handle export
-   */
+
   async handleExport() {
     if (!this.selectedFolder || !this.selectedFile) {
       this.showError('Vui lòng chọn folder và file trước');
       return;
     }
 
-    // ✅ Validate form first before exporting
     if (window.validateForm && typeof window.validateForm === 'function') {
       console.log('🔍 MainApp: Validating form before export...');
       const isValid = window.validateForm();
       if (!isValid) {
         console.log('❌ MainApp: Form validation failed, stopping export');
-        return; // Stop export if validation fails
+        return; 
       }
       console.log('✅ MainApp: Form validation passed, proceeding with export');
     } else {
@@ -503,14 +384,9 @@ class MainApp {
     }
 
     try {
-      console.log('📤 MainApp: Starting export...');
-      
+      console.log('📤 MainApp: Starting export...'); 
       this.showLoading();
-      
-      // Collect form data
       const formData = this.collectFormData();
-      
-      // ✅ Save to session storage for reuse (only if data changed AND not reused from elsewhere)
       if (window.sessionStorageManager && this.selectedFile) {
         console.log(`🔍 Before saveFormData:`, {
           selectedFile: this.selectedFile,
@@ -524,7 +400,7 @@ class MainApp {
           formData, 
           window.__reusedGroups,
           window.__reusedGroupSources,
-          this.currentConfig // Pass config để check localStorage groups
+          this.currentConfig 
         );
         
         console.log(`🔍 saveFormData returned:`, saved);
@@ -532,14 +408,11 @@ class MainApp {
         if (saved) {
           console.log(`💾 Saved new session data for: ${this.selectedFile}`);
         }
-        
-        // Reset flags
+
         window.__formDataReused = false;
         if (window.__reusedGroups) window.__reusedGroups.clear();
         if (window.__reusedGroupSources) window.__reusedGroupSources.clear();
       }
-      
-      // ✅ Get folder path from template config
       const selectedTemplate = this.templates.find(t => t.name === this.selectedFolder);
       if (!selectedTemplate) {
         throw new Error(`Template not found: ${this.selectedFolder}`);
@@ -547,10 +420,8 @@ class MainApp {
       
       // Export
       if (window.ipcRenderer) {
-        // ✅ Get phMapping and visibleSubgroups for smart line removal
         const phMapping = window.__renderDataStructures?.phMapping || {};
         const visibleSubgroups = window.visibleSubgroups ? Array.from(window.visibleSubgroups) : [];
-        
         const result = await window.ipcRenderer.invoke("export-single-document", {
           folderPath: selectedTemplate.path,
           fileName: this.selectedFile,
@@ -565,7 +436,6 @@ class MainApp {
           throw new Error(result.error || 'Export failed');
         }
       } else {
-        // Fallback for development
         await new Promise(resolve => setTimeout(resolve, 2000));
         this.showSuccess('Văn bản đã được tạo thành công! (Demo)');
       }
@@ -578,22 +448,17 @@ class MainApp {
     }
   }
 
-  /**
-   * Collect form data
-   */
+
   collectFormData() {
     try {
-      // Try generic form data collector first
       if (window.collectGenericFormData && window.idToPhGeneric && Object.keys(window.idToPhGeneric).length > 0) {
         return window.collectGenericFormData();
       }
       
-      // Fallback to standard form data collector
       if (window.collectFormData) {
         return window.collectFormData();
       }
       
-      // Manual collection
       const data = {};
       document.querySelectorAll('input[data-ph], select[data-ph], textarea[data-ph]').forEach(el => {
         const ph = el.getAttribute('data-ph');
@@ -609,9 +474,7 @@ class MainApp {
     }
   }
 
-  /**
-   * Update UI
-   */
+
   updateUI() {
     this.renderTemplates();
     this.updateTemplateCount();
@@ -619,9 +482,7 @@ class MainApp {
     this.updateExportButton();
   }
 
-  /**
-   * Render files list
-   */
+
   renderFiles() {
     const fileList = document.getElementById('fileList');
     const fileCount = document.getElementById('fileCount');
@@ -650,27 +511,22 @@ class MainApp {
 
     if (fileCount) fileCount.textContent = this.files.length;
 
-    // Setup file listeners
     this.setupFileListeners();
   }
 
-  /**
-   * Setup file click listeners
-   */
+
   setupFileListeners() {
     const fileItems = document.querySelectorAll('.file-item[data-file-name]');
     fileItems.forEach(item => {
       item.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent folder click
+        event.stopPropagation(); 
         const fileName = item.dataset.fileName;
         this.selectFile(fileName);
       });
     });
   }
 
-  /**
-   * Render templates list
-   */
+
   renderTemplates() {
     const templateList = document.getElementById('templateList');
     if (!templateList) return;
@@ -716,15 +572,13 @@ class MainApp {
       `;
     }).join('');
 
-    // Setup listeners
+
     this.setupTemplateListeners();
     this.setupFileListeners();
   }
 
 
-  /**
-   * Update template selection UI
-   */
+
   updateTemplateSelection() {
     const templateItems = document.querySelectorAll('.template-item');
     templateItems.forEach(item => {
@@ -736,9 +590,7 @@ class MainApp {
     });
   }
 
-  /**
-   * Update template count
-   */
+
   updateTemplateCount() {
     const templateCount = document.getElementById('templateCount');
     if (templateCount) {
@@ -746,9 +598,7 @@ class MainApp {
     }
   }
 
-  /**
-   * Update folder selection UI
-   */
+
   updateFolderSelection() {
     const folderItems = document.querySelectorAll('.folder-item[data-template-name]');
     folderItems.forEach(item => {
@@ -761,9 +611,7 @@ class MainApp {
     });
   }
 
-  /**
-   * Update file selection UI
-   */
+
   updateFileSelection() {
     const fileItems = document.querySelectorAll('.file-item[data-file-name]');
     fileItems.forEach(item => {
@@ -776,9 +624,7 @@ class MainApp {
     });
   }
 
-  /**
-   * Clear form area
-   */
+
   clearFormArea() {
     const formArea = document.getElementById('formArea');
     if (formArea) {
@@ -792,9 +638,7 @@ class MainApp {
     }
   }
 
-  /**
-   * Update form status
-   */
+
   updateFormStatus() {
     const formStatus = document.getElementById('formStatus');
     if (formStatus) {
@@ -811,9 +655,7 @@ class MainApp {
     }
   }
 
-  /**
-   * Update export button
-   */
+
   updateExportButton() {
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) {
@@ -821,9 +663,7 @@ class MainApp {
     }
   }
 
-  /**
-   * Show form loading state
-   */
+
   showFormLoading() {
     const formArea = document.getElementById('formArea');
     if (formArea) {
@@ -837,9 +677,7 @@ class MainApp {
     }
   }
 
-  /**
-   * Show form error
-   */
+
   showFormError(message) {
     const formArea = document.getElementById('formArea');
     if (formArea) {
@@ -853,9 +691,7 @@ class MainApp {
     }
   }
 
-  /**
-   * Show loading overlay
-   */
+
   showLoading() {
     this.isLoading = true;
     const loadingOverlay = document.getElementById('loadingOverlay');
@@ -865,9 +701,7 @@ class MainApp {
     this.updateExportButton();
   }
 
-  /**
-   * Hide loading overlay
-   */
+
   hideLoading() {
     this.isLoading = false;
     const loadingOverlay = document.getElementById('loadingOverlay');
@@ -877,9 +711,7 @@ class MainApp {
     this.updateExportButton();
   }
 
-  /**
-   * Show success modal
-   */
+
   showSuccess(message) {
     const successModal = document.getElementById('successModal');
     if (successModal) {
@@ -887,9 +719,7 @@ class MainApp {
     }
   }
 
-  /**
-   * Show error modal
-   */
+
   showError(message) {
     const errorModal = document.getElementById('errorModal');
     const errorMessage = document.getElementById('errorMessage');
@@ -902,7 +732,6 @@ class MainApp {
   }
 }
 
-// Export
 if (typeof window !== 'undefined') {
   window.MainApp = MainApp;
 }

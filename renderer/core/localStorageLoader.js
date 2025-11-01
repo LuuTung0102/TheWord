@@ -1,7 +1,3 @@
-// ========================================
-// LOCAL STORAGE LOADER (Browser-compatible)
-// ========================================
-
 (function() {
   console.log('🔧 Initializing localStorageLoader...');
   
@@ -59,7 +55,6 @@
     return null;
   }
 
-  // Make functions available globally
   if (typeof window !== 'undefined') {
     window.loadSavedPeople = loadSavedPeople;
     window.getPersonById = getPersonById;

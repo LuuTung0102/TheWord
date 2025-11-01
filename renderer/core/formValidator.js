@@ -1,42 +1,4 @@
 /**
- * Form Validation System
- * Validates form data based on visible subgroups only
- * 
- * ✅ Only validates subgroups with visible = true
- * ✅ Respects required fields from schema
- * ✅ Shows user-friendly error messages
- * 
- * PROBLEM (Before v4.0):
- * - All MEN (MEN1, MEN2, MEN3...) were required to fill
- * - Even if user didn't enable MEN2, MEN3 on UI
- * - Caused frustration when only 1 heir needed
- * 
- * SOLUTION (v4.0):
- * - Only validate subgroups that are VISIBLE (visible = true)
- * - Hidden subgroups are skipped in validation
- * - When user adds person → visible: true → validate
- * - When user removes person → visible: false → skip validation
- * 
- * USAGE:
- * 1. User clicks "Tạo văn bản" (Export button)
- * 2. exportHandler.js calls validateForm()
- * 3. validateForm() checks window.visibleSubgroups
- * 4. Only validates fields in visible subgroups
- * 5. If errors → show alert + highlight fields + scroll to first error
- * 6. If valid → proceed to export
- * 
- * EXAMPLE:
- * User has only 1 heir:
- *   → Only MEN1 visible
- *   → Only validate MEN1 fields
- *   → MEN2, MEN3... are hidden → NOT validated ✅
- * 
- * User adds 2nd heir:
- *   → Click "Thêm người" → MEN2 becomes visible
- *   → Now validate both MEN1 AND MEN2 ✅
- */
-
-/**
  * Validate form data based on current template config and visible subgroups
  * @returns {boolean} - true if valid, false if errors
  */

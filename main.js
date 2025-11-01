@@ -1,4 +1,3 @@
-// main.js (thêm log để debug IPC)
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
@@ -37,7 +36,6 @@ ipcMain.handle("load-placeholders", async (event, fileNames) => {
 });
 
 ipcMain.handle("get-templates-root", async () => {
-  // ✅ Trả về đường dẫn gốc của project, không bao gồm "templates"
   console.log(`🔍 get-templates-root: Returning root path: ${__dirname}`);
   return __dirname;
 });
@@ -52,7 +50,6 @@ ipcMain.handle("get-templates", async () => {
       fs.mkdirSync(templatesDir);
     }
     
-    // Scan folders trong templates/
     const items = fs.readdirSync(templatesDir);
     const folders = [];
     
@@ -60,9 +57,7 @@ ipcMain.handle("get-templates", async () => {
       const itemPath = path.join(templatesDir, item);
       const stat = fs.statSync(itemPath);
       
-      // Chỉ lấy folders
       if (stat.isDirectory()) {
-        // Đếm số file .docx trong folder
         const filesInFolder = fs.readdirSync(itemPath).filter(f => f.endsWith(".docx"));
         
         folders.push({
@@ -118,7 +113,6 @@ ipcMain.handle("save-temp-file", async (event, { buffer, fileName }) => {
     const tempDir = os.tmpdir();
     const tempPath = path.join(tempDir, fileName);
     
-    // Write buffer to temp file
     fs.writeFileSync(tempPath, Buffer.from(buffer));
     console.log(`✅ Saved temp file: ${tempPath}`);
     return tempPath;
@@ -131,17 +125,13 @@ ipcMain.handle("save-temp-file", async (event, { buffer, fileName }) => {
 ipcMain.handle("upload-template", async (event, filePath) => {
   try {
     const destDir = path.join(__dirname, "templates");
-    
-    // Ensure templates directory exists
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
     
-    // Copy file to templates directory
     const fileName = path.basename(filePath);
     const dest = path.join(destDir, fileName);
     
-    // Handle duplicate files
     let finalDest = dest;
     let counter = 1;
     while (fs.existsSync(finalDest)) {
@@ -154,7 +144,6 @@ ipcMain.handle("upload-template", async (event, filePath) => {
     fs.copyFileSync(filePath, finalDest);
     console.log(`✅ Uploaded template: ${path.basename(finalDest)}`);
     
-    // Clean up temp file
     try {
       fs.unlinkSync(filePath);
     } catch (cleanupError) {
@@ -186,7 +175,6 @@ ipcMain.handle("open-template-file", async (event, fileName) => {
       throw new Error('File không tồn tại');
     }
     
-    // Mở file bằng ứng dụng mặc định
     await shell.openPath(filePath);
     console.log(`✅ Opened template file: ${fileName}`);
     return true;
@@ -203,13 +191,11 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
 
     const generatedPaths = [];
     
-    // Lấy tất cả files trong folder
     const folderPath = path.join(__dirname, "templates", folderName);
     const files = fs.readdirSync(folderPath).filter(f => f.endsWith(".docx"));
     
     console.log(`📤 Xuất ${files.length} files từ folder "${folderName}"`);
 
-    // Tạo từng file Word
     for (const file of files) {
       const inputPath = path.join(folderPath, file);
       const outputPath = path.join(
@@ -260,11 +246,7 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
   }
 });
 
-// ========================================
-// NEW IPC HANDLERS FOR MAIN APP v4.0
-// ========================================
 
-// Load main config from renderer/config/config.json
 ipcMain.handle("load-main-config", async () => {
   try {
     const configPath = path.join(__dirname, "renderer", "config", "config.json");
@@ -287,7 +269,7 @@ ipcMain.handle("load-main-config", async () => {
   }
 });
 
-// Check if folder exists
+
 ipcMain.handle("check-folder-exists", async (event, folderPath) => {
   try {
     console.log("📁 check-folder-exists: Checking:", folderPath);
@@ -300,7 +282,7 @@ ipcMain.handle("check-folder-exists", async (event, folderPath) => {
   }
 });
 
-// Get files in folder
+
 ipcMain.handle("get-files-in-folder", async (event, folderPath) => {
   try {
     console.log("📁 get-files-in-folder: Loading from:", folderPath);
@@ -320,7 +302,7 @@ ipcMain.handle("get-files-in-folder", async (event, folderPath) => {
   }
 });
 
-// Get placeholders for a specific file
+
 ipcMain.handle("get-file-placeholders", async (event, folderPath, fileName) => {
   try {
     console.log("📋 get-file-placeholders: Loading from:", folderPath, "file:", fileName);
@@ -346,7 +328,7 @@ ipcMain.handle("get-file-placeholders", async (event, folderPath, fileName) => {
   }
 });
 
-// Get placeholders for a specific template folder
+
 ipcMain.handle("get-template-placeholders", async (event, folderPath) => {
   try {
     console.log("📋 get-placeholders: Loading from:", folderPath);
@@ -375,7 +357,7 @@ ipcMain.handle("get-template-placeholders", async (event, folderPath) => {
   }
 });
 
-// Export single document with form data
+
 ipcMain.handle("export-single-document", async (event, { folderPath, fileName, formData, options }) => {
   try {
     console.log("📤 export-single-document: Starting export for:", folderPath, "file:", fileName);
@@ -391,8 +373,6 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
       throw new Error(`File not found: ${fileName} in ${folderPath}`);
     }
     
-    // ✅ Show dialog to choose output folder
-    // Use last selected folder or Downloads as default
     const { app } = require('electron');
     const defaultFolder = global.lastOutputFolder || app.getPath('downloads');
     
@@ -407,15 +387,10 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     }
     
     const outputFolder = result.filePaths[0];
-    
-    // ✅ Save last selected folder for next time
     global.lastOutputFolder = outputFolder;
-    
-    // ✅ Generate single document with output path and options
-    const outputFileName = fileName; // Keep original filename
+    const outputFileName = fileName; 
     const outputPath = path.join(outputFolder, outputFileName);
     
-    // Convert visibleSubgroups array to Set if provided
     const generateOptions = options ? {
       phMapping: options.phMapping || {},
       visibleSubgroups: options.visibleSubgroups ? new Set(options.visibleSubgroups) : new Set()
@@ -432,7 +407,7 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     return {
       success: true,
       outputPath: outputPath,
-      generatedPath: outputPath, // Keep for backward compatibility
+      generatedPath: outputPath, 
       fileName: path.basename(outputPath)
     };
     
@@ -445,7 +420,6 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
   }
 });
 
-// Export documents with form data
 ipcMain.handle("export-documents", async (event, { templateName, formData }) => {
   try {
     console.log("📤 export-documents: Starting export for:", templateName);
@@ -458,7 +432,6 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
       throw new Error(`Template folder not found: ${templateName}`);
     }
     
-    // Get all docx files in the folder
     const files = fs.readdirSync(folderPath).filter(file => file.endsWith('.docx'));
     
     if (files.length === 0) {
@@ -466,8 +439,6 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
     }
     
     const generatedPaths = [];
-    
-    // Generate each document
     for (const file of files) {
       const filePath = path.join(folderPath, file);
       const outputPath = await generateDocx(filePath, formData);
@@ -497,13 +468,12 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
   }
 });
 
-// Open output folder
+
 ipcMain.handle("open-output-folder", async (event, filePath) => {
   try {
     const { shell } = require("electron");
     
     if (!filePath) {
-      // Fallback: open default output folder
       const outputDir = path.join(__dirname, "output");
       if (fs.existsSync(outputDir)) {
         await shell.openPath(outputDir);
@@ -512,9 +482,7 @@ ipcMain.handle("open-output-folder", async (event, filePath) => {
       return { success: false, error: 'Output folder not found' };
     }
     
-    // Get folder containing the file
     const folderPath = path.dirname(filePath);
-    
     if (fs.existsSync(folderPath)) {
       await shell.openPath(folderPath);
       return { success: true };
