@@ -290,6 +290,46 @@ function setupMoneyInput(el) {
   });
 }
 
+function setupAreaInput(el) {
+  // ✅ Khi đang gõ - chỉ cho phép nhập số
+  el.addEventListener("input", (e) => {
+    let value = e.target.value.replace(/\D/g, ""); // Chỉ giữ số
+    e.target.value = value; // Không format, chỉ hiển thị số thuần
+  });
+  
+  // ✅ Khi focus - xóa dấu phẩy để dễ chỉnh sửa
+  el.addEventListener("focus", (e) => {
+    let value = e.target.value.replace(/\D/g, ""); // Loại bỏ dấu phẩy
+    e.target.value = value;
+  });
+  
+  // ✅ Khi blur (mất focus) - format với dấu phẩy và cập nhật S_Text
+  el.addEventListener("blur", (e) => {
+    let value = e.target.value.replace(/\D/g, "");
+    
+    if (value.length === 0) {
+      // Nếu rỗng, clear S_Text
+      const sTextField = document.querySelector('[data-ph="S_Text"]');
+      if (sTextField) {
+        sTextField.value = "";
+      }
+      return;
+    }
+    
+    // ✅ Sử dụng hàm formatWithCommas từ utils.js
+    const formatted = window.formatWithCommas ? window.formatWithCommas(value) : value;
+    e.target.value = formatted;
+    
+    // ✅ Sử dụng hàm numberToAreaWords từ utils.js
+    const sText = window.numberToAreaWords ? window.numberToAreaWords(value) : "";
+    const sTextField = document.querySelector('[data-ph="S_Text"]');
+    if (sTextField && sText) {
+      sTextField.value = sText;
+      console.log(`📐 Area: ${formatted} -> Text: "${sText}"`);
+    }
+  });
+}
+
 function setupNoteTextarea(el) {
   const resizeTextarea = (ta) => {
     ta.style.height = "auto";
@@ -473,6 +513,11 @@ function reSetupAllInputs() {
     setupMoneyInput(input);
   });
   
+  // Setup area inputs
+  document.querySelectorAll('input[data-ph="S"]').forEach(input => {
+    setupAreaInput(input);
+  });
+  
   // Setup note textareas
   document.querySelectorAll('textarea[data-ph="Note"]').forEach(textarea => {
     setupNoteTextarea(textarea);
@@ -561,6 +606,7 @@ window.isValidEmail = isValidEmail;
 window.setupNameInput = setupNameInput;
 window.setupLandTypeInput = setupLandTypeInput;
 window.setupMoneyInput = setupMoneyInput;
+window.setupAreaInput = setupAreaInput;
 window.setupNoteTextarea = setupNoteTextarea;
 window.setupDatePickers = setupDatePickers;
 window.setupAddressSelects = setupAddressSelects;

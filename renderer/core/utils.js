@@ -119,9 +119,77 @@ function numberToVietnameseWords(number) {
     .trim();
 }
 
+function numberToAreaWords(number) {
+  number = Number(number);
+  if (!Number.isFinite(number) || isNaN(number)) return "";
+  if (number === 0) return "không mét vuông";
+
+  const units = ["", "nghìn", "triệu", "tỷ"];
+  const words = [
+    "không",
+    "một",
+    "hai",
+    "ba",
+    "bốn",
+    "năm",
+    "sáu",
+    "bảy",
+    "tám",
+    "chín",
+  ];
+
+  function readThreeDigits(n, isHighestOrder = false) {
+    n = Number(n);
+    let hundred = Math.floor(n / 100);
+    let ten = Math.floor((n % 100) / 10);
+    let unit = n % 10;
+    let str = "";
+    
+    // Explicitly handle hundreds place (including zero)
+    if (hundred) str += words[hundred] + " trăm";
+    else if (n >= 10 && !isHighestOrder) str += "không trăm";
+    
+    if (ten > 1) {
+      str += (str ? " " : "") + words[ten] + " mươi";
+      if (unit) {
+        if (unit === 1) str += " mốt";
+        else if (unit === 5) str += " lăm";
+        else str += " " + words[unit];
+      }
+    } else if (ten === 1) {
+      str += (str ? " " : "") + "mười";
+      if (unit) {
+        if (unit === 5) str += " lăm";
+        else str += " " + words[unit];
+      }
+    } else if (ten === 0 && unit) {
+      if (hundred) str += " lẻ";
+      if (unit) str += (str ? " " : "") + words[unit];
+    }
+    return str;
+  }
+
+  let i = 0;
+  let result = [];
+  while (number > 0) {
+    const chunk = number % 1000;
+    if (chunk) {
+      const isHighestOrder = Math.floor(number / 1000) === 0;
+      const chunkWords = readThreeDigits(chunk, isHighestOrder);
+      result.unshift((chunkWords + (units[i] ? " " + units[i] : "")).trim());
+    }
+    number = Math.floor(number / 1000);
+    i++;
+  }
+  return (result.join(" ").replace(/ +/g, " ").trim() + " mét vuông")
+    .replace(/ +/g, " ")
+    .trim();
+}
+
 window.expandLandType = expandLandType;
 window.formatCCCD = formatCCCD;
 window.formatPhoneNumber = formatPhoneNumber;
 window.formatDate = formatDate;
 window.formatWithCommas = formatWithCommas;
 window.numberToVietnameseWords = numberToVietnameseWords;
+window.numberToAreaWords = numberToAreaWords;

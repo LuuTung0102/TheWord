@@ -18,6 +18,20 @@
           "BNUQ": ["Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
           "LAND": ["QSH", "So_so", "Ngay_CapD", "Thua_dat_so", "Ban_do_so", "AddressD"]
         }
+      },
+      {
+        "id": "hd-cn",
+        "filename": "Chứng thực.docx",
+        "name": "Giấy chứng thực",
+        "description": "Giấy chứng thực",
+        "groups": ["BCN", "BNCN"],
+        "placeholders": {
+          "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1"],
+          "BNCN": [
+            "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2",
+            "Gender3", "Name3", "Date3", "CCCD3", "Noi_Cap3", "Ngay_Cap3"
+          ]
+        }
       }
     ],
   
@@ -27,6 +41,18 @@
         "label": "Bên ủy quyền ",
         "order": 1,
         "description": "Người ủy quyền"
+      },
+      {
+        "id": "BCN",
+        "label": "Bên chuyển nhượng ",
+        "order": 1,
+        "description": "Bên chuyển nhượng"
+      },
+      {
+        "id": "BNCN",
+        "label": "Bên nhận chuyển nhượng ",
+        "order": 1,
+        "description": "Bên nhận chuyển nhượng"
       },
       {
         "id": "BNUQ",
@@ -202,6 +228,25 @@
         ],
         "suffixes": ["1"],
         "defaultGenders": ["Ông"]
+      },
+      {
+        "group": "BCN",
+        "schema": "UQInfo",
+        "subgroups": [
+          {"id": "MEN1", "label": "Thông tin cá nhân","visible": true}
+        ],
+        "suffixes": ["1"],
+        "defaultGenders": ["Ông"]
+      },
+      {
+        "group": "BNCN",
+        "schema": "UQInfo",
+        "subgroups": [
+          {"id": "MEN2", "label": "Thông tin cá nhân","visible": true},
+          {"id": "MEN3", "label": "Thông tin cá nhân","visible": true}
+        ],
+        "suffixes": ["2", "3"],
+        "defaultGenders": ["Ông", "Bà"]
       },
       {
       "group": "BNUQ",

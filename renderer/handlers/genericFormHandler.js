@@ -125,6 +125,36 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
  */
 async function renderGenericForm(placeholders, config, folderPath) {
   console.log("🎨 Rendering GENERIC form", { placeholders, config });
+  
+  // ✅ Save render params and data structures to window for access in event listeners
+  window.__renderParams = { placeholders, config, folderPath };
+  
+  // Save data structures for dynamic rendering
+  const phMapping = window.buildPlaceholderMapping(config, placeholders);
+  const groupLabels = window.getGroupLabels(config);
+  const subgroupLabels = window.getSubgroupLabels(config);
+  
+  // Group placeholders
+  const grouped = {};
+  placeholders.forEach(ph => {
+    const def = phMapping[ph];
+    if (!def) {
+      console.warn(`⚠️ Placeholder ${ph} not in mapping (not in schema or filtered out)`);
+      return;
+    }
+    
+    const groupKey = def.group;
+    const subKey = def.subgroup;
+    
+    if (!grouped[groupKey]) grouped[groupKey] = {};
+    if (!grouped[groupKey][subKey]) grouped[groupKey][subKey] = [];
+    
+    grouped[groupKey][subKey].push({ ph, def });
+  });
+  
+  window.__renderDataStructures = { phMapping, grouped, groupLabels, subgroupLabels };
+  
+  // Reset flags và clear form
   window.__formDataReused = false;
   window.__reusedGroups = new Set(); // Track các group đã reuse
   window.__reusedGroupSources = new Map(); // Track source của các group đã reuse
@@ -153,30 +183,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
     console.error("❌ Invalid config - missing groups");
     return;
   }
-
-  // Build placeholder mapping
-  // ✅ CRITICAL: Pass actual placeholders to only map existing ones
-  const phMapping = window.buildPlaceholderMapping(config, placeholders);
-  const groupLabels = window.getGroupLabels(config);
-  const subgroupLabels = window.getSubgroupLabels(config);
-
-  // Group placeholders
-  const grouped = {};
-  placeholders.forEach(ph => {
-    const def = phMapping[ph];
-    if (!def) {
-      console.warn(`⚠️ Placeholder ${ph} not in mapping (not in schema or filtered out)`);
-      return;
-    }
-    
-    const groupKey = def.group;
-    const subKey = def.subgroup;
-    
-    if (!grouped[groupKey]) grouped[groupKey] = {};
-    if (!grouped[groupKey][subKey]) grouped[groupKey][subKey] = [];
-    
-    grouped[groupKey][subKey].push({ ph, def });
-  });
 
   console.log("📊 Grouped placeholders:", grouped);
 
@@ -526,9 +532,21 @@ async function renderGenericForm(placeholders, config, folderPath) {
   } // End of for loop
 
   // ✅ Setup "Add Subgroup" buttons
-  document.querySelectorAll('.add-subgroup-btn').forEach(btn => {
+  const addButtons = document.querySelectorAll('.add-subgroup-btn');
+  addButtons.forEach(btn => {
     btn.addEventListener('click', async () => {
       const groupKey = btn.dataset.group;
+      
+      // Get render params and data structures from window
+      const renderParams = window.__renderParams;
+      const renderData = window.__renderDataStructures;
+      if (!renderParams || !renderData) {
+        console.error('❌ No render params or data structures found');
+        return;
+      }
+      
+      const { config } = renderParams;
+      const { phMapping, grouped, groupLabels, subgroupLabels } = renderData;
       
       // Tìm groupMapping để lấy danh sách subgroups
       const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
@@ -537,7 +555,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
         // Tìm subgroup ẩn TIẾP THEO
         const nextHidden = groupMapping.subgroups.find(sg => {
           const subId = typeof sg === 'string' ? sg : sg.id;
-          // ✅ Chỉ check visible status, không cần check grouped
           return !window.visibleSubgroups.has(subId);
         });
         
@@ -545,24 +562,60 @@ async function renderGenericForm(placeholders, config, folderPath) {
           const subgroupId = typeof nextHidden === 'string' ? nextHidden : nextHidden.id;
           window.visibleSubgroups.add(subgroupId);
           
-          // Re-render toàn bộ form để subgroup mới xuất hiện
-          await renderGenericForm(placeholders, config, folderPath);
+          // ✅ Render subgroup và insert vào DOM thay vì re-render cả form
+          const newSubgroupDiv = renderSingleSubgroup(groupKey, subgroupId, config, phMapping, grouped, groupLabels, subgroupLabels);
           
-          // Auto scroll to the new subgroup
-          setTimeout(() => {
-            const newSubgroup = document.querySelector(`[data-subgroup-id="${subgroupId}"]`);
-            if (newSubgroup) {
-              newSubgroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Tìm groupDiv và insert subgroup vào cuối
+          const sectionDiv = document.querySelector(`#section-${groupKey}`);
+          if (sectionDiv) {
+            const groupDiv = sectionDiv.querySelector('.form-group');
+            if (groupDiv) {
+              groupDiv.appendChild(newSubgroupDiv);
+              
+              // Setup event listeners cho subgroup mới
+              setTimeout(() => {
+                // Setup remove button for new subgroup
+                const removeBtn = newSubgroupDiv.querySelector('.remove-subgroup-btn');
+                if (removeBtn) {
+                  removeBtn.addEventListener('click', async () => {
+                    // Use the same logic as main remove handler
+                    const subgroupIdToRemove = removeBtn.dataset.subgroup;
+                    const subgroupLabel = removeBtn.getAttribute('title')?.replace('Xóa ', '') || subgroupIdToRemove;
+                    
+                    if (!confirm(`Bạn có chắc muốn xóa "${subgroupLabel}"?\n\nDữ liệu đã nhập sẽ bị xóa.`)) {
+                      return;
+                    }
+                    
+                    window.visibleSubgroups.delete(subgroupIdToRemove);
+                    groupDiv.removeChild(newSubgroupDiv);
+                    console.log(`✅ Subgroup ${subgroupIdToRemove} removed`);
+                  });
+                }
+                
+                // Setup reuse data dropdown for new subgroup
+                setupReuseDataListeners();
+                
+                // Setup inputs for new subgroup
+                if (typeof window.reSetupAllInputs === 'function') {
+                  window.reSetupAllInputs();
+                }
+              }, 50);
+              
+              // Auto scroll to the new subgroup
+              setTimeout(() => {
+                newSubgroupDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
             }
-          }, 100);
+          }
         }
       }
     });
   });
 
   // ✅ Setup "Remove Subgroup" buttons
-  document.querySelectorAll('.remove-subgroup-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
+  const removeButtons = document.querySelectorAll('.remove-subgroup-btn');
+  removeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
       const groupKey = btn.dataset.group;
       const subgroupId = btn.dataset.subgroup;
       
@@ -583,23 +636,14 @@ async function renderGenericForm(placeholders, config, folderPath) {
       window.visibleSubgroups.delete(subgroupId);
       console.log('✅ Removed from visibleSubgroups:', Array.from(window.visibleSubgroups));
       
-      // Clear input values của subgroup này (nếu cần)
+      // ✅ Simply remove the subgroup div from DOM - no re-render needed
       const subgroupElement = document.querySelector(`[data-subgroup-id="${subgroupId}"]`);
-      if (subgroupElement) {
-        const inputs = subgroupElement.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-          if (input.type === 'checkbox') {
-            input.checked = false;
-          } else {
-            input.value = '';
-          }
-        });
+      if (subgroupElement && subgroupElement.parentNode) {
+        subgroupElement.parentNode.removeChild(subgroupElement);
+        console.log(`✅ Subgroup ${subgroupId} removed from DOM`);
+      } else {
+        console.warn(`⚠️ Subgroup element not found: ${subgroupId}`);
       }
-      
-      // Re-render toàn bộ form để subgroup biến mất
-      await renderGenericForm(placeholders, config, folderPath);
-      
-      console.log(`✅ Subgroup ${subgroupId} removed successfully`);
     });
   });
 
@@ -643,6 +687,98 @@ async function renderGenericForm(placeholders, config, folderPath) {
   });
   
   console.log("✅ Generic form rendered");
+}
+
+/**
+ * Render một subgroup đơn lẻ (dùng để add/remove động)
+ * @param {string} groupKey - BCN, NCN, LAND...
+ * @param {string} subKey - MEN1, MEN2, INFO...
+ * @param {object} config - Config object
+ * @param {object} phMapping - Placeholder mapping
+ * @param {object} grouped - Grouped placeholders
+ * @param {object} groupLabels - Group labels
+ * @param {object} subgroupLabels - Subgroup labels
+ * @returns {HTMLElement} - subgroupDiv element
+ */
+function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, groupLabels, subgroupLabels) {
+  const subgroupDiv = document.createElement("div");
+  subgroupDiv.className = "form-subgroup";
+  subgroupDiv.setAttribute('data-subgroup-id', subKey);
+  subgroupDiv.style.cssText = `
+    border: 2px solid #2196F3;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background: #f8fbff;
+  `;
+  
+  // ✅ Check if this subgroup can be deleted
+  const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
+  const allSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups : [];
+  const subgroupKeys = allSubgroups.map(sg => typeof sg === 'string' ? sg : sg.id);
+  
+  const isDefaultVisible = window.defaultVisibleSubgroups && window.defaultVisibleSubgroups.has(subKey);
+  const visibleSubgroupsInGroup = subgroupKeys.filter(sk => window.visibleSubgroups.has(sk));
+  const canDelete = !isDefaultVisible && visibleSubgroupsInGroup.length > 1;
+  
+  // ✅ Header với nút "Xóa"
+  const deleteButtonHtml = canDelete ? `
+    <button class="remove-subgroup-btn" 
+      data-group="${groupKey}" 
+      data-subgroup="${subKey}"
+      style="
+        padding: 6px 12px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        margin-left: 10px;
+      "
+      title="Xóa ${subgroupLabels[subKey] || subKey}">
+      ❌ Xóa
+    </button>
+  ` : '';
+  
+  subgroupDiv.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h4 style="margin: 0; color: #1976D2;">${subgroupLabels[subKey] || subKey}</h4>
+      ${deleteButtonHtml}
+    </div>
+  `;
+  
+  // ✅ Thêm dropdown "Tái sử dụng dữ liệu"
+  const reuseDropdownHtml = renderReuseDataDropdown(groupKey, subKey, config);
+  if (reuseDropdownHtml) {
+    subgroupDiv.innerHTML += reuseDropdownHtml;
+  }
+
+  // ✅ Lấy items từ grouped
+  const items = (grouped[groupKey] && grouped[groupKey][subKey]) ? grouped[groupKey][subKey] : [];
+  
+  // Sort fields
+  const sortedItems = sortGenericFields(items);
+
+  // Render 3 cột
+  for (let i = 0; i < sortedItems.length; i += 3) {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "form-row";
+    
+    for (let j = i; j < i + 3 && j < sortedItems.length; j++) {
+      const { ph, def } = sortedItems[j];
+      const { inputHtml } = renderGenericInputField(ph, def, groupKey, subKey);
+      const cellDiv = document.createElement("div");
+      cellDiv.className = "form-cell form-field";
+      cellDiv.innerHTML = inputHtml;
+      rowDiv.appendChild(cellDiv);
+    }
+    
+    subgroupDiv.appendChild(rowDiv);
+  }
+  
+  return subgroupDiv;
 }
 
 /**
@@ -1009,6 +1145,18 @@ function collectGenericFormData() {
         }
         const moneyText = window.numberToVietnameseWords ? window.numberToVietnameseWords(rawMoney) : "";
         if (moneyText) data['MoneyText'] = moneyText;
+      }
+    }
+    
+    if (ph === 'S' && value) {
+      const rawArea = value.replace(/\D/g, '');
+      if (rawArea) {
+        if (!value.includes(',')) {
+          value = window.formatWithCommas ? window.formatWithCommas(rawArea) : rawArea;
+          el.value = value;
+        }
+        const sText = window.numberToAreaWords ? window.numberToAreaWords(rawArea) : "";
+        if (sText) data['S_Text'] = sText;
       }
     }
     
