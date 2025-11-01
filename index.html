@@ -20,10 +20,7 @@
                 <p class="app-subtitle">Tạo văn bản tự động từ template</p>
             </div>
         </header>
-
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Panel Nhập Dữ Liệu (Trái) -->
             <div class="data-panel">
                 <div class="panel-header">
                     <h2 class="panel-title">
@@ -36,7 +33,6 @@
                 </div>
                 
                 <div class="panel-content">
-                    <!-- Form Area -->
                     <div class="form-container">
                         <div id="formArea" class="form-area">
                             <div class="empty-state">
@@ -49,7 +45,6 @@
                 </div>
             </div>
 
-            <!-- Panel Chọn Folder -->
             <div class="template-panel">
                 <div class="panel-header">
                     <h2 class="panel-title">
@@ -62,10 +57,8 @@
                 </div>
                 
                 <div class="panel-content">
-                    <!-- Folder List -->
                     <div class="template-container">
                         <div id="templateList" class="template-list">
-                            <!-- Folders will be loaded here -->
                         </div>
                     </div>
                 </div>
@@ -78,7 +71,6 @@
             </div>
         </main>
 
-    <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay" style="display: none;">
         <div class="loading-content">
             <div class="loading-spinner"></div>
@@ -86,7 +78,6 @@
         </div>
     </div>
 
-    <!-- Success Modal -->
     <div id="successModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -103,7 +94,6 @@
         </div>
     </div>
 
-    <!-- Error Modal -->
     <div id="errorModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -119,14 +109,9 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <!-- External Libraries -->
     <script src="node_modules/flatpickr/dist/flatpickr.min.js"></script>
     <script src="node_modules/flatpickr/dist/l10n/vn.js"></script>
-    
-    <!-- Load Address Data -->
     <script>
-        // Load address data
         fetch('renderer/config/address.json')
             .then(response => response.json())
             .then(data => {
@@ -136,8 +121,6 @@
             .catch(error => console.error('❌ Error loading address data:', error));
     </script>
     
-    <!-- Config & Mappings -->
-    <!-- 🆕 NEW SYSTEM: Base constants + Config loader -->
     <script src="renderer/config/baseConstants.js"></script>
     <script src="renderer/config/configLoader.js"></script>
     <script src="renderer/core/utils.js"></script>
@@ -149,7 +132,6 @@
     <script src="renderer/handlers/exportHandler.js"></script>
     <script src="renderer/core/formHelpers.js"></script>
     <script src="renderer/core/electron-imports.js"></script>
-
     <script src="renderer/mainApp.js"></script>
 
     <script>  
@@ -165,16 +147,14 @@
             if (window.ipcRenderer && window.mainAppInstance && window.mainAppInstance.lastExportedPath) {
                 window.ipcRenderer.invoke('open-output-folder', window.mainAppInstance.lastExportedPath);
             } else if (window.ipcRenderer) {
-                // Fallback: open default output folder
                 window.ipcRenderer.invoke('open-output-folder');
             }
         }
         
-        // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             if (window.MainApp) {
                 const app = new window.MainApp();
-                window.mainAppInstance = app; // Expose for openOutputFolder()
+                window.mainAppInstance = app; 
                 app.init();
             }
         });

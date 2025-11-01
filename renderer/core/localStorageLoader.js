@@ -1,7 +1,5 @@
 (function() {
   console.log('🔧 Initializing localStorageLoader...');
-  
-  // Cache for saved people
   let savedPeopleCache = null;
 
   /**

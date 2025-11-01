@@ -112,7 +112,6 @@ ipcMain.handle("save-temp-file", async (event, { buffer, fileName }) => {
     const os = require('os');
     const tempDir = os.tmpdir();
     const tempPath = path.join(tempDir, fileName);
-    
     fs.writeFileSync(tempPath, Buffer.from(buffer));
     console.log(`✅ Saved temp file: ${tempPath}`);
     return tempPath;
@@ -128,10 +127,8 @@ ipcMain.handle("upload-template", async (event, filePath) => {
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
-    
     const fileName = path.basename(filePath);
     const dest = path.join(destDir, fileName);
-    
     let finalDest = dest;
     let counter = 1;
     while (fs.existsSync(finalDest)) {
@@ -140,16 +137,13 @@ ipcMain.handle("upload-template", async (event, filePath) => {
       finalDest = path.join(destDir, `${name}_${counter}${ext}`);
       counter++;
     }
-    
     fs.copyFileSync(filePath, finalDest);
     console.log(`✅ Uploaded template: ${path.basename(finalDest)}`);
-    
     try {
       fs.unlinkSync(filePath);
     } catch (cleanupError) {
       console.warn("⚠️ Could not clean up temp file:", cleanupError);
     }
-    
     return path.basename(finalDest);
   } catch (error) {
     console.error("❌ Error uploading template:", error);
@@ -170,7 +164,6 @@ ipcMain.handle("open-template-file", async (event, fileName) => {
   try {
     const { shell } = require('electron');
     const filePath = path.join(__dirname, "templates", fileName);
-    
     if (!fs.existsSync(filePath)) {
       throw new Error('File không tồn tại');
     }
@@ -188,21 +181,16 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
   try {
     const tempDir = path.join(app.getPath("temp"), "word_exports");
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
-
     const generatedPaths = [];
-    
     const folderPath = path.join(__dirname, "templates", folderName);
     const files = fs.readdirSync(folderPath).filter(f => f.endsWith(".docx"));
-    
     console.log(`📤 Xuất ${files.length} files từ folder "${folderName}"`);
-
     for (const file of files) {
       const inputPath = path.join(folderPath, file);
       const outputPath = path.join(
         tempDir,
         `${path.parse(file).name}_filled.docx`
       );
-      
       await generateDocx(inputPath, data, outputPath);
       generatedPaths.push(outputPath);
       console.log(`  ✅ ${file} → ${path.basename(outputPath)}`);
@@ -363,7 +351,6 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     console.log("📤 export-single-document: Starting export for:", folderPath, "file:", fileName);
     console.log("📤 export-single-document: Form data:", formData);
     
-    // ✅ Sửa lại: Không nối thêm "templates/" vì folderPath đã có "templates/"
     const projectRoot = __dirname;
     const fullFolderPath = path.join(projectRoot, folderPath);
     console.log(`📤 export-single-document: Full folder path: ${fullFolderPath}`);

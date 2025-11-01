@@ -39,7 +39,6 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
       ${wrapperEnd}
     `;
   } else if (type === "address-select") {
-    // Address with province/district/ward/village dropdowns
     inputHtml = `
       ${wrapperStart}
       <label for="${safeId}"${requiredClass}><b>${label}</b></label>
@@ -120,21 +119,12 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
   return { inputHtml, inputId };
 }
 
-/**
- * Render form từ config
- */
 async function renderGenericForm(placeholders, config, folderPath) {
   console.log("🎨 Rendering GENERIC form", { placeholders, config });
-  
-  // ✅ Save render params and data structures to window for access in event listeners
   window.__renderParams = { placeholders, config, folderPath };
-  
-  // Save data structures for dynamic rendering
   const phMapping = window.buildPlaceholderMapping(config, placeholders);
   const groupLabels = window.getGroupLabels(config);
   const subgroupLabels = window.getSubgroupLabels(config);
-  
-  // Group placeholders
   const grouped = {};
   placeholders.forEach(ph => {
     const def = phMapping[ph];
@@ -153,22 +143,18 @@ async function renderGenericForm(placeholders, config, folderPath) {
   });
   
   window.__renderDataStructures = { phMapping, grouped, groupLabels, subgroupLabels };
-  
-  // Reset flags và clear form
   window.__formDataReused = false;
-  window.__reusedGroups = new Set(); // Track các group đã reuse
-  window.__reusedGroupSources = new Map(); // Track source của các group đã reuse
+  window.__reusedGroups = new Set(); 
+  window.__reusedGroupSources = new Map();
   
   document.querySelectorAll('input[data-ph], select[data-ph], textarea[data-ph]').forEach(el => {
     el.value = '';
   });
   
-  // 🗑️ CLEANUP old event listeners FIRST
   if (typeof window.cleanupAllEventListeners === 'function') {
     window.cleanupAllEventListeners();
   }
   
-  // 🗑️ HIDE OLD TASKBAR (from formHandler.js)
   const oldTaskbar = document.getElementById('taskbarContainer');
   if (oldTaskbar) {
     oldTaskbar.style.display = 'none';
@@ -185,18 +171,10 @@ async function renderGenericForm(placeholders, config, folderPath) {
   }
 
   console.log("📊 Grouped placeholders:", grouped);
-
-  // Get group order từ config (new JSON format)
   const groupOrder = config.groups
     .sort((a, b) => (a.order || 999) - (b.order || 999))
     .map(group => group.id);
   
-  // ✅ Track visible state of subgroups
-  // ⚠️ CRITICAL: Reset visibleSubgroups when rendering new form
-  // Only reset visibleSubgroups when loading a NEW file (not when re-rendering)
-  // When re-rendering after clicking "Thêm" button, preserve existing visibleSubgroups
-  
-  // ✅ Initialize defaultVisibleSubgroups if not exists (should be reset in mainApp.js when loading new file)
   if (!window.defaultVisibleSubgroups) {
     window.defaultVisibleSubgroups = new Set();
   }
@@ -204,29 +182,22 @@ async function renderGenericForm(placeholders, config, folderPath) {
   if (!window.visibleSubgroups || window.visibleSubgroups.size === 0) {
     window.visibleSubgroups = new Set();
     console.log('🔄 Initialize visibleSubgroups for new form');
-    
-    // Initialize visible subgroups from fieldMappings
     if (config.fieldMappings) {
       config.fieldMappings.forEach(mapping => {
         if (mapping.subgroups && mapping.subgroups.length > 0) {
           mapping.subgroups.forEach((subgroup, index) => {
             const subgroupId = typeof subgroup === 'string' ? subgroup : subgroup.id;
-            
-            // Check explicit visible property
-            const hasExplicitVisible = typeof subgroup === 'object' && subgroup.hasOwnProperty('visible');
-            
+            const hasExplicitVisible = typeof subgroup === 'object' && subgroup.hasOwnProperty('visible');          
             if (hasExplicitVisible) {
-              // Use explicit visible value from config
               if (subgroup.visible === true) {
                 window.visibleSubgroups.add(subgroupId);
-                window.defaultVisibleSubgroups.add(subgroupId); // ✅ Track as default visible
+                window.defaultVisibleSubgroups.add(subgroupId); 
                 console.log(`✅ Default visible (config): ${subgroupId}`);
               }
             } else {
-              // Default: Only first subgroup is visible
               if (index === 0) {
                 window.visibleSubgroups.add(subgroupId);
-                window.defaultVisibleSubgroups.add(subgroupId); // ✅ Track as default visible
+                window.defaultVisibleSubgroups.add(subgroupId); 
                 console.log(`✅ Default visible (first): ${subgroupId}`);
               } else {
                 console.log(`⏭️ Default hidden (not first): ${subgroupId}`);
@@ -243,7 +214,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
   console.log('✅ Current visibleSubgroups:', Array.from(window.visibleSubgroups));
   console.log('✅ Default visible subgroups (cannot delete):', Array.from(window.defaultVisibleSubgroups));
 
-  // 🎨 RENDER TASKBAR
+
   const taskbarHtml = `
     <div class="form-taskbar">
       ${groupOrder.map((groupKey, index) => {
@@ -256,16 +227,13 @@ async function renderGenericForm(placeholders, config, folderPath) {
   `;
   area.insertAdjacentHTML('beforeend', taskbarHtml);
   
-  // ✅ Add "Clear All Session" button to footer (next to export button)
   const footerActions = document.querySelector('.footer-actions');
   if (footerActions) {
-    // Remove existing clear button if any
     const existingClearBtn = footerActions.querySelector('.clear-all-session-btn');
     if (existingClearBtn) {
       existingClearBtn.remove();
     }
     
-    // Check if there's any session data to show clear button
     const hasSessionData = window.sessionStorageManager ? 
       (window.sessionStorageManager.getAvailableMenGroups() || []).length > 0 : false;
     
@@ -290,16 +258,12 @@ async function renderGenericForm(placeholders, config, folderPath) {
       clearBtn.title = 'Xóa tất cả dữ liệu đã lưu trong session';
       footerActions.appendChild(clearBtn);
       
-      // ✅ Setup event listener for this button
       clearBtn.addEventListener('click', async () => {
-        // Xác nhận trước khi xóa
         if (!confirm('⚠️ Bạn có chắc muốn xóa TẤT CẢ dữ liệu đã lưu?\n\nTất cả dữ liệu "Tái sử dụng" sẽ bị xóa và không thể khôi phục.')) {
           return;
         }
         
         console.log('🗑️ Clearing all session data...');
-        
-        // Clear all session data
         if (window.sessionStorageManager && window.sessionStorageManager.clearAllSessionData) {
           window.sessionStorageManager.clearAllSessionData();
           console.log('✅ All session data cleared');
@@ -309,19 +273,13 @@ async function renderGenericForm(placeholders, config, folderPath) {
           return;
         }
         
-        // Remove button from footer immediately
         clearBtn.remove();
-        
-        // Re-render form để cập nhật dropdowns (remove "Tái sử dụng" options)
         await renderGenericForm(placeholders, config, folderPath);
-        
-        // Show success message
         alert('✅ Đã xóa tất cả session data thành công!');
       });
     }
   }
 
-  // Check if any group has localStorage source
   const groupSources = {};
   if (config.fieldMappings) {
     config.fieldMappings.forEach(mapping => {
@@ -331,25 +289,18 @@ async function renderGenericForm(placeholders, config, folderPath) {
     });
   }
 
-
-  // Render each group
   for (let index = 0; index < groupOrder.length; index++) {
     const groupKey = groupOrder[index];
     if (!grouped[groupKey]) continue;
-
     const sectionDiv = document.createElement("div");
     sectionDiv.className = `form-section ${index === 0 ? 'active' : ''}`;
     sectionDiv.id = `section-${groupKey}`;
-
     const groupDiv = document.createElement("div");
     groupDiv.className = "form-group";
     
-    // ✅ Header với nút "Thêm" (nếu có subgroups ẩn)
     const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
     const hiddenSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups.filter(sg => {
       const subId = typeof sg === 'string' ? sg : sg.id;
-      // ✅ Chỉ check visible status từ window.visibleSubgroups
-      // Không check grouped vì subgroup có thể không có placeholders nhưng vẫn cần button "Thêm"
       return !window.visibleSubgroups.has(subId);
     }) : [];
     
@@ -378,11 +329,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
       groupDiv.innerHTML = `<h3>${groupLabels[groupKey] || groupKey}</h3>`;
     }
 
-    // ✅ Check if this group uses localStorage
     if (groupSources[groupKey] === "localStorage") {
       console.log(`📂 Group ${groupKey} uses localStorage`);
       
-      // Get suffix for this group from fieldMappings
       let suffix = '';
       if (config.fieldMappings) {
         const mapping = config.fieldMappings.find(m => m.group === groupKey && m.source === "localStorage");
@@ -391,11 +340,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
         }
       }
       
-      // Render buttons to select from saved people
       console.log(`🔍 Loading saved people for group ${groupKey}...`);
       console.log(`🔍 window.loadSavedPeople exists? ${!!window.loadSavedPeople}`);
       
-      // ✅ loadSavedPeople is now async, so we await it
       const savedPeople = window.loadSavedPeople ? await window.loadSavedPeople() : [];
       console.log(`🔍 Loaded ${savedPeople.length} saved people:`, savedPeople);
       
@@ -439,13 +386,10 @@ async function renderGenericForm(placeholders, config, folderPath) {
       
       groupDiv.innerHTML += buttonsHtml;
     } else {
-      // Normal form rendering - Subgroups only render visible ones
-      // ✅ Lấy từ config thay vì grouped để bao gồm cả subgroups không có placeholders
       const allSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups : [];
       const subgroupKeys = allSubgroups.map(sg => typeof sg === 'string' ? sg : sg.id);
       
       subgroupKeys.forEach(subKey => {
-        // ✅ Skip if subgroup is not visible
         if (!window.visibleSubgroups.has(subKey)) return;
         
         const subgroupDiv = document.createElement("div");
@@ -459,14 +403,10 @@ async function renderGenericForm(placeholders, config, folderPath) {
           background: #f8fbff;
         `;
         
-        // ✅ Check if this subgroup can be deleted
-        // Rule: Chỉ cho phép xóa các subgroup được thêm động (KHÔNG có trong defaultVisibleSubgroups)
-        // Subgroup mặc định (visible: true trong config) KHÔNG được phép xóa
         const isDefaultVisible = window.defaultVisibleSubgroups && window.defaultVisibleSubgroups.has(subKey);
         const visibleSubgroupsInGroup = subgroupKeys.filter(sk => window.visibleSubgroups.has(sk));
         const canDelete = !isDefaultVisible && visibleSubgroupsInGroup.length > 1;
         
-        // ✅ Header với nút "Xóa" (chỉ hiển thị cho subgroup được thêm động)
         const deleteButtonHtml = canDelete ? `
           <button class="remove-subgroup-btn" 
             data-group="${groupKey}" 
@@ -494,19 +434,13 @@ async function renderGenericForm(placeholders, config, folderPath) {
           </div>
         `;
         
-        // ✅ Thêm dropdown "Tái sử dụng dữ liệu" cho từng subgroup
         const reuseDropdownHtml = renderReuseDataDropdown(groupKey, subKey, config);
         if (reuseDropdownHtml) {
           subgroupDiv.innerHTML += reuseDropdownHtml;
         }
 
-        // ✅ Lấy items từ grouped (có thể rỗng nếu subgroup không có placeholders trong template)
         const items = (grouped[groupKey] && grouped[groupKey][subKey]) ? grouped[groupKey][subKey] : [];
-        
-        // Sort fields
         const sortedItems = sortGenericFields(items);
-
-      // Render 3 cột
       for (let i = 0; i < sortedItems.length; i += 3) {
         const rowDiv = document.createElement("div");
         rowDiv.className = "form-row";
@@ -525,19 +459,17 @@ async function renderGenericForm(placeholders, config, folderPath) {
 
         groupDiv.appendChild(subgroupDiv);
       });
-    } // End of else (normal form rendering)
+    } 
 
     sectionDiv.appendChild(groupDiv);
     area.appendChild(sectionDiv);
-  } // End of for loop
+  } 
 
-  // ✅ Setup "Add Subgroup" buttons
   const addButtons = document.querySelectorAll('.add-subgroup-btn');
   addButtons.forEach(btn => {
     btn.addEventListener('click', async () => {
       const groupKey = btn.dataset.group;
       
-      // Get render params and data structures from window
       const renderParams = window.__renderParams;
       const renderData = window.__renderDataStructures;
       if (!renderParams || !renderData) {
@@ -547,12 +479,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
       
       const { config } = renderParams;
       const { phMapping, grouped, groupLabels, subgroupLabels } = renderData;
-      
-      // Tìm groupMapping để lấy danh sách subgroups
       const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
       
       if (groupMapping && groupMapping.subgroups) {
-        // Tìm subgroup ẩn TIẾP THEO
         const nextHidden = groupMapping.subgroups.find(sg => {
           const subId = typeof sg === 'string' ? sg : sg.id;
           return !window.visibleSubgroups.has(subId);
@@ -561,47 +490,31 @@ async function renderGenericForm(placeholders, config, folderPath) {
         if (nextHidden) {
           const subgroupId = typeof nextHidden === 'string' ? nextHidden : nextHidden.id;
           window.visibleSubgroups.add(subgroupId);
-          
-          // ✅ Render subgroup và insert vào DOM thay vì re-render cả form
           const newSubgroupDiv = renderSingleSubgroup(groupKey, subgroupId, config, phMapping, grouped, groupLabels, subgroupLabels);
-          
-          // Tìm groupDiv và insert subgroup vào cuối
           const sectionDiv = document.querySelector(`#section-${groupKey}`);
           if (sectionDiv) {
             const groupDiv = sectionDiv.querySelector('.form-group');
             if (groupDiv) {
               groupDiv.appendChild(newSubgroupDiv);
-              
-              // Setup event listeners cho subgroup mới
               setTimeout(() => {
-                // Setup remove button for new subgroup
                 const removeBtn = newSubgroupDiv.querySelector('.remove-subgroup-btn');
                 if (removeBtn) {
                   removeBtn.addEventListener('click', async () => {
-                    // Use the same logic as main remove handler
                     const subgroupIdToRemove = removeBtn.dataset.subgroup;
                     const subgroupLabel = removeBtn.getAttribute('title')?.replace('Xóa ', '') || subgroupIdToRemove;
-                    
                     if (!confirm(`Bạn có chắc muốn xóa "${subgroupLabel}"?\n\nDữ liệu đã nhập sẽ bị xóa.`)) {
                       return;
                     }
-                    
                     window.visibleSubgroups.delete(subgroupIdToRemove);
                     groupDiv.removeChild(newSubgroupDiv);
                     console.log(`✅ Subgroup ${subgroupIdToRemove} removed`);
                   });
                 }
-                
-                // Setup reuse data dropdown for new subgroup
                 setupReuseDataListeners();
-                
-                // Setup inputs for new subgroup
                 if (typeof window.reSetupAllInputs === 'function') {
                   window.reSetupAllInputs();
                 }
               }, 50);
-              
-              // Auto scroll to the new subgroup
               setTimeout(() => {
                 newSubgroupDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }, 100);
@@ -612,7 +525,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
     });
   });
 
-  // ✅ Setup "Remove Subgroup" buttons
   const removeButtons = document.querySelectorAll('.remove-subgroup-btn');
   removeButtons.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -624,19 +536,14 @@ async function renderGenericForm(placeholders, config, folderPath) {
         return;
       }
       
-      // Xác nhận trước khi xóa
       const subgroupLabel = btn.getAttribute('title')?.replace('Xóa ', '') || subgroupId;
       if (!confirm(`Bạn có chắc muốn xóa "${subgroupLabel}"?\n\nDữ liệu đã nhập sẽ bị xóa.`)) {
         return;
       }
-      
       console.log(`🗑️ Removing subgroup: ${subgroupId} from group: ${groupKey}`);
-      
-      // Remove từ visibleSubgroups
       window.visibleSubgroups.delete(subgroupId);
       console.log('✅ Removed from visibleSubgroups:', Array.from(window.visibleSubgroups));
       
-      // ✅ Simply remove the subgroup div from DOM - no re-render needed
       const subgroupElement = document.querySelector(`[data-subgroup-id="${subgroupId}"]`);
       if (subgroupElement && subgroupElement.parentNode) {
         subgroupElement.parentNode.removeChild(subgroupElement);
@@ -647,16 +554,12 @@ async function renderGenericForm(placeholders, config, folderPath) {
     });
   });
 
-  // Setup taskbar navigation
+
   document.querySelectorAll('.taskbar-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const targetSection = btn.dataset.section;
-      
-      // Update active button
       document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      // Show target section, hide others
+      btn.classList.add('active');  
       document.querySelectorAll('.form-section').forEach(section => {
         if (section.id === `section-${targetSection}`) {
           section.classList.add('active');
@@ -677,13 +580,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
         console.log('🔧 Setting up all inputs for generic form...');
         window.reSetupAllInputs();
       }
-      
-      // ✅ Setup person selection dropdowns
       setupPersonSelectionListeners(groupSources, grouped);
-      
-      // ✅ Setup reuse data dropdowns
       setupReuseDataListeners();
-    }, 100); // Reduced from 500ms since we have requestAnimationFrame
+    }, 100); 
   });
   
   console.log("✅ Generic form rendered");
@@ -712,7 +611,6 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
     background: #f8fbff;
   `;
   
-  // ✅ Check if this subgroup can be deleted
   const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
   const allSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups : [];
   const subgroupKeys = allSubgroups.map(sg => typeof sg === 'string' ? sg : sg.id);
@@ -721,7 +619,6 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
   const visibleSubgroupsInGroup = subgroupKeys.filter(sk => window.visibleSubgroups.has(sk));
   const canDelete = !isDefaultVisible && visibleSubgroupsInGroup.length > 1;
   
-  // ✅ Header với nút "Xóa"
   const deleteButtonHtml = canDelete ? `
     <button class="remove-subgroup-btn" 
       data-group="${groupKey}" 
@@ -749,19 +646,13 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
     </div>
   `;
   
-  // ✅ Thêm dropdown "Tái sử dụng dữ liệu"
   const reuseDropdownHtml = renderReuseDataDropdown(groupKey, subKey, config);
   if (reuseDropdownHtml) {
     subgroupDiv.innerHTML += reuseDropdownHtml;
   }
 
-  // ✅ Lấy items từ grouped
   const items = (grouped[groupKey] && grouped[groupKey][subKey]) ? grouped[groupKey][subKey] : [];
-  
-  // Sort fields
   const sortedItems = sortGenericFields(items);
-
-  // Render 3 cột
   for (let i = 0; i < sortedItems.length; i += 3) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "form-row";
@@ -788,12 +679,10 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
  * @param {object} config - Config object
  */
 function renderReuseDataDropdown(groupKey, subKey, config) {
-  // Lấy suffix của subgroup này (nếu có)
   let targetSuffix = '';
   if (config.fieldMappings) {
     const mapping = config.fieldMappings.find(m => m.group === groupKey);
     if (mapping && mapping.suffixes && mapping.suffixes.length > 0) {
-      // Tìm index của subKey trong subgroups
       const subgroupIndex = mapping.subgroups ? 
         mapping.subgroups.findIndex(sg => (typeof sg === 'string' ? sg : sg.id) === subKey) : -1;
       
@@ -803,30 +692,22 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
     }
   }
   
-  // Lấy tất cả groups đã lưu
   const allGroups = window.sessionStorageManager ? 
     window.sessionStorageManager.getAvailableMenGroups() : [];
   
   if (allGroups.length === 0) return null;
   
   const availableGroups = allGroups.filter(group => {
-    // ❌ Luôn loại bỏ group "OTHER"
     if (group.groupKey === 'OTHER') return false;
-    
     if (targetSuffix) {
-      // Subgroup này có suffix → chỉ lấy MEN groups
       return group.groupKey.startsWith('MEN');
     } else {
-      // Subgroup này không có suffix → chỉ lấy groups khác (trừ MEN và OTHER)
       return !group.groupKey.startsWith('MEN');
     }
   }).map(group => {
       let finalDisplayName = group.displayName;
-      
-      
       if (!group.groupKey.startsWith('MEN')) {
         let groupLabel = null;
-        
         if (config.groups) {
           const groupDef = config.groups.find(g => g.id === group.groupKey);
           if (groupDef && groupDef.label) {
@@ -856,7 +737,6 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
   
   if (availableGroups.length === 0) return null;
   
-  // Tạo unique ID cho dropdown này
   const dropdownId = `reuse-${groupKey}-${subKey}-${Date.now()}`;
   
   return `
@@ -883,14 +763,10 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
   `;
 }
 
-/**
- * Setup event listeners for person selection buttons
- */
 function setupPersonSelectionListeners(groupSources, grouped) {
   Object.keys(groupSources).forEach(groupKey => {
     if (groupSources[groupKey] !== "localStorage") return;
     
-    // Get all person buttons for this group
     const buttonsContainer = document.getElementById(`person-buttons-${groupKey}`);
     if (!buttonsContainer) return;
     
@@ -903,7 +779,6 @@ function setupPersonSelectionListeners(groupSources, grouped) {
         const previewDiv = document.getElementById(`preview-${groupKey}`);
         const previewContent = document.getElementById(`preview-content-${groupKey}`);
         
-        // Reset all buttons in this group
         buttons.forEach(btn => {
           btn.classList.remove('active');
           btn.style.fontWeight = 'normal';
@@ -912,18 +787,15 @@ function setupPersonSelectionListeners(groupSources, grouped) {
           btn.style.color = '#333';
         });
         
-        // Highlight selected button
         clickedButton.classList.add('active');
         clickedButton.style.fontWeight = 'bold';
         clickedButton.style.borderColor = '#4CAF50';
         clickedButton.style.background = '#4CAF50';
         clickedButton.style.color = 'white';
         
-        // Set flag: group này được reuse từ localStorage
         if (!window.__reusedGroups) window.__reusedGroups = new Set();
         window.__reusedGroups.add(`localStorage:${groupKey}`); // Prefix để phân biệt
         
-        // Get person data
         const person = window.getPersonById ? window.getPersonById(personId) : null;
         
         if (!person) {
@@ -931,7 +803,6 @@ function setupPersonSelectionListeners(groupSources, grouped) {
           return;
         }
         
-        // Display preview
         let html = `<p style="margin-bottom: 10px; font-size: 16px;"><strong>📋 ${person.name}</strong></p>`;
         html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">';
         
@@ -952,9 +823,7 @@ function setupPersonSelectionListeners(groupSources, grouped) {
   });
 }
 
-/**
- * Setup event listeners for reuse data dropdowns
- */
+
 function setupReuseDataListeners() {
   document.querySelectorAll('.reuse-data-select').forEach(select => {
     select.addEventListener('change', (e) => {
@@ -966,12 +835,10 @@ function setupReuseDataListeners() {
       console.log(`🔄 Reuse data selected: ${value} for ${targetSubgroup} (suffix ${targetSuffix})`);
       
       if (!value) {
-        // User chọn "Nhập mới" → Xóa flag
         window.__formDataReused = false;
         return;
       }
       
-      // Parse value: "fileName|sourceGroupKey"
       const [fileName, sourceGroupKey] = value.split('|');
       
       if (!fileName || !sourceGroupKey) {
@@ -979,7 +846,6 @@ function setupReuseDataListeners() {
         return;
       }
       
-      // Lấy dữ liệu từ session storage
       const sourceData = window.sessionStorageManager.getMenGroupData(fileName, sourceGroupKey);
       
       if (!sourceData) {
@@ -990,19 +856,16 @@ function setupReuseDataListeners() {
       console.log(`✅ Loading data: ${sourceGroupKey} (${fileName}) → ${targetSubgroup}`);
       console.log(`   Source data:`, sourceData);
       
-      // Set flag: targetSubgroup được reuse từ session storage
       if (!window.__reusedGroups) window.__reusedGroups = new Set();
-      window.__reusedGroups.add(targetSubgroup); // Track TARGET groupKey (MEN1, MEN2, LAND...)
+      window.__reusedGroups.add(targetSubgroup); 
       
-      // Track source: targetGroupKey → {sourceFileName, sourceGroupKey, sourceData}
       if (!window.__reusedGroupSources) window.__reusedGroupSources = new Map();
       window.__reusedGroupSources.set(targetSubgroup, { 
         sourceFileName: fileName, 
-        sourceGroupKey: sourceGroupKey,  // MEN7, MEN2, LAND...
+        sourceGroupKey: sourceGroupKey,  
         sourceData: sourceData 
       });
       
-      // Fill form với dữ liệu
       fillFormWithMenData(sourceData, targetSuffix);
     });
   });
@@ -1018,13 +881,11 @@ function fillFormWithMenData(groupData, targetSuffix) {
     const value = groupData[fieldName];
     const placeholder = targetSuffix ? `${fieldName}${targetSuffix}` : fieldName;
     
-    // Xử lý đặc biệt cho Address (address-select với 4 dropdowns)
     if (fieldName.includes('Address') && value && typeof value === 'string') {
       fillAddressField(placeholder, value);
       return;
     }
     
-    // Tìm input/select/textarea có data-ph
     const element = document.querySelector(`[data-ph="${placeholder}"]`);
     
     if (element) {
@@ -1054,7 +915,6 @@ function fillAddressField(placeholder, addressString) {
   const wardSelect = addressGroup.querySelector('select[data-level="ward"]');
   const villageInput = addressGroup.querySelector('input[data-level="village"]');
   
-  // Set province
   const provinceName = parts[parts.length - 1];
   const provinceOption = Array.from(provinceSelect.options).find(opt => 
     opt.text.includes(provinceName.replace('T. ', '').replace('TP. ', ''))
@@ -1091,26 +951,16 @@ function fillAddressField(placeholder, addressString) {
   }, 100);
 }
 
-/**
- * Sort fields theo field order
- */
 function sortGenericFields(items) {
   return items.sort((a, b) => {
-    // ✅ Chỉ dùng order từ fieldDef (đã được load từ config.json)
     const aOrder = a.def?.order || 999;
     const bOrder = b.def?.order || 999;
-    
     return aOrder - bOrder;
   });
 }
 
-/**
- * Collect data từ generic form
- */
 function collectGenericFormData() {
   const data = {};
-  
-  // Thu thập dữ liệu từ localStorage buttons
   document.querySelectorAll('.person-buttons').forEach(buttonContainer => {
     const groupKey = buttonContainer.getAttribute('data-group');
     const suffix = buttonContainer.getAttribute('data-suffix');
@@ -1129,7 +979,6 @@ function collectGenericFormData() {
     }
   });
   
-  // Thu thập dữ liệu từ các input/select/textarea có data-ph
   document.querySelectorAll('input[data-ph], select[data-ph], textarea[data-ph]').forEach(el => {
     const ph = el.getAttribute('data-ph');
     if (!ph) return;
@@ -1168,38 +1017,29 @@ function collectGenericFormData() {
     data[ph] = value;
   });
   
-  // ✅ Thu thập dữ liệu địa chỉ từ các address-group
   document.querySelectorAll('.address-group').forEach(addressGroup => {
-    // Tìm tất cả các select trong group này
     const provinceSelect = addressGroup.querySelector('select[data-level="province"]');
     const districtSelect = addressGroup.querySelector('select[data-level="district"]');
     const wardSelect = addressGroup.querySelector('select[data-level="ward"]');
     const villageSelect = addressGroup.querySelector('select[data-level="village"]');
     
     if (!provinceSelect) return;
-    
-    // Lấy data-main từ province select (đây là placeholder ID)
     const mainId = provinceSelect.getAttribute('data-main');
     if (!mainId) return;
-    
-    // Tìm placeholder tương ứng từ mainId (vd: input-Address1-xxx => Address1)
     const phMatch = mainId.match(/input-([^-]+)/);
     if (!phMatch) return;
     const ph = phMatch[1];
-    
     const parts = [];
     if (villageSelect && villageSelect.value) parts.push(villageSelect.value);
     if (wardSelect && wardSelect.value) parts.push(wardSelect.value);
     if (districtSelect && districtSelect.value) parts.push(districtSelect.value);
     if (provinceSelect && provinceSelect.value) parts.push(provinceSelect.value);
-    
     data[ph] = parts.join(', ');
   });
   
   return data;
 }
 
-// Export
 if (typeof window !== 'undefined') {
   window.renderGenericForm = renderGenericForm;
   window.collectGenericFormData = collectGenericFormData;

@@ -32,7 +32,6 @@ class MainApp {
       const config = await this.loadMainConfig();
       
       if (config && config.folders) {
-        // Load templates từ config.folders
         this.templates = await Promise.all(config.folders.map(async (folderConfig) => {
           try {
             const templatesRoot = await window.ipcRenderer.invoke("get-templates-root");
@@ -61,7 +60,6 @@ class MainApp {
           }
         }));
         
-        // Filter out null results
         this.templates = this.templates.filter(template => template !== null);
         
         console.log('📁 MainApp: Templates loaded from config:', this.templates);
@@ -418,7 +416,6 @@ class MainApp {
         throw new Error(`Template not found: ${this.selectedFolder}`);
       }
       
-      // Export
       if (window.ipcRenderer) {
         const phMapping = window.__renderDataStructures?.phMapping || {};
         const visibleSubgroups = window.visibleSubgroups ? Array.from(window.visibleSubgroups) : [];

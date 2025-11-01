@@ -20,12 +20,7 @@
 
     let hasModifications = false;
     let hasAdditions = false;
-
-    // Chỉ so sánh các key có trong currentData (template mới có thể có ít trường hơn)
-    // Bỏ qua các trường có trong sourceData nhưng không có trong currentData
     const currentKeys = Object.keys(currentData);
-    
-    // Debug: Track các field có vấn đề
     const differences = [];
     
     for (const key of currentKeys) {
@@ -34,26 +29,20 @@
 
       const sourceEmpty = isEmpty(sourceValue);
       const currentEmpty = isEmpty(currentValue);
-
-      // Nếu cả 2 đều có giá trị và khác nhau → modification
       if (!sourceEmpty && !currentEmpty && sourceValue !== currentValue) {
         hasModifications = true;
         differences.push({ key, type: 'MODIFICATION', source: sourceValue, current: currentValue });
       }
-      // Nếu source rỗng (hoặc không có) nhưng current có giá trị → addition
       else if (sourceEmpty && !currentEmpty) {
         hasAdditions = true;
         differences.push({ key, type: 'ADDITION', source: sourceValue || '(undefined)', current: currentValue });
       }
-      // Nếu source có giá trị nhưng current rỗng → modification (xóa dữ liệu)
       else if (!sourceEmpty && currentEmpty) {
         hasModifications = true;
         differences.push({ key, type: 'DELETION', source: sourceValue, current: currentValue || '(empty)' });
       }
-      // Nếu cả 2 đều rỗng hoặc không có → không thay đổi (không làm gì)
     }
     
-    // Debug log nếu có differences
     if (differences.length > 0) {
       console.log(`   🔍 Found ${differences.length} differences:`, differences);
     }
@@ -65,9 +54,6 @@
     return { type: "HAS_MODIFICATIONS" };
   }
 
-  /**
-   * Kiểm tra xem groupKey có phải là subgroup trong config không
-   */
   function isSubgroupInConfig(groupKey, config) {
     if (!config || !config.fieldMappings) return false;
     
@@ -136,7 +122,7 @@
           }
           
           const sourceFileName = sourceInfo.sourceFileName;
-          const sourceGroupKey = sourceInfo.sourceGroupKey; // MEN7, MEN2, LAND...
+          const sourceGroupKey = sourceInfo.sourceGroupKey; 
           const sourceData = sourceInfo.sourceData;
           const isSameFile = sourceFileName === fileName;
 
@@ -154,16 +140,11 @@
 
           console.log(`   Change type: ${changeAnalysis.type}`);
           console.log(`   Same file: ${isSameFile}`);
-          
-          // ✅ Kiểm tra xem groupKey có phải là subgroup không (dựa vào config)
           const isSubgroup = isSubgroupInConfig(groupKey, config);
-
-          // ======== Xử lý chung cho tất cả subgroup ==========
           if (isSubgroup) {
             if (changeAnalysis.type === "NO_CHANGE") {
               if (isSameFile) {
                 console.log(`📘 ${groupKey}: Copy không sửa + cùng file → Giữ nguyên session`);
-                // Không xóa, giữ nguyên session
               } else {
                 console.log(`📘 ${groupKey}: Copy không sửa + khác file → Không lưu duplicate`);
                 groupsToRemove.push(groupKey);
@@ -177,12 +158,10 @@
                 };
               } else {
                 console.log(`📘 ${groupKey}: Copy và thêm field mới + khác file → Tạo session mới, xóa session cũ`);
-                // Merge để giữ tất cả fields
                 dataGroups[groupKey] = {
                   ...normalizedSource,
                   ...normalizedCurrent,
                 };
-                // Xóa session cũ từ file nguồn
                 if (existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
                   delete existingData[sourceFileName].dataGroups[sourceGroupKey];
                   console.log(`   🗑️ Đã xóa ${sourceGroupKey} từ ${sourceFileName}`);
@@ -238,34 +217,24 @@
       ));
       
       remainingGroups.forEach(groupKey => {
-        // Bỏ qua nếu đã được xử lý trong reusedGroups
         if (processedReusedKeys.has(groupKey)) return;
-        
-        // ✅ Nếu là subgroup, đã được xử lý trong reusedGroups rồi → bỏ qua
-        // Nếu không phải subgroup, cần kiểm tra duplicate
         const isSubgroup = isSubgroupInConfig(groupKey, config);
         if (isSubgroup) return;
         
         const currentGroupData = dataGroups[groupKey];
         const normalizedCurrent = normalizeDataForComparison(currentGroupData);
-        
-        // Kiểm tra tất cả files trong existingData
         for (const [otherFileName, otherFileData] of Object.entries(existingData)) {
-          if (otherFileName === fileName) continue; // Bỏ qua cùng file
-          
+          if (otherFileName === fileName) continue; 
           const otherGroups = otherFileData.dataGroups || {};
           if (otherGroups[groupKey]) {
             const otherGroupData = otherGroups[groupKey];
             const normalizedOther = normalizeDataForComparison(otherGroupData);
-            
             const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
-            
-            // Nếu NO_CHANGE → không lưu duplicate
             if (changeAnalysis.type === "NO_CHANGE") {
               console.log(`🔍 ${groupKey} not in reusedGroups but matches ${otherFileName} → NO_CHANGE, removing duplicate`);
               groupsToRemove.push(groupKey);
               delete dataGroups[groupKey];
-              break; // Chỉ cần match với 1 file là đủ
+              break;
             }
           }
         }
@@ -319,15 +288,12 @@
     Object.keys(formData).forEach((key) => {
       const match = key.match(/^([A-Za-z_]+?)(\d+)$/);
       if (match) {
-        // Field có suffix (ví dụ: Name1, CCCD2)
         const fieldName = match[1];
         const suffix = match[2];
         const groupKey = suffixToGroupMap[suffix] || `UNKNOWN_${suffix}`;
         if (!groups[groupKey]) groups[groupKey] = {};
         groups[groupKey][fieldName] = formData[key];
       } else {
-        // Field không có suffix (ví dụ: AddressD, Money, QSH)
-        // Nếu có subgroup với suffix rỗng (""), dùng subgroup đó (thường là INFO)
         const groupKey = suffixToGroupMap[""] || "OTHER";
         if (!groups[groupKey]) groups[groupKey] = {};
         groups[groupKey][key] = formData[key];

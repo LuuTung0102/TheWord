@@ -78,9 +78,8 @@ function numberToVietnameseWords(number) {
     let unit = n % 10;
     let str = "";
     
-    // Explicitly handle hundreds place (including zero)
     if (hundred) str += words[hundred] + " trăm";
-    else if (n >= 10 && !isHighestOrder) str += "không trăm"; // Add 'không trăm' only for middle chunks
+    else if (n >= 10 && !isHighestOrder) str += "không trăm"; 
     
     if (ten > 1) {
       str += (str ? " " : "") + words[ten] + " mươi";

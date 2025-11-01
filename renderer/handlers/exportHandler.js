@@ -10,21 +10,14 @@ function setupExportButton() {
     const exportType = confirm("OK: file ZIP, Cancel: File Word")
       ? "zip"
       : "word";
-    
-    // Validate form first
     if (typeof validateForm === 'function' && !validateForm()) {
       return;
     }
-    
-    // Show loading
     if (typeof showLoading === 'function') {
       showLoading();
     }
     
-    // Collect form data
     const data = typeof collectFormData === 'function' ? collectFormData() : {};
-    
-    // Get selected folder (chỉ cho phép chọn 1 folder)
     const selectedTemplates = typeof getSelectedTemplates === 'function' ? getSelectedTemplates() : (window.selectedTemplates || []);
     
     if (selectedTemplates.length === 0) {
@@ -49,7 +42,6 @@ function setupExportButton() {
         exportType,
       });
 
-      // Hide loading
       if (typeof hideLoading === 'function') {
         hideLoading();
       }
@@ -68,7 +60,6 @@ function setupExportButton() {
         }
       }
     } catch (err) {
-      // Hide loading
       if (typeof hideLoading === 'function') {
         hideLoading();
       }
@@ -82,8 +73,6 @@ function setupExportButton() {
   });
 }
 
-
-// Update export button state
 function updateExportButtonState() {
   const exportBtn = document.getElementById("btnExport");
   const selectedTemplates = window.selectedTemplates || [];
@@ -99,6 +88,5 @@ function updateExportButtonState() {
   }
 }
 
-// Make export handler functions available globally
 window.setupExportButton = setupExportButton;
 window.updateExportButtonState = updateExportButtonState;

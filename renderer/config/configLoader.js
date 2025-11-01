@@ -3,7 +3,6 @@ const { ipcRenderer } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
-// Cache configs đã load
 let configCache = {};
 
 /**
@@ -13,7 +12,6 @@ let configCache = {};
  */
 async function loadFolderConfig(folderPath) {
   try {
-    // Check cache
     if (configCache[folderPath]) {
       console.log(`📦 Using cached config for: ${folderPath}`);
       return configCache[folderPath];
@@ -21,19 +19,15 @@ async function loadFolderConfig(folderPath) {
     
     const configPath = path.join(folderPath, 'config.json');
     
-    // Check if config.json exists
     if (!fs.existsSync(configPath)) {
       console.warn(`⚠️ No config.json found in: ${folderPath}`);
       return null;
     }
     
-    // Read and parse config
     const configContent = fs.readFileSync(configPath, 'utf-8');
     const config = JSON.parse(configContent);
-    
     console.log(`✅ Loaded config from: ${configPath}`);
     
-    // Cache it
     configCache[folderPath] = config;
     
     return config;
@@ -51,14 +45,9 @@ async function loadFolderConfig(folderPath) {
  */
 function buildPlaceholderMapping(config, actualPlaceholders = null) {
   if (!config) return {};
-  
   const mapping = {};
   const basePlaceholders = window.BASE_PLACEHOLDERS || {};
-  
-  // ✅ Convert actualPlaceholders to Set for fast lookup
   const actualPhSet = actualPlaceholders ? new Set(actualPlaceholders) : null;
-  
-  // 0. Đầu tiên, lấy tất cả các field từ fieldSchemas để có thể tham chiếu trực tiếp
   const schemaFields = {};
   if (config.fieldSchemas) {
     Object.keys(config.fieldSchemas).forEach(schemaName => {
@@ -72,7 +61,6 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
   }
   console.log(`📋 Extracted ${Object.keys(schemaFields).length} schema fields for direct reference`);
   
-  // 1. Process fieldMappings để tạo placeholder mapping
   if (config.fieldMappings) {
     config.fieldMappings.forEach(mappingDef => {
       const { group, subgroups, schema, suffixes, defaultGenders } = mappingDef;
@@ -153,7 +141,6 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
                   subgroup: 'INFO'
                 };
                 
-                // Debug log cho address fields
                 if (placeholder.includes("Address")) {
                   console.log(`🏠 Creating address field from schema: ${placeholder}, type: ${mapping[placeholder].type}`);
                   if (mapping[placeholder].type !== "address-select") {

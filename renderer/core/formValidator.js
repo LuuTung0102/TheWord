@@ -4,12 +4,10 @@
  */
 function validateForm() {
   console.log('🔍 Validation: Starting form validation...');
-  
-  // Get current template config
   const currentTemplate = window.currentTemplate;
   if (!currentTemplate || !currentTemplate.config) {
     console.warn('⚠️ Validation: No template config found, skipping validation');
-    return true; // Allow export if no config
+    return true; 
   }
   
   console.log('✅ Validation: Found currentTemplate:', {
@@ -26,7 +24,6 @@ function validateForm() {
     return true;
   }
 
-  // Get currently selected template groups
   const selectedFile = window.currentTemplate.selectedFile;
   if (!selectedFile || !selectedFile.groups) {
     console.warn('⚠️ Validation: No template file selected');
@@ -34,12 +31,8 @@ function validateForm() {
   }
   
   console.log('✅ Validation: Template groups:', selectedFile.groups);
-
-  // Collect form data
   const formData = window.collectGenericFormData ? window.collectGenericFormData() : {};
   console.log('✅ Validation: Collected form data:', Object.keys(formData).length, 'fields');
-  
-  // Validate
   const errors = validateFormData(formData, fieldMappings, fieldSchemas, selectedFile.groups);
   
   if (errors.length > 0) {
@@ -66,7 +59,6 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
 
   console.log('🔍 Validating form with visible subgroups:', Array.from(visibleSubgroups));
   
-  // ✅ Get actual placeholders from current template
   const actualPlaceholders = window.currentTemplate?.selectedFile?.placeholders || {};
   const allPlaceholders = new Set();
   
@@ -74,7 +66,6 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
   console.log('  actualPlaceholders object:', actualPlaceholders);
   console.log('  templateGroups:', templateGroups);
   
-  // Collect all placeholders from all groups in template
   templateGroups.forEach(groupKey => {
     if (actualPlaceholders[groupKey]) {
       console.log(`  Group ${groupKey} has ${actualPlaceholders[groupKey].length} placeholders:`, actualPlaceholders[groupKey]);
@@ -87,7 +78,6 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
   console.log('✅ Layer 3: Template has', allPlaceholders.size, 'actual placeholders:', Array.from(allPlaceholders));
 
   for (const mapping of fieldMappings) {
-    // Skip if this group is not in current template
     if (!templateGroups.includes(mapping.group)) {
       continue;
     }
@@ -98,33 +88,25 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
       continue;
     }
 
-    // Validate each subgroup
     for (let i = 0; i < mapping.subgroups.length; i++) {
       const subgroup = mapping.subgroups[i];
       const subgroupId = typeof subgroup === 'string' ? subgroup : subgroup.id;
       const subgroupLabel = typeof subgroup === 'string' ? subgroup : subgroup.label;
-      
-      // ⚠️ CRITICAL: Skip if subgroup is not visible
       if (!visibleSubgroups.has(subgroupId)) {
         console.log(`⏭️ Skipping validation for hidden subgroup: ${subgroupId}`);
         continue;
       }
 
       const suffix = mapping.suffixes ? mapping.suffixes[i] : '';
-      
       console.log(`✅ Validating visible subgroup: ${subgroupId} (suffix: ${suffix})`);
 
-      // Validate required fields in this subgroup
       for (const field of schema.fields) {
-        // Skip validation for hidden fields
         if (field.hidden) continue;
         
-        // Skip validation for non-required fields
         if (!field.required) continue;
 
         const fieldName = suffix ? `${field.name}${suffix}` : field.name;
         
-        // ✅ CRITICAL: Layer 3 - Only validate if placeholder exists in template
         if (!allPlaceholders.has(fieldName)) {
           console.log(`⏭️ Layer 3 SKIP: ${fieldName} (field "${field.label}") not in template placeholders`);
           continue;
@@ -134,7 +116,6 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
         
         const fieldValue = formData[fieldName];
         
-        // Check if field is empty
         if (!fieldValue || fieldValue.toString().trim() === '') {
           const groupInfo = mapping.group;
           errors.push({
@@ -162,7 +143,6 @@ function displayValidationErrors(errors) {
 
   console.error('❌ Form validation errors:', errors);
 
-  // Group errors by subgroup for better UX
   const errorsBySubgroup = {};
   errors.forEach(error => {
     if (!errorsBySubgroup[error.subgroupLabel]) {
@@ -171,7 +151,6 @@ function displayValidationErrors(errors) {
     errorsBySubgroup[error.subgroupLabel].push(error.fieldLabel);
   });
 
-  // Build error message
   let message = '❌ Vui lòng điền đầy đủ thông tin bắt buộc:\n\n';
   
   Object.keys(errorsBySubgroup).forEach(subgroupLabel => {
@@ -183,14 +162,11 @@ function displayValidationErrors(errors) {
     message += '\n';
   });
 
-  // Show error modal or alert
   if (typeof window.showError === 'function') {
     window.showError(message);
   } else {
     alert(message);
   }
-
-  // Optionally scroll to first error
   scrollToFirstError(errors);
 }
 
@@ -203,8 +179,6 @@ function scrollToFirstError(errors) {
 
   const firstError = errors[0];
   const fieldName = firstError.field;
-  
-  // Try to find the input element
   const inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
   
   if (inputElement) {
@@ -226,25 +200,21 @@ function scrollToFirstError(errors) {
  * @returns {boolean} - true if valid
  */
 function validateField(fieldName, value) {
-  // Get field schema
   const currentTemplate = window.currentTemplate;
   if (!currentTemplate || !currentTemplate.config) return true;
 
   const { fieldMappings, fieldSchemas } = currentTemplate.config;
   
-  // Find field in schema
   for (const mapping of fieldMappings) {
     const schema = fieldSchemas[mapping.schema];
     if (!schema) continue;
 
     for (const field of schema.fields) {
-      // Check if this field matches
       const suffixes = mapping.suffixes || [''];
       for (const suffix of suffixes) {
         const fullFieldName = suffix ? `${field.name}${suffix}` : field.name;
         
         if (fullFieldName === fieldName) {
-          // Found the field, validate it
           if (field.required && (!value || value.toString().trim() === '')) {
             return false;
           }
@@ -254,10 +224,10 @@ function validateField(fieldName, value) {
     }
   }
 
-  return true; // Field not found in schema, assume valid
+  return true; 
 }
 
-// Export to window
+
 if (typeof window !== 'undefined') {
   window.validateForm = validateForm;
   window.validateFormData = validateFormData;

@@ -19,7 +19,6 @@ async function loadTemplates() {
   }
 }
 
-// Helper function to render template items (folders)
 function renderTemplateItem(folder, actionType) {
   const actionConfig = {
     add: { class: 'add', icon: '+', title: 'Chọn folder' },
@@ -29,8 +28,6 @@ function renderTemplateItem(folder, actionType) {
   const config = actionConfig[actionType] || actionConfig.add;
   const item = document.createElement("div");
   item.className = "template-item";
-  
-  // Folder có thể là string (tên) hoặc object {name, fileCount, files}
   const folderName = typeof folder === 'string' ? folder : folder.name;
   const fileCount = typeof folder === 'object' ? folder.fileCount : 0;
   
@@ -90,7 +87,6 @@ window.selectTemplate = (file) => {
     updateForm();
     updateTemplateCounts();
     
-    // Update export button state
     if (typeof updateExportButtonState === 'function') {
       updateExportButtonState();
     }
@@ -107,15 +103,12 @@ window.removeTemplate = (file) => {
   updateForm();
   updateTemplateCounts();
   
-  // Update export button state
   if (typeof updateExportButtonState === 'function') {
     updateExportButtonState();
   }
 };
 
-// Setup event listeners for new button structure
 function setupTemplateEventListeners() {
-  // Add event listeners for add buttons
   document.addEventListener('click', (e) => {
     if (e.target.closest('.action-btn.add')) {
       const button = e.target.closest('.action-btn.add');
@@ -138,7 +131,6 @@ function setupTemplateEventListeners() {
 async function updateForm() {
   if (!selectedTemplates.length) {
     document.getElementById("formArea").innerHTML = "";
-    // Ẩn tất cả taskbar buttons khi không có template nào được chọn
     if (typeof updateDynamicTaskbar === 'function') {
       updateDynamicTaskbar();
     }
@@ -146,8 +138,6 @@ async function updateForm() {
   }
 
   const phSet = new Set();
-  
-  // Lấy placeholders từ folder (thay vì từ files)
   for (const folderName of selectedTemplates) {
     console.log(`📋 Loading placeholders from folder: ${folderName}`);
     const ph = await window.ipcRenderer.invoke("get-folder-placeholders", folderName);
@@ -157,27 +147,19 @@ async function updateForm() {
   }
 
   console.log(`✅ Total placeholders: ${phSet.size}`);
-  
-  // 🆕 TRY LOAD CONFIG.JSON FIRST
   let folderConfig = null;
   let folderPath = null;
   
   if (selectedTemplates.length > 0) {
-    // Get folder path
     const templatesRoot = await window.ipcRenderer.invoke("get-templates-root");
     folderPath = `${templatesRoot}\\${selectedTemplates[0]}`;
-    
     console.log(`🔍 Trying to load config from: ${folderPath}`);
-    
     if (typeof window.loadFolderConfig === 'function') {
       folderConfig = await window.loadFolderConfig(folderPath);
     }
   }
   
-  // 🎨 RENDER FORM
   if (folderConfig && typeof window.renderGenericForm === 'function') {
-    // Check if has BD or UQ groups → Use old system (has special logic)
-    // For new JSON format, check if any group has BD/UQ in the name
     const hasBDorUQ = folderConfig.groups && folderConfig.groups.some(group => 
       group.id === 'BD' || group.id === 'UQ' || 
       group.label.toLowerCase().includes('biến động') || 
@@ -185,21 +167,17 @@ async function updateForm() {
     );
     
     if (hasBDorUQ) {
-      // ⚠️ FALLBACK: BD/UQ need old system for source selection
       console.log("⚠️ Config has BD/UQ - Using OLD system for advanced features");
       renderForm([...phSet]);
     } else {
-      // ✅ NEW SYSTEM: Use config-based generic form
       console.log("🆕 Using NEW config-based system");
       await window.renderGenericForm([...phSet], folderConfig, folderPath);
     }
   } else if (typeof renderForm === 'function') {
-    // ⚠️ OLD SYSTEM: Fallback to legacy form
     console.log("⚠️ Using OLD legacy system (no config.json found)");
     renderForm([...phSet]);
   }
   
-  // ⚡ Setup lại TẤT CẢ event listeners sau khi render form
   setTimeout(() => {
     if (typeof window.reSetupAllInputs === 'function') {
       window.reSetupAllInputs();
@@ -207,7 +185,6 @@ async function updateForm() {
   }, 500);
 }
 
-// Setup search functionality
 function setupSearch() {
   document.getElementById("searchLeft").addEventListener("input", (e) => {
     const query = e.target.value.toLowerCase();
@@ -231,13 +208,12 @@ function setupTemplatePopovers() {
   const rightPop = document.querySelector('.right-popover');
   if (!leftBtn || !rightBtn || !leftPop || !rightPop) return;
 
-  // Center popovers below the controls
   const placePopovers = () => {
     const controls = document.querySelector('.template-controls');
     if (!controls) return;
     const rect = controls.getBoundingClientRect();
     const baseLeft = rect.left + rect.width / 2;
-    const offset = 190; // half width of popover
+    const offset = 190;
     leftPop.style.left = Math.max(12, baseLeft - offset - 190) + 'px';
     rightPop.style.left = Math.max(12, baseLeft - offset + 190) + 'px';
   };
@@ -272,8 +248,6 @@ function setupTemplatePopovers() {
 }
 
 window.setupTemplatePopovers = setupTemplatePopovers;
-
-// Make template manager functions available globally
 window.loadTemplates = loadTemplates;
 window.renderLeftTable = renderLeftTable;
 window.renderRightTable = renderRightTable;
