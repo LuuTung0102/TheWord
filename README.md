@@ -1,7 +1,5 @@
 # 📄 TheWord - Hệ Thống Tự Động Hóa Văn Bản
 
-> **Tạo văn bản Word chuyên nghiệp trong 1 phút** 
-
 ## ✨ Tính Năng Nổi Bật
 
 🚀 **Tự động hóa 100%** - Từ template Word đến văn bản hoàn chỉnh  
