@@ -376,7 +376,7 @@ ipcMain.handle("get-template-placeholders", async (event, folderPath) => {
 });
 
 // Export single document with form data
-ipcMain.handle("export-single-document", async (event, { folderPath, fileName, formData }) => {
+ipcMain.handle("export-single-document", async (event, { folderPath, fileName, formData, options }) => {
   try {
     console.log("📤 export-single-document: Starting export for:", folderPath, "file:", fileName);
     console.log("📤 export-single-document: Form data:", formData);
@@ -411,10 +411,17 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     // ✅ Save last selected folder for next time
     global.lastOutputFolder = outputFolder;
     
-    // ✅ Generate single document with output path
+    // ✅ Generate single document with output path and options
     const outputFileName = fileName; // Keep original filename
     const outputPath = path.join(outputFolder, outputFileName);
-    await generateDocx(filePath, formData, outputPath);
+    
+    // Convert visibleSubgroups array to Set if provided
+    const generateOptions = options ? {
+      phMapping: options.phMapping || {},
+      visibleSubgroups: options.visibleSubgroups ? new Set(options.visibleSubgroups) : new Set()
+    } : {};
+    
+    await generateDocx(filePath, formData, outputPath, generateOptions);
     
     if (!fs.existsSync(outputPath)) {
       throw new Error('Document generation failed');

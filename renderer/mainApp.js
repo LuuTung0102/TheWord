@@ -547,10 +547,15 @@ class MainApp {
       
       // Export
       if (window.ipcRenderer) {
+        // ✅ Get phMapping and visibleSubgroups for smart line removal
+        const phMapping = window.__renderDataStructures?.phMapping || {};
+        const visibleSubgroups = window.visibleSubgroups ? Array.from(window.visibleSubgroups) : [];
+        
         const result = await window.ipcRenderer.invoke("export-single-document", {
           folderPath: selectedTemplate.path,
           fileName: this.selectedFile,
-          formData: formData
+          formData: formData,
+          options: { phMapping, visibleSubgroups }
         });
         
         if (result.success) {

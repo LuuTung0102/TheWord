@@ -26,9 +26,9 @@
       "description": "Chuyển nhượng nhà",
       "groups": ["BCN", "BNCN", "LAND"],
       "placeholders": {
-        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2"],
-        "BNCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7","Gender8", "Name8", "Date8", "CCCD8", "Noi_Cap8", "Ngay_Cap8"],
-        "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "S_Text","Noi_CapD", "TDCSPL","Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
+        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2"],
+        "BNCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7","Gender8", "Name8", "Date8", "CCCD8", "Noi_Cap8", "Ngay_Cap8"],
+        "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "S_Text","Noi_CapD", "TDCSPL","Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "NG","THSD", "TTGLVD", "Thua_dat_so"]
       }
     }
   ],

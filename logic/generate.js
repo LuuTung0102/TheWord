@@ -5,7 +5,7 @@ const expressionParser = require("docxtemplater/expressions.js");
 const { getPlaceholders } = require("./placeholder");
 const path = require("path");
 
-function generateDocx(templatePath, data, outputPath) {
+function generateDocx(templatePath, data, outputPath, options = {}) {
   try {
     const content = fs.readFileSync(templatePath);
     const zip = new PizZip(content);
@@ -38,43 +38,94 @@ function generateDocx(templatePath, data, outputPath) {
           return '';
         });
         
-        // ✅ Xóa các dòng chứa TOÀN BỘ placeholders trống của MEN2-6
-        xml = xml.replace(/<w:p\b[^>]*>([\s\S]*?)<\/w:p>/g, (matchP, contentP) => {
-          // Extract tất cả placeholders trong paragraph
-          const placeholderMatches = contentP.match(/\{\{([^}]+)\}\}/g);
-          if (!placeholderMatches) return matchP;
+        // ✅ Xóa các dòng chứa TOÀN BỘ placeholders trống của subgroups ẩn (visible=false)
+        if (options && options.phMapping && options.visibleSubgroups) {
+          xml = xml.replace(/<w:p\b[^>]*>([\s\S]*?)<\/w:p>/g, (matchP, contentP) => {
+            // Extract tất cả placeholders trong paragraph
+            const placeholderMatches = contentP.match(/\{\{([^}]+)\}\}/g);
+            if (!placeholderMatches) return matchP;
 
-          const placeholders = placeholderMatches.map(m => m.replace(/[{}]/g, ''));
-          
-          // Lấy các số MEN trong paragraph (1, 2, 3, 4, 5, 6)
-          const menNumbers = placeholders
-            .map(ph => ph.match(/\d+$/)?.[0])
-            .filter(Boolean)
-            .filter((v, i, a) => a.indexOf(v) === i); // unique
+            const placeholders = placeholderMatches.map(m => m.replace(/[{}]/g, ''));
+            
+            // Lấy tất cả subgroups có trong paragraph
+            const subgroupsInParagraph = new Set();
+            placeholders.forEach(ph => {
+              const phDef = options.phMapping[ph];
+              if (phDef && phDef.subgroup) {
+                subgroupsInParagraph.add(phDef.subgroup);
+              }
+            });
 
-          if (menNumbers.length === 0) return matchP;
+            if (subgroupsInParagraph.size === 0) return matchP;
 
-          // Kiểm tra xem TẤT CẢ các MEN trong dòng có trống không
-          const allMenEmpty = menNumbers.every(num => {
-            const menKey = `MEN${num}`;
-            // MEN2-6 mà KHÔNG có trong data hoặc tất cả fields đều trống
-            return num >= 2 && num <= 6 && (
-              !data[`Name${num}`] && 
-              !data[`Gender${num}`] && 
-              !data[`Date${num}`] &&
-              !data[`CCCD${num}`]
-            );
+            // ✅ Logic mới:
+            // - Subgroup có visible = false -> Xóa dòng nếu TẤT CẢ placeholders đều rỗng
+            // - Subgroup có visible = true -> KHÔNG xóa dòng (placeholder rỗng sẽ thay bằng "")
+            const shouldRemoveLine = Array.from(subgroupsInParagraph).every(subgroupId => {
+              const isVisible = options.visibleSubgroups.has(subgroupId);
+              
+              // Lấy tất cả placeholders của subgroup này
+              const subgroupPhs = placeholders.filter(ph => {
+                const phDef = options.phMapping[ph];
+                return phDef && phDef.subgroup === subgroupId;
+              });
+
+              if (subgroupPhs.length === 0) return false; // Không có placeholder thì không xóa
+
+              // Kiểm tra tất cả placeholders có rỗng không
+              const allEmpty = subgroupPhs.every(ph => !data[ph] || data[ph].toString().trim() === '');
+              
+              if (!isVisible) {
+                // Subgroup ẩn (visible=false) -> Xóa nếu tất cả rỗng
+                return allEmpty;
+              } else {
+                // Subgroup visible (visible=true) -> KHÔNG xóa dòng
+                return false;
+              }
+            });
+
+            if (shouldRemoveLine) {
+              const extractedText = contentP.match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g);
+              const lineText = extractedText ? extractedText.map(t => t.replace(/<w:t[^>]*>|<\/w:t>/g, '')).join('').trim() : '';
+              console.log(`🗑️ Removing empty line (${Array.from(subgroupsInParagraph).join(', ')}): "${lineText}"`);
+              return '';
+            }
+
+            return matchP;
           });
+        } else {
+          // Fallback: Xóa các dòng chứa TOÀN BỘ placeholders trống của MEN2-6 (backward compatibility)
+          xml = xml.replace(/<w:p\b[^>]*>([\s\S]*?)<\/w:p>/g, (matchP, contentP) => {
+            const placeholderMatches = contentP.match(/\{\{([^}]+)\}\}/g);
+            if (!placeholderMatches) return matchP;
 
-          if (allMenEmpty) {
-            const extractedText = contentP.match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g);
-            const lineText = extractedText ? extractedText.map(t => t.replace(/<w:t[^>]*>|<\/w:t>/g, '')).join('').trim() : '';
-            console.log(`🗑️ Removing empty MEN line: "${lineText}"`);
-            return '';
-          }
+            const placeholders = placeholderMatches.map(m => m.replace(/[{}]/g, ''));
+            const menNumbers = placeholders
+              .map(ph => ph.match(/\d+$/)?.[0])
+              .filter(Boolean)
+              .filter((v, i, a) => a.indexOf(v) === i);
 
-          return matchP;
-        });
+            if (menNumbers.length === 0) return matchP;
+
+            const allMenEmpty = menNumbers.every(num => {
+              return num >= 2 && num <= 6 && (
+                !data[`Name${num}`] && 
+                !data[`Gender${num}`] && 
+                !data[`Date${num}`] &&
+                !data[`CCCD${num}`]
+              );
+            });
+
+            if (allMenEmpty) {
+              const extractedText = contentP.match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g);
+              const lineText = extractedText ? extractedText.map(t => t.replace(/<w:t[^>]*>|<\/w:t>/g, '')).join('').trim() : '';
+              console.log(`🗑️ Removing empty MEN line: "${lineText}"`);
+              return '';
+            }
+
+            return matchP;
+          });
+        }
         
         zip.file('word/document.xml', xml);
         console.log('✅ Đã làm sạch XML của template');
@@ -108,7 +159,7 @@ function generateDocx(templatePath, data, outputPath) {
       console.error('🔍 Error stack:', error.stack);
       throw new Error(msg);
     }
-    // ✅ FATHER/MOTHER và MEN logic đã được thay thế bằng pre-processing XML
+   
 
     
     // Normalize data values
