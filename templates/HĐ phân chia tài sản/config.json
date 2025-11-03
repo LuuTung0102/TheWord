@@ -28,11 +28,11 @@
           "Gender9", "Name9", "Date9", "CCCD9", "Noi_Cap9", "Ngay_Cap9", "Address9"
         ],
         "LAND": [
-           "HTSD_C", "HTSD_R",  "THSD"
+           "HTSD_C", "HTSD_R",  "THSD", "Loai_Dat_F"
         ]
       }
     },
-    {
+    { 
       "id": "hd-pc-ts",
       "filename": "Phân chia tài sản.docx",
       "name": "Hợp đồng phân chia tài sản thừa kế",
@@ -53,7 +53,7 @@
           "Gender9", "Name9", "Date9", "CCCD9", "Noi_Cap9", "Ngay_Cap9", "Address9"
         ],
         "LAND": [
-          "AddressD", "Ban_do_so", "HTSD_C", "HTSD_R", "Loai_Dat", "Money", "MoneyText",
+          "AddressD", "Ban_do_so", "HTSD_C", "HTSD_R", "Loai_Dat", "Loai_Dat_F", "Money", "MoneyText",
           "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD",
           "TTGLVD", "Thua_dat_so"
         ]
@@ -113,7 +113,8 @@
         { "name": "Thua_dat_so", "label": "Thửa đất số", "type": "text", "required": true },
         { "name": "Ban_do_so", "label": "Bản đồ số", "type": "text", "required": true },
         { "name": "S", "label": "Diện tích (m²)", "type": "number", "required": true },
-        { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type_size", "required": true },
+        { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "required": true },
+        { "name": "Loai_Dat_F", "label": "Loại đất (có diện tích)", "type": "land_type_size", "required": true },
         { "name": "HTSD_R", "label": "Sử dụng riêng (m²)", "type": "number", "required": true },
         { "name": "HTSD_C", "label": "Sử dụng chung (m²)", "type": "number", "required": true },
         { "name": "THSD", "label": "Thời hạn sử dụng", "type": "textarea", "required": false },

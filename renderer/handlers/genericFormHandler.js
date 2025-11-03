@@ -78,6 +78,22 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
       </div>
       ${wrapperEnd}
     `;
+  } else if (type === "land_type_size") {
+    inputHtml = `
+      ${wrapperStart}
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
+      <div class="land-type-size-container" id="${safeId}_container" data-ph="${ph}">
+        <div class="tags-wrapper" id="${safeId}_tags"></div>
+        <div class="tag-input-wrapper">
+          <input type="text" id="${safeId}" class="tag-input" data-ph="${ph}" placeholder="Chọn loại đất..." autocomplete="off">
+          <div id="${safeId}_dropdown" class="land-type-dropdown"></div>
+        </div>
+        <button type="button" class="tag-add-btn" id="${safeId}_addBtn" title="Thêm loại đất">
+          <span>+</span>
+        </button>
+      </div>
+      ${wrapperEnd}
+    `;
   } else if (type === "money" || type === "currency") {
     inputHtml = `
       ${wrapperStart}
@@ -1007,6 +1023,80 @@ function collectGenericFormData() {
         const sText = window.numberToAreaWords ? window.numberToAreaWords(rawArea) : "";
         if (sText) data['S_Text'] = sText;
         value = rawArea;
+      }
+    }
+    
+    // Handle land_type_size - format from tags
+    const landTypeSizeContainer = el.closest('.land-type-size-container');
+    if (el.classList.contains('tag-input') && landTypeSizeContainer) {
+      // Lấy giá trị từ input (ngay cả khi input ẩn)
+      // Value is already formatted as "ONT 440; CHN 450" from setupLandTypeSizeInput
+      if (!value || value.trim() === '') {
+        // Nếu input trống, thử lấy từ tags trực tiếp
+        const tagsWrapper = landTypeSizeContainer.querySelector('.tags-wrapper');
+        if (tagsWrapper) {
+          const tags = tagsWrapper.querySelectorAll('.land-type-tag');
+          if (tags.length > 0) {
+            const tagValues = [];
+            tags.forEach(tagEl => {
+              const codeSpan = tagEl.querySelector('.tag-code');
+              const areaSpan = tagEl.querySelector('.tag-area');
+              if (codeSpan) {
+                const code = codeSpan.textContent.trim();
+                if (code) {
+                  let area = '';
+                  if (areaSpan) {
+                    const areaText = areaSpan.textContent.trim();
+                    const areaMatch = areaText.match(/(\d+(?:\.\d+)?)/);
+                    area = areaMatch ? areaMatch[1] : '';
+                  }
+                  // Cho phép tag chỉ có code (không có area) - sẽ có format "CODE" hoặc "CODE "
+                  if (area) {
+                    tagValues.push(`${code} ${area}`);
+                  } else {
+                    // Nếu không có area, chỉ thêm code (nhưng vẫn cần ít nhất 1 tag có area để validation pass)
+                    tagValues.push(code);
+                  }
+                }
+              }
+            });
+            if (tagValues.length > 0) {
+              value = tagValues.join('; ');
+            }
+          }
+        }
+      }
+      
+      // But we need to format for export: "440m2 ONT; 450 m2 CHN"
+      if (value && value.trim()) {
+        const pairs = value.split(';').map(p => p.trim()).filter(Boolean);
+        // Filter out pairs that are only code without area (for validation purposes)
+        const pairsWithArea = pairs.filter(p => /\d/.test(p));
+        if (pairsWithArea.length === 0 && pairs.length > 0) {
+          // Nếu chỉ có codes không có area, vẫn giữ lại để validation
+          value = pairs.join('; ');
+        } else {
+          const formatted = pairsWithArea.map(pair => {
+            const match = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/);
+            if (match) {
+              return `${match[2]}m2 ${match[1]}`;
+            }
+            return pair;
+          }).join('; ');
+          value = formatted || pairs.join('; '); // Fallback nếu không format được
+        }
+        
+        // Tự động tạo Loai_Dat từ Loai_Dat_F nếu Loai_Dat chưa có giá trị
+        if (ph === 'Loai_Dat_F' && !data['Loai_Dat']) {
+          // Extract chỉ các mã loại đất (không có diện tích)
+          const codes = pairs.map(pair => {
+            const match = pair.match(/^([A-Z]+)/);
+            return match ? match[1] : '';
+          }).filter(Boolean);
+          if (codes.length > 0) {
+            data['Loai_Dat'] = codes.join('+');
+          }
+        }
       }
     }
     

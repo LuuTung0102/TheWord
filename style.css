@@ -847,6 +847,173 @@ label.required::after {
   background: #e0f2fe;
 }
 
+/* Land Type Size - Tag Input Component */
+.land-type-size-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  min-height: 2.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.land-type-size-container:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.tags-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+  max-width: calc(100% - 3rem);
+}
+
+.land-type-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.625rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  user-select: none;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.land-type-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.land-type-tag.editing {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+}
+
+.tag-code {
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+.tag-area {
+  opacity: 0.95;
+  font-weight: 400;
+  padding: 0 0.125rem;
+  border-radius: 0.25rem;
+  outline: none;
+  min-width: 3rem;
+}
+
+.tag-area:focus {
+  background: rgba(255, 255, 255, 0.2);
+  outline: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.tag-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  margin-left: 0.125rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 300;
+}
+
+.tag-delete:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.tag-input-wrapper {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 150px;
+  z-index: 10;
+  order: 10;
+  display: none;
+}
+
+.tag-input-wrapper.show {
+  display: block;
+}
+
+.tag-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  background: transparent;
+  color: #1e293b;
+  min-width: 120px;
+  position: relative;
+  z-index: 10;
+}
+
+.tag-input::placeholder {
+  color: #9ca3af;
+}
+
+.tag-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  margin-left: 0.25rem;
+  background: #3b82f6;
+  border: none;
+  border-radius: 0.375rem;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.tag-add-btn:hover {
+  background: #2563eb;
+  transform: scale(1.05);
+}
+
+.tag-add-btn:active {
+  transform: scale(0.95);
+}
+
+.tag-add-btn span {
+  line-height: 1;
+}
+
 .suggestion-item:last-child {
   border-bottom: none;
 }

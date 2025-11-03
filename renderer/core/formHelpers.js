@@ -470,6 +470,14 @@ function reSetupAllInputs() {
     const id = input.id;
     if (id) setupLandTypeInput(input, id);
   });
+  
+  document.querySelectorAll('.land-type-size-container').forEach(container => {
+    const inputId = container.querySelector('.tag-input')?.id;
+    if (inputId && !container.dataset.landTypeSizeSetup) {
+      setupLandTypeSizeInput(container, inputId);
+      container.dataset.landTypeSizeSetup = 'true';
+    }
+  });
 }
 
 function cleanupAllEventListeners() {
@@ -542,6 +550,342 @@ window.setupAreaInput = setupAreaInput;
 window.setupNoteTextarea = setupNoteTextarea;
 window.setupDatePickers = setupDatePickers;
 window.setupAddressSelects = setupAddressSelects;
+function setupLandTypeSizeInput(container, inputId) {
+  const input = document.getElementById(inputId);
+  const tagsWrapper = container.querySelector('.tags-wrapper');
+  const dropdown = container.querySelector('.land-type-dropdown');
+  const addBtn = container.querySelector('.tag-add-btn');
+  const inputWrapper = container.querySelector('.tag-input-wrapper');
+  const ph = container.dataset.ph;
+  
+  if (!input || !tagsWrapper || !dropdown || !addBtn || !inputWrapper) {
+    console.warn('⚠️ Missing elements for land_type_size:', { input, tagsWrapper, dropdown, addBtn, inputWrapper });
+    return;
+  }
+  
+  const landKeys = window.landTypeMap ? Object.keys(window.landTypeMap).sort() : [];
+  let tags = []; // Array of {code: "ONT", area: "440"}
+  let selectedIndex = -1;
+  let currentTagIndex = -1; // Index of tag being edited
+  
+  // Hàm hiển thị input
+  function showInput() {
+    inputWrapper.classList.add('show');
+    input.value = '';
+    input.focus();
+    updateDropdown('');
+  }
+  
+  // Hàm ẩn input
+  function hideInput() {
+    inputWrapper.classList.remove('show');
+    dropdown.style.display = 'none';
+    input.value = '';
+    currentTagIndex = -1;
+    // Remove editing highlight
+    document.querySelectorAll('.land-type-tag').forEach(t => t.classList.remove('editing'));
+  }
+  
+  // Load existing value if any
+  function loadExistingValue() {
+    const existingValue = input.value.trim();
+    if (!existingValue) return;
+    
+    // Parse format: "ONT+CHN 440; 450" hoặc "ONT 440; CHN 450"
+    const parts = existingValue.split(/\s+/);
+    if (parts.length === 0) return;
+    
+    // Try format: "ONT+CHN 440; 450"
+    if (parts.length === 2 && parts[1].includes(';')) {
+      const codes = parts[0].split('+').map(c => c.trim().toUpperCase());
+      const areas = parts[1].split(';').map(a => a.trim().replace(/m2/g, '').trim());
+      
+      codes.forEach((code, idx) => {
+        if (code && areas[idx]) {
+          tags.push({ code: code, area: areas[idx] });
+        }
+      });
+    } else {
+      // Try format: "ONT 440; CHN 450"
+      const pairs = existingValue.split(';').map(p => p.trim());
+      pairs.forEach(pair => {
+        const match = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/);
+        if (match) {
+          tags.push({ code: match[1].toUpperCase(), area: match[2] });
+        }
+      });
+    }
+    
+    renderTags();
+    
+    // Ẩn input sau khi load giá trị có sẵn
+    if (tags.length > 0) {
+      hideInput();
+    }
+  }
+  
+  // Render all tags
+  function renderTags() {
+    tagsWrapper.innerHTML = '';
+    
+    tags.forEach((tag, idx) => {
+      const tagEl = document.createElement('div');
+      tagEl.className = 'land-type-tag';
+      tagEl.dataset.tagIndex = idx;
+      
+      const codeSpan = document.createElement('span');
+      codeSpan.className = 'tag-code';
+      codeSpan.textContent = tag.code;
+      codeSpan.contentEditable = 'false';
+      
+      const areaSpan = document.createElement('span');
+      areaSpan.className = 'tag-area';
+      areaSpan.textContent = ` - ${tag.area}m²`;
+      areaSpan.contentEditable = 'true';
+      areaSpan.dataset.tagIndex = idx;
+      
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'tag-delete';
+      deleteBtn.innerHTML = '×';
+      deleteBtn.title = 'Xóa';
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        tags.splice(idx, 1);
+        renderTags();
+        updateHiddenValue();
+      };
+      
+      tagEl.appendChild(codeSpan);
+      tagEl.appendChild(areaSpan);
+      tagEl.appendChild(deleteBtn);
+      
+      // Click to edit
+      tagEl.onclick = (e) => {
+        if (e.target === deleteBtn || e.target.parentElement === deleteBtn) return;
+        
+        currentTagIndex = idx;
+        showInput();
+        input.value = tag.code;
+        updateDropdown(input.value);
+        
+        // Highlight tag being edited
+        document.querySelectorAll('.land-type-tag').forEach(t => t.classList.remove('editing'));
+        tagEl.classList.add('editing');
+      };
+      
+      // Edit area inline
+      areaSpan.addEventListener('blur', () => {
+        const newArea = areaSpan.textContent.replace(/[^\d.]/g, '');
+        if (newArea) {
+          tag.area = newArea;
+          areaSpan.textContent = ` - ${newArea}m²`;
+          updateHiddenValue();
+        } else {
+          areaSpan.textContent = ` - ${tag.area}m²`;
+        }
+      });
+      
+      // Press Enter to save area
+      areaSpan.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          areaSpan.blur();
+        }
+      });
+      
+      tagsWrapper.appendChild(tagEl);
+    });
+    
+    updateHiddenValue();
+  }
+  
+  // Update hidden input value
+  function updateHiddenValue() {
+    if (tags.length === 0) {
+      input.value = '';
+      // Trigger change event even when empty (for validation)
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      return;
+    }
+    
+    // Format: "ONT 440; CHN 450"
+    const value = tags.map(t => `${t.code} ${t.area}`).join('; ');
+    input.value = value;
+    
+    // Trigger change event for form data collection and validation
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  
+  // Update dropdown suggestions
+  function updateDropdown(query) {
+    if (!dropdown) return;
+    selectedIndex = -1;
+    
+    const selectedCodes = tags.map(t => t.code);
+    const filtered = landKeys.filter(key => 
+      !selectedCodes.includes(key) && 
+      (!query || key.toUpperCase().includes(query.toUpperCase()))
+    );
+    
+    dropdown.innerHTML = filtered
+      .map(key => {
+        const desc = window.landTypeMap ? window.landTypeMap[key] : key;
+        return `<div class="suggestion-item" data-key="${key}">${key}: ${desc}</div>`;
+      })
+      .join("");
+    
+    dropdown.style.display = filtered.length ? "block" : "none";
+  }
+  
+  // Handle input
+  input.addEventListener('input', (e) => {
+    const query = e.target.value.trim().toUpperCase();
+    updateDropdown(query);
+    
+    // Remove editing highlight if typing
+    document.querySelectorAll('.land-type-tag').forEach(t => t.classList.remove('editing'));
+    currentTagIndex = -1;
+  });
+  
+  input.addEventListener('focus', () => {
+    const query = input.value.trim().toUpperCase();
+    updateDropdown(query);
+  });
+  
+  // Keyboard navigation
+  input.addEventListener('keydown', (e) => {
+    const items = dropdown.querySelectorAll('.suggestion-item');
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (items.length > 0) {
+        selectedIndex = (selectedIndex + 1) % items.length;
+        items.forEach((item, i) => {
+          item.classList.toggle('selected', i === selectedIndex);
+          if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+        });
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (items.length > 0) {
+        selectedIndex = selectedIndex <= 0 ? items.length - 1 : selectedIndex - 1;
+        items.forEach((item, i) => {
+          item.classList.toggle('selected', i === selectedIndex);
+          if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+        });
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && items[selectedIndex]) {
+        items[selectedIndex].click();
+      } else if (input.value.trim()) {
+        // Add as new tag if valid code
+        const code = input.value.trim().toUpperCase();
+        if (landKeys.includes(code) && !tags.find(t => t.code === code)) {
+          addTag(code, '');
+          input.value = '';
+          input.focus();
+        }
+      }
+    } else if (e.key === 'Escape') {
+      hideInput();
+    }
+  });
+  
+  // Click on suggestion
+  dropdown.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const item = e.target.closest('.suggestion-item');
+    if (item) {
+      const code = item.dataset.key;
+      addTag(code, '');
+      input.value = '';
+      dropdown.style.display = 'none';
+      input.focus();
+    }
+  });
+  
+  // Add tag
+  function addTag(code, area = '') {
+    // If editing existing tag, update it
+    if (currentTagIndex >= 0 && currentTagIndex < tags.length) {
+      tags[currentTagIndex].code = code;
+      if (area) tags[currentTagIndex].area = area;
+      currentTagIndex = -1;
+    } else {
+      // Check if code already exists
+      const existingIndex = tags.findIndex(t => t.code === code);
+      if (existingIndex >= 0) {
+        // Focus on existing tag
+        const tagEl = tagsWrapper.querySelector(`[data-tag-index="${existingIndex}"]`);
+        if (tagEl) tagEl.click();
+        return;
+      }
+      
+      tags.push({ code: code, area: area || '' });
+    }
+    
+    renderTags();
+    
+    // Ẩn input sau khi thêm tag (trừ khi đang edit area)
+    if (!area) {
+      // Nếu chưa có diện tích, focus vào area input của tag mới
+      const newTagIndex = tags.findIndex(t => t.code === code);
+      if (newTagIndex >= 0) {
+        setTimeout(() => {
+          const tagEl = tagsWrapper.querySelector(`[data-tag-index="${newTagIndex}"]`);
+          if (tagEl) {
+            const areaSpan = tagEl.querySelector('.tag-area');
+            if (areaSpan) {
+              areaSpan.focus();
+              // Select the number part
+              const range = document.createRange();
+              range.selectNodeContents(areaSpan);
+              const sel = window.getSelection();
+              sel.removeAllRanges();
+              sel.addRange(range);
+            }
+          }
+          // Ẩn input sau khi focus vào area
+          hideInput();
+        }, 50);
+      } else {
+        hideInput();
+      }
+    } else {
+      // Nếu đã có diện tích, ẩn input ngay
+      hideInput();
+    }
+  }
+  
+  // Add button click - toggle input visibility
+  addBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (inputWrapper.classList.contains('show')) {
+      // Nếu đang hiện, chỉ focus (không ẩn)
+      input.focus();
+    } else {
+      // Nếu đang ẩn, hiện input
+      showInput();
+    }
+  });
+  
+  // Click outside to close dropdown and hide input
+  document.addEventListener('click', (e) => {
+    if (!container.contains(e.target)) {
+      hideInput();
+    }
+  });
+  
+  // Load existing value
+  loadExistingValue();
+}
+
 window.reSetupAllInputs = reSetupAllInputs;
 window.formatInputValue = formatInputValue;
+window.setupLandTypeSizeInput = setupLandTypeSizeInput;
 
