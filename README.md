@@ -11,55 +11,38 @@
 ✅ **Smart Validation** - Single source of truth từ config.json, chỉ validate subgroup visible  
 📊 **Tự động chuyển đổi** - Money → MoneyText, S (diện tích) → S_Text (bằng chữ)  
 🧹 **Tự động dọn dẹp** - Xóa dòng trống của subgroup ẩn khi xuất Word  
+🏷️ **Loại đất thông minh** - Loai_Dat (tên đầy đủ) và Loai_Dat_F (code + diện tích với m²)  
+² **Superscript tự động** - Tự động chuyển m2 → m² (Unicode superscript) trong Word  
 ⚡ **Nhanh chóng** - Xuất văn bản trong < 5 giây  
 🎨 **UI hiện đại** - Taskbar, dropdown, date picker, address cascading  
 📂 **Mở thư mục** - Mở trực tiếp thư mục output sau khi xuất  
 🔌 **100% Offline** - Không cần kết nối internet
-
----
-
 ## 🎯 Workflow
-
-```
 1️⃣ Chọn folder → 2️⃣ Chọn file Word → 3️⃣ Điền form → 4️⃣ Xuất văn bản ✅
-```
-
 ### **Chi tiết:**
-
-```
 📁 Chọn folder (vd: "HĐ chuyển nhượng")
   └─ 📄 Chọn file (vd: "HĐ chuyển nhượng quyền sử dụng đất.docx")
       └─ 📝 Form tự động render theo placeholders trong file
           └─ ✅ Nhấn "Xuất Word" → Chọn nơi lưu → Hoàn tất!
-```
-
----
 
 ## 📖 Quick Start
-
 ### **1. Cài Đặt**
-
 **Yêu cầu hệ thống:**
 - Windows 10/11
 - Node.js 16.x hoặc mới hơn
 - 200MB dung lượng trống
-
 **Cài đặt:**
 ```bash
-# Clone repository (hoặc download ZIP)
+
 git clone https://github.com/LuuTung0102/TheWord.git
 
-# Install dependencies
 cd TheWord
 npm install
 
-# Run app
 npm start
-```
 
 **✅ Sau khi chạy `npm install`, có thể dùng offline hoàn toàn!**
 
-### **2. Sử Dụng Cơ Bản**
 
 1. **Chọn folder** (panel bên phải)
 2. **Chọn file Word** trong folder
@@ -67,11 +50,7 @@ npm start
 4. **Nhấn "Xuất Word"** → Chọn thư mục lưu
 5. **Mở file Word** → Văn bản hoàn chỉnh! ✅
 
-### **3. Tính Năng Nâng Cao**
 
-#### **🔄 Tái sử dụng dữ liệu (Session Storage)**
-
-```
 Scenario: Tạo nhiều văn bản cho cùng một người
 
 1. Điền "HĐ chuyển nhượng" cho ông A
@@ -95,8 +74,6 @@ Scenario: Tạo nhiều văn bản cho cùng một người
 - Xóa duplicate khi copy không sửa + khác file (NO_CHANGE)
 
 #### **💾 Lưu người dùng (Local Storage)**
-
-```
 File: renderer/config/local_storage.json
 
 Thêm người dùng thường xuyên:
@@ -112,21 +89,14 @@ Thêm người dùng thường xuyên:
 }
 
 → Chọn từ dropdown trong form (nhóm có source: "localStorage")
-```
-
 #### **🗑️ Quản lý dữ liệu linh hoạt**
-
-```
 ✅ Thêm/xóa subgroup: Click "➕ Thêm" để thêm subgroup mới, "❌ Xóa" để xóa
    → Không mất dữ liệu đã nhập (DOM manipulation, không reload)
 ✅ Xóa dòng: Click [X] bên cạnh dòng để xóa toàn bộ dữ liệu dòng đó
 ✅ Xóa placeholder: Click [🗑️] trên từng field để xóa riêng lẻ
 ✅ Ẩn/hiện subgroup: Toggle để form gọn gàng, dễ điều hướng
-```
-
 #### **📊 Tự động chuyển đổi số sang chữ**
 
-```
 ✅ Money → MoneyText:
    - Nhập: 1234567
    - UI hiển thị: 1,234,567
@@ -138,28 +108,18 @@ Thêm người dùng thường xuyên:
    - UI hiển thị: 500 (có thể có dấu phẩy: 5,000)
    - Word nhận: 500 (số thuần, không dấu phẩy)
    - S_Text tự động: "năm trăm mét vuông"
-```
 
 #### **📂 Mở thư mục nhanh**
-
-```
 Sau khi xuất file Word thành công:
 → Nhấn "Mở thư mục" để mở trực tiếp folder chứa file vừa tạo
 → Tiết kiệm thời gian tìm kiếm file output
-```
-
----
-
 ## ✅ Smart Validation (Single Source of Truth)
 
 **🎯 Nguyên tắc: Một nguồn dữ liệu (`config.json`) — dùng cho cả:**
 1. **Hiển thị dấu `*` trong UI** (visual indicator)
 2. **Kiểm tra hợp lệ trước khi xuất** (validation)
-
 **1️⃣ Single Source of Truth - `config.json`:**
 
-```json
-{
   "fieldSchemas": {
     "PersonalInfo": {
       "fields": [
@@ -178,24 +138,15 @@ Sau khi xuất file Word thành công:
       ]
     }
   }
-}
-```
+
 
 **2️⃣ UI tự động đọc từ config:**
 
-```javascript
-
 const isRequired = fieldDef.required === true;
 const requiredClass = isRequired ? ' class="required"' : '';
-
-
 <label class="required"><b>Họ và tên</b></label>  
-```
-
 
 ## 📂 Cấu Trúc Dự Án
-
-```
 TheWord/
 ├── main.js                       # Electron main process
 ├── index.html                    # App entry point
@@ -232,23 +183,14 @@ TheWord/
     ├── HĐ phân chia tài sản/
     ├── Giấy tờ khác/
     └── Thuế/
-```
-
 **🗂️ Các file quan trọng:**
 - `genericFormHandler.js`: Core form rendering
 - `formValidator.js`: Smart validation theo visibility
 - `sessionStorageManager.js`: Quản lý tái sử dụng dữ liệu với logic config-based
 - `generate.js`: Logic sinh file Word với pre-processing XML
-
----
-
 ## 🎨 Kiến Trúc Hệ Thống
-
 ### **1. Single Source of Truth Architecture**
-
 **Flow: `config.json` → UI + Validation**
-
-```
 ┌─────────────────────────────────────────────────────────────────┐
 │  config.json (SINGLE SOURCE OF TRUTH)                           │
 ├─────────────────────────────────────────────────────────────────┤
@@ -284,13 +226,8 @@ TheWord/
         └──────────────────────────────┘  └──────────────────────────────┘
 
 ✅ Chỉnh sửa 1 lần trong config.json → UI + Validation tự động sync
-```
-
 ### **2. Config-based System**
-
 Mỗi folder template có `config.json`:
-
-```json
 {
   "folder": {
     "id": "chuyen-nhuong",
@@ -317,90 +254,66 @@ Mỗi folder template có `config.json`:
     ]
   }]
 }
-```
-
 ### **3. Dynamic Form Rendering**
-
-```
 config.json → configLoader.js → genericFormHandler.js → Form UI
-```
-
 - **Không cần code mới** cho file Word mới
 - Chỉ cần cập nhật `config.json`
 - Form tự động render theo config
 - **Thêm/xóa subgroup động** - DOM manipulation, không reload, giữ nguyên dữ liệu
-
 ### **4. Auto-Format & Conversion**
-
 **Money field:**
 - Input: Số thuần (1234567)
 - UI: Format với dấu phẩy (1,234,567)
 - Word: Giữ format với dấu phẩy
 - MoneyText: Tự động tạo "một triệu hai trăm ba mươi bốn nghìn năm trăm sáu mươi bảy đồng chẵn"
-
 **S (Area) field:**
 - Input: Số thuần (500)
 - UI: Format với dấu phẩy nếu > 1000 (5,000)
 - Word: Số thuần không dấu phẩy (5000) - để dễ tính toán
 - S_Text: Tự động tạo "năm nghìn mét vuông"
-
+**Land Type fields:**
+- `Loai_Dat` (land_type): Chọn loại đất → Xuất tên đầy đủ (ví dụ: "Đất ở tại đô thị")
+- `Loai_Dat_F` (land_type_size): Tags với code + diện tích → Xuất format "440m² ONT; 450m² CHN"
+- Tự động chuyển m2 → m² (Unicode superscript) trong Word
 ### **5. Session Storage Management**
-
 **Logic tái sử dụng dữ liệu:**
-
-```
 1. Parse formData → dataGroups (dựa vào config.fieldMappings)
    - Field có suffix (Name1) → map vào subgroup theo suffix
    - Field không suffix (QSH, Money) → map vào subgroup với suffix = ""
-
 2. Kiểm tra reusedGroups từ UI
    - Subgroup được xác định tự động bằng isSubgroupInConfig()
    - Phân tích thay đổi: NO_CHANGE, ONLY_ADDITIONS, HAS_MODIFICATIONS
-
 3. Xử lý theo logic:
    - NO_CHANGE + cùng file → Giữ nguyên session
    - NO_CHANGE + khác file → Không lưu duplicate ✅
    - ONLY_ADDITIONS → Merge data, xóa session cũ nếu khác file
    - HAS_MODIFICATIONS → Giữ cả 2 sessions
-```
-
 ### **6. Smart Line Removal (Auto-cleanup)**
 
 **Logic xóa dòng tự động khi xuất Word:**
-
-```
 1. Subgroup có visible = false (ẩn):
    → Xóa dòng nếu TẤT CẢ placeholders của subgroup đều rỗng
-   
 2. Subgroup có visible = true (hiện):
    → KHÔNG xóa dòng
    → Placeholder rỗng thay bằng "" (empty string)
    → Dòng vẫn giữ nguyên trong Word
-```
-
 **Ví dụ:**
 - Template có MEN1 (visible), MEN2-6 (hidden)
 - Người dùng không thêm MEN2 → Tất cả placeholders MEN2 rỗng
 - → Dòng chứa {Name2}, {CCCD2}... sẽ bị xóa tự động ✅
 - MEN1 có Name1="Nguyễn Văn A" nhưng CCCD1 rỗng
 - → Dòng vẫn giữ, CCCD1 = "" ✅
-
 **Technical:**
+- Logic subgroup-based: Xử lý tất cả subgroups dựa trên config (MEN, BCN, BCT, MP, LAND, v.v.)
 - Sử dụng `phMapping` và `visibleSubgroups` để xác định subgroup
 - Pre-process XML trước khi render với Docxtemplater
 - Chỉ xóa paragraph nếu TẤT CẢ subgroups trong đó đều thỏa điều kiện xóa
-
----
-
+- Không còn logic riêng cho MEN2-6 (đã được thay thế bởi logic subgroup-based)
 ## ⚙️ Tạo Template Mới
-
 ### **Bước 1: Tạo file Word**
-
-```
 1. Tạo file .docx trong folder templates/
 2. Chèn placeholders: {PlaceholderName}
 3. Format đẹp (font, spacing, alignment)
-```
 
 ### **Bước 2: Cập nhật config.json**
 
@@ -455,7 +368,6 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
     }
   ]
 }
-```
 
 **Kết quả:**
 - UI tự động hiển thị "Label hiển thị *" (có dấu sao đỏ)
@@ -464,12 +376,7 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
 - **Chỉnh 1 lần** trong config → UI + Validation đồng bộ ✅
 
 ### **Bước 3: Khởi động TheWord**
-
-```
 npm start → Template sẵn sàng! ✅
-```
-
----
 
 ## 🔧 Field Types
 
@@ -480,7 +387,8 @@ npm start → Template sẵn sàng! ✅
 | `date` | Date picker | Birth date |
 | `select` | Dropdown | Gender, Options |
 | `address-select` | Cascading address | Province → District → Ward |
-| `land_type` | Land type selector | ONT, LUK, TSC |
+| `land_type` | Land type selector | ONT, LUK, TSC (xuất tên đầy đủ) |
+| `land_type_size` | Land type + area | ONT 440 → 440m² ONT (tags + dropdown) |
 | `currency` | Money input | 1,000,000 (tự động tạo MoneyText) |
 | `textarea` | Multi-line text | Notes |
 
@@ -491,7 +399,6 @@ npm start → Template sẵn sàng! ✅
 ### **App không khởi động**
 
 ```bash
-# Clear cache
 rm -rf node_modules
 npm install
 npm start
@@ -545,7 +452,22 @@ npm start
 
 ## 🚀 Version History
 
-### **v4.2** ✅ (Current)
+### **v4.3** ✅ (Current)
+
+**🎯 Major Changes:**
+- [x] **Tách biệt Loai_Dat và Loai_Dat_F** - Loai_Dat xuất tên đầy đủ, Loai_Dat_F xuất code + diện tích với m²
+- [x] **Unicode superscript m²** - Tự động chuyển m2 → m² (Unicode U+00B2) trong data và template
+- [x] **Land type size component** - Tags + dropdown cho Loai_Dat_F, input ẩn/hiện khi cần
+- [x] **Loại bỏ logic MEN riêng** - Chỉ dùng logic subgroup-based, code gọn hơn
+
+**✨ Improvements:**
+- [x] Format Loai_Dat_F với code ngắn gọn (440m² ONT) thay vì tên đầy đủ
+- [x] Tự động tạo Loai_Dat từ Loai_Dat_F nếu chưa có
+- [x] Xử lý nhiều format input: "ONT 440", "440m2 ONT", "440m² Đất bằng..." → chuẩn hóa
+- [x] An toàn: Không post-process XML sau render (tránh phá hỏng cấu trúc)
+- [x] Logic xóa dòng tập trung: chỉ dùng subgroup-based, không còn logic MEN riêng
+
+### **v4.2** ✅
 
 **🎯 Major Changes:**
 - [x] **S_Text tự động** - Field `S` (diện tích) tự động tạo `S_Text` (bằng chữ) tương tự MoneyText
@@ -632,23 +554,7 @@ npm start    # Chạy offline mãi mãi ✅
 
 **Copy sang máy khác:**
 ```bash
-# Copy cả thư mục (cần Node.js trên máy đích)
 1. Copy toàn bộ folder TheWord
 2. npm install (nếu chưa có node_modules)
 3. npm start
 ```
-
----
-
-## 🎉 Acknowledgments
-
-- **Docxtemplater** - Powerful Word template engine
-- **Electron** - Cross-platform desktop framework
-- **Flatpickr** - Beautiful date picker
-- **Vietnamese Address Dataset** - Comprehensive địa chỉ Việt Nam
-
----
-
-**Made with ❤️ for Vietnamese Document Automation**
-
-**System by THANHTUNG | Happy Document Generation! 🚀📄✨**
