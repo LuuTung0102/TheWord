@@ -33,16 +33,15 @@
 - 200MB dung lượng trống
 **Cài đặt:**
 ```bash
-
 git clone https://github.com/LuuTung0102/TheWord.git
-
 cd TheWord
 npm install
-
 npm start
+```
 
 **✅ Sau khi chạy `npm install`, có thể dùng offline hoàn toàn!**
 
+### **2. Sử Dụng Cơ Bản**
 
 1. **Chọn folder** (panel bên phải)
 2. **Chọn file Word** trong folder
@@ -50,15 +49,17 @@ npm start
 4. **Nhấn "Xuất Word"** → Chọn thư mục lưu
 5. **Mở file Word** → Văn bản hoàn chỉnh! ✅
 
+### **3. Tính Năng Nâng Cao**
 
-Scenario: Tạo nhiều văn bản cho cùng một người
+#### **🔄 Tái sử dụng dữ liệu (Session Storage)**
+
+**Scenario:** Tạo nhiều văn bản cho cùng một người
 
 1. Điền "HĐ chuyển nhượng" cho ông A
 2. Xuất văn bản
 3. Mở "Giấy ủy quyền"
 4. Dropdown "Tái sử dụng" → Chọn "MEN1 - Nguyễn Văn A"
 5. Form tự động điền ✅ (merge thông minh với dữ liệu hiện tại)
-```
 
 **Tính năng:**
 - ✅ **Auto-merge**: Tự động kết hợp dữ liệu cũ với form mới
@@ -118,8 +119,11 @@ Sau khi xuất file Word thành công:
 **🎯 Nguyên tắc: Một nguồn dữ liệu (`config.json`) — dùng cho cả:**
 1. **Hiển thị dấu `*` trong UI** (visual indicator)
 2. **Kiểm tra hợp lệ trước khi xuất** (validation)
+
 **1️⃣ Single Source of Truth - `config.json`:**
 
+```json
+{
   "fieldSchemas": {
     "PersonalInfo": {
       "fields": [
@@ -138,15 +142,21 @@ Sau khi xuất file Word thành công:
       ]
     }
   }
+}
+```
 
 
 **2️⃣ UI tự động đọc từ config:**
 
+```javascript
 const isRequired = fieldDef.required === true;
 const requiredClass = isRequired ? ' class="required"' : '';
-<label class="required"><b>Họ và tên</b></label>  
+// → <label class="required"><b>Họ và tên</b></label>
+```  
 
 ## 📂 Cấu Trúc Dự Án
+
+```
 TheWord/
 ├── main.js                       # Electron main process
 ├── index.html                    # App entry point
@@ -183,6 +193,8 @@ TheWord/
     ├── HĐ phân chia tài sản/
     ├── Giấy tờ khác/
     └── Thuế/
+```
+
 **🗂️ Các file quan trọng:**
 - `genericFormHandler.js`: Core form rendering
 - `formValidator.js`: Smart validation theo visibility
@@ -227,7 +239,10 @@ TheWord/
 
 ✅ Chỉnh sửa 1 lần trong config.json → UI + Validation tự động sync
 ### **2. Config-based System**
+
 Mỗi folder template có `config.json`:
+
+```json
 {
   "folder": {
     "id": "chuyen-nhuong",
@@ -255,7 +270,11 @@ Mỗi folder template có `config.json`:
   }]
 }
 ### **3. Dynamic Form Rendering**
+
+```
 config.json → configLoader.js → genericFormHandler.js → Form UI
+```
+
 - **Không cần code mới** cho file Word mới
 - Chỉ cần cập nhật `config.json`
 - Form tự động render theo config
@@ -436,7 +455,7 @@ npm start
 ✅ Kiểm tra config.json có định nghĩa subgroup đúng không
 ✅ Xem console logs: analyzeChanges() type là gì?
 ✅ Subgroup phải được định nghĩa trong fieldMappings
----
+```
 
 ## 📊 Performance Benchmarks
 
