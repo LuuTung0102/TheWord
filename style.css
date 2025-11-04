@@ -12,8 +12,6 @@ body {
   line-height: 1.6;
 }
 
-
-
 .main-container {
   display: flex;
   flex-direction: column;
@@ -59,10 +57,6 @@ body {
   gap: 1rem;
   padding: 1rem;
 }
-
-/* ========================================
-   PANELS
-   ======================================== */
 
 .data-panel,
 .template-panel {
@@ -134,10 +128,6 @@ body {
   flex-direction: column;
 }
 
-/* ========================================
-   FORM AREA
-   ======================================== */
-
 .form-container {
   flex: 1;
   overflow: auto;
@@ -176,10 +166,6 @@ body {
   line-height: 1.5;
   max-width: 300px;
 }
-
-/* ========================================
-   FOLDER EXPANSION STYLES
-   ======================================== */
 
 .folder-item {
   background: white;
@@ -275,9 +261,6 @@ body {
   flex: 1;
 }
 
-/* ========================================
-   TEMPLATE LIST
-   ======================================== */
 
 .template-container {
   flex: 1;
@@ -301,7 +284,6 @@ body {
   position: relative;
 }
 
-/* Address group styles */
 .address-group {
   display: flex;
   flex-direction: column;
@@ -386,10 +368,6 @@ body {
   gap: 0.25rem;
 }
 
-/* ========================================
-   FOOTER
-   ======================================== */
-
 .main-footer {
   background: white;
   border-top: 1px solid #e2e8f0;
@@ -431,9 +409,6 @@ body {
   gap: 1rem;
 }
 
-/* ========================================
-   BUTTONS
-   ======================================== */
 
 .export-btn {
   background: #3b82f6;
@@ -468,9 +443,6 @@ body {
   font-size: 1rem;
 }
 
-/* ========================================
-   LOADING & MODALS
-   ======================================== */
 
 .loading-overlay {
   position: fixed;
@@ -608,11 +580,6 @@ body {
   background: #cbd5e1;
 }
 
-/* ========================================
-   FORM VALIDATION
-   ======================================== */
-
-/* Validation error highlight */
 input.validation-error,
 select.validation-error,
 textarea.validation-error {
@@ -621,14 +588,12 @@ textarea.validation-error {
   animation: shake 0.3s ease-in-out;
 }
 
-/* Shake animation */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
   75% { transform: translateX(5px); }
 }
 
-/* Error icon for required fields */
 .field-row.has-error::before {
   content: "⚠️";
   position: absolute;
@@ -637,14 +602,12 @@ textarea.validation-error {
   transform: translateY(-50%);
 }
 
-/* Required field indicator */
 label.required::after {
   content: " *";
   color: #ef4444;
   font-weight: 600;
 }
 
-/* Error message below field */
 .field-error-message {
   color: #ef4444;
   font-size: 0.75rem;
@@ -659,9 +622,6 @@ label.required::after {
   font-size: 0.875rem;
 }
 
-/* ========================================
-   RESPONSIVE
-   ======================================== */
 
 @media (max-width: 768px) {
   .main-content {
@@ -691,10 +651,6 @@ label.required::after {
     justify-content: center;
   }
 }
-
-/* ========================================
-   FORM STYLES (from existing system)
-   ======================================== */
 
 .form-taskbar {
   display: flex;
@@ -847,7 +803,6 @@ label.required::after {
   background: #e0f2fe;
 }
 
-/* Land Type Size - Tag Input Component */
 .land-type-size-container {
   display: flex;
   flex-wrap: wrap;
@@ -1017,7 +972,3 @@ label.required::after {
 .suggestion-item:last-child {
   border-bottom: none;
 }
-
-/* ========================================
-   END OF STYLES
-   ======================================== */

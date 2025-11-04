@@ -606,12 +606,25 @@ function setupLandTypeSizeInput(container, inputId) {
         }
       });
     } else {
-      // Try format: "ONT 440; CHN 450"
+      // Try format: "ONT 440; CHN 450" hoặc "BCS 454; CCC 1111"
       const pairs = existingValue.split(';').map(p => p.trim());
       pairs.forEach(pair => {
-        const match = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/);
+        // Match format: "BCS 454" hoặc "BCS 454m2" hoặc "454m2 BCS"
+        let match = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)\s*m2?$/i);
         if (match) {
           tags.push({ code: match[1].toUpperCase(), area: match[2] });
+        } else {
+          // Try format: "454m2 BCS" hoặc "454 m2 BCS"
+          match = pair.match(/^(\d+(?:\.\d+)?)\s*m2?\s*([A-Z]+)$/i);
+          if (match) {
+            tags.push({ code: match[2].toUpperCase(), area: match[1] });
+          } else {
+            // Try format: "BCS 454" (không có m2)
+            match = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)$/);
+            if (match) {
+              tags.push({ code: match[1].toUpperCase(), area: match[2] });
+            }
+          }
         }
       });
     }
@@ -880,6 +893,12 @@ function setupLandTypeSizeInput(container, inputId) {
       hideInput();
     }
   });
+  
+  // Expose reload function để có thể gọi từ bên ngoài
+  container.reloadLandTypeSizeValue = function() {
+    tags = []; // Reset tags trước khi load lại
+    loadExistingValue();
+  };
   
   // Load existing value
   loadExistingValue();

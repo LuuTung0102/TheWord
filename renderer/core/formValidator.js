@@ -1,7 +1,4 @@
-/**
- * Validate form data based on current template config and visible subgroups
- * @returns {boolean} - true if valid, false if errors
- */
+
 function validateForm() {
   console.log('🔍 Validation: Starting form validation...');
   const currentTemplate = window.currentTemplate;
