@@ -209,14 +209,14 @@ TheWord/
 │  {                                                               │
 │    "fieldSchemas": {                                             │
 │      "PersonalInfo": {                                           │
-│        "fields": [                                               │
+│        "fields":                                                 │
 │          { "name": "Name", "required": true },  ← Định nghĩa 1 lần│
 │          { "name": "CCCD", "required": true },                   │
 │          { "name": "Note", "required": false }                   │
 │        ]                                                         │
 │      }                                                           │
 │    },                                                            │
-│    "fieldMappings": [...]                                        │
+│    "fieldMappings": []                                      │
 │  }                                                               │
 └─────────────────────────────────────────────────────────────────┘
                            │
