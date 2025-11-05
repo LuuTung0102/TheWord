@@ -171,11 +171,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
     window.cleanupAllEventListeners();
   }
   
-  const oldTaskbar = document.getElementById('taskbarContainer');
-  if (oldTaskbar) {
-    oldTaskbar.style.display = 'none';
-  }
-  
   const area = document.getElementById("formArea");
   area.innerHTML = "";
   idToPhGeneric = {};

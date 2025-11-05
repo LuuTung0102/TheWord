@@ -14,9 +14,9 @@
         "description": "Giấy ủy quyền",
         "groups": ["BUQ", "BNUQ", "LAND"],
         "placeholders": {
-          "BUQ": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1"],
-          "BNUQ": ["Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address2"],
-          "LAND": ["QSH", "So_so", "Ngay_CapD", "Thua_dat_so", "Ban_do_so", "AddressD"]
+          "BUQ": ["MEN1"],
+          "BNUQ": ["MEN2"],
+          "LAND": ["INFO"]
         }
       },
       {
@@ -26,11 +26,8 @@
         "description": "Giấy chứng thực",
         "groups": ["BCN", "BNCN"],
         "placeholders": {
-          "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1"],
-          "BNCN": [
-            "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2",
-            "Gender3", "Name3", "Date3", "CCCD3", "Noi_Cap3", "Ngay_Cap3"
-          ]
+          "BCN": ["MEN1", "MEN2"],
+          "BNCN": ["MEN7", "MEN8"]
         }
       }
     ],
@@ -206,7 +203,7 @@
             "name": "Responsibility",
             "label": "Bên chịu trách nhiệm thuế phí",
             "type": "select",
-            "options": ["Bên A", "Bên B"],
+            "options": ["A", "B"],
             "required": true
           },
           {
@@ -233,19 +230,20 @@
         "group": "BCN",
         "schema": "UQInfo",
         "subgroups": [
-          {"id": "MEN1", "label": "Thông tin cá nhân","visible": true}
+          {"id": "MEN1", "label": "Thông tin cá nhân","visible": true},
+          {"id": "MEN2", "label": "Thông tin cá nhân","visible": false}
         ],
-        "suffixes": ["1"],
-        "defaultGenders": ["Ông"]
+        "suffixes": ["1", "2"],
+        "defaultGenders": ["Ông", "Bà"]
       },
       {
         "group": "BNCN",
         "schema": "UQInfo",
         "subgroups": [
-          {"id": "MEN2", "label": "Thông tin cá nhân","visible": true},
-          {"id": "MEN3", "label": "Thông tin cá nhân","visible": true}
+          {"id": "MEN7", "label": "Thông tin cá nhân","visible": true},
+          {"id": "MEN8", "label": "Thông tin cá nhân","visible": false}
         ],
-        "suffixes": ["2", "3"],
+        "suffixes": ["7", "8"],
         "defaultGenders": ["Ông", "Bà"]
       },
       {

@@ -99,6 +99,14 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
             subgroupLabel: subgroupLabel
           };
           
+          // Ensure required is set from fieldDef (may be true, false, or undefined)
+          if (fieldDef.hasOwnProperty('required')) {
+            fieldConfig.required = fieldDef.required;
+          } else if (!fieldConfig.hasOwnProperty('required')) {
+            // Default to false if not specified
+            fieldConfig.required = false;
+          }
+          
           if (fieldDef.label) {
             fieldConfig.label = fieldDef.label;
             console.log(`🏷️ Using label from config.json for ${placeholder}: "${fieldDef.label}"`);
@@ -123,78 +131,143 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
     });
   }
   
-  if (config.templates) {
-    config.templates.forEach(template => {
-      if (template.placeholders) {
-        Object.keys(template.placeholders).forEach(groupKey => {
-          const placeholders = template.placeholders[groupKey];
+  // Match placeholders from Word file with fieldMappings to determine group/subgroup
+  // This runs after fieldMappings processing, so we only handle placeholders not yet mapped
+  if (actualPlaceholders && actualPlaceholders.length > 0) {
+    actualPlaceholders.forEach(placeholder => {
+      // Skip if already mapped
+      if (mapping[placeholder]) return;
+      
+      // Try to find this placeholder in fieldMappings
+      let foundMatch = false;
+      
+      if (config.fieldMappings) {
+        config.fieldMappings.forEach(mappingDef => {
+          if (foundMatch) return;
           
-          placeholders.forEach(placeholder => {
-            if (!mapping[placeholder]) {
-              const fieldName = placeholder.replace(/\d+$/, '');
-              const schemaField = schemaFields[fieldName];
-              if (schemaField) {
-                console.log(`🔍 Found field ${fieldName} in schemas with label: "${schemaField.label}"`);
-                mapping[placeholder] = {
-                  ...schemaField,
-                  group: groupKey,
-                  subgroup: 'INFO'
+          const { group, subgroups, schema, suffixes } = mappingDef;
+          const schemaDef = config.fieldSchemas?.[schema];
+          if (!schemaDef || !schemaDef.fields) return;
+          
+          // Try to match placeholder by pattern: fieldName + suffix
+          subgroups.forEach((subgroupDef, subIndex) => {
+            if (foundMatch) return;
+            
+            const subgroupId = typeof subgroupDef === 'string' ? subgroupDef : subgroupDef.id;
+            const subgroupLabel = typeof subgroupDef === 'object' ? subgroupDef.label : subgroupDef;
+            const suffix = (suffixes && suffixes[subIndex]) ? suffixes[subIndex] : '';
+            
+            // Check if placeholder matches any field in schema with this suffix
+            schemaDef.fields.forEach(fieldDef => {
+              if (foundMatch) return;
+              
+              const expectedPlaceholder = `${fieldDef.name}${suffix}`;
+              if (placeholder === expectedPlaceholder) {
+                // Found match! Create mapping
+                const baseFieldName = fieldDef.name;
+                const baseField = basePlaceholders[baseFieldName] || {};
+                
+                const fieldConfig = {
+                  ...baseField,
+                  ...fieldDef,
+                  group: group,
+                  subgroup: subgroupId,
+                  subgroupLabel: subgroupLabel
                 };
                 
-                if (placeholder.includes("Address")) {
-                  console.log(`🏠 Creating address field from schema: ${placeholder}, type: ${mapping[placeholder].type}`);
-                  if (mapping[placeholder].type !== "address-select") {
-                    console.warn(`⚠️ Address field ${placeholder} has incorrect type: ${mapping[placeholder].type}. Fixing to address-select.`);
-                    mapping[placeholder].type = "address-select";
-                  }
+                // Ensure required is set from fieldDef (may be true, false, or undefined)
+                if (fieldDef.hasOwnProperty('required')) {
+                  fieldConfig.required = fieldDef.required;
+                } else if (!fieldConfig.hasOwnProperty('required')) {
+                  // Default to false if not specified
+                  fieldConfig.required = false;
                 }
-              }
-              else {
-                const baseField = basePlaceholders[fieldName];
-                if (baseField) {
-                  let autoLabel = placeholder; 
-                  autoLabel = autoLabel.replace(/[0-9_]+$/, '');
-                  autoLabel = autoLabel.replace(/([A-Z])/g, ' $1').trim();
-                  autoLabel = autoLabel.charAt(0).toUpperCase() + autoLabel.slice(1);
-                  if (placeholder.includes("Address")) {
-                    console.log(`🏠 Creating address field: ${placeholder} from base ${fieldName}, type: ${baseField.type}`);
-                    if (baseField.type !== "address-select") {
-                      console.warn(`⚠️ Address field ${placeholder} has incorrect type: ${baseField.type}. Fixing to address-select.`);
-                      baseField.type = "address-select";
-                    }
-                  }
-                  
-                  mapping[placeholder] = {
-                    ...baseField,
-                    label: autoLabel, 
-                    group: groupKey,
-                    subgroup: 'INFO'
-                  };
-                  
-                  console.log(`🏷️ Created auto label for ${placeholder}: "${autoLabel}"`);
-                } 
-                else {
+                
+                if (fieldDef.label) {
+                  fieldConfig.label = fieldDef.label;
+                } else if (!fieldConfig.label) {
+                  // Auto-generate label
                   let autoLabel = placeholder;
                   autoLabel = autoLabel.replace(/[0-9_]+$/, '');
                   autoLabel = autoLabel.replace(/([A-Z])/g, ' $1').trim();
                   autoLabel = autoLabel.charAt(0).toUpperCase() + autoLabel.slice(1);
-                  console.warn(`⚠️ Field ${placeholder} not found in baseConstants.js. Creating with default type "text"`);
-                  mapping[placeholder] = {
-                    type: "text",
-                    label: autoLabel,
-                    group: groupKey,
-                    subgroup: 'INFO'
-                  };
-                  console.log(`🏷️ Created auto label for ${placeholder}: "${autoLabel}"`);
-                  if (placeholder.includes("Address")) {
-                    mapping[placeholder].type = "address-select";
-                    console.log(`🏠 Created new address field: ${placeholder} with type address-select`);
-                  }
+                  fieldConfig.label = autoLabel;
                 }
+                
+                if (placeholder.includes("Address")) {
+                  fieldConfig.type = "address-select";
+                }
+                
+                mapping[placeholder] = fieldConfig;
+                foundMatch = true;
+                console.log(`✅ Matched placeholder ${placeholder} to group ${group}, subgroup ${subgroupId} from fieldMappings (required: ${fieldConfig.required})`);
               }
-            }
+            });
           });
         });
+      }
+      
+      if (!foundMatch) {
+        const fieldName = placeholder.replace(/\d+$/, '');
+        const schemaField = schemaFields[fieldName];
+        
+        if (schemaField) {
+          console.log(`🔍 Found field ${fieldName} in schemas for placeholder ${placeholder}`);
+          mapping[placeholder] = {
+            ...schemaField,
+            group: 'UNKNOWN',
+            subgroup: 'INFO'
+          };
+          
+          // Ensure required is preserved from schemaField
+          if (schemaField.hasOwnProperty('required')) {
+            mapping[placeholder].required = schemaField.required;
+          } else {
+            mapping[placeholder].required = false;
+          }
+          
+          if (placeholder.includes("Address")) {
+            mapping[placeholder].type = "address-select";
+          }
+        } else {
+          const baseField = basePlaceholders[fieldName];
+          if (baseField) {
+            let autoLabel = placeholder;
+            autoLabel = autoLabel.replace(/[0-9_]+$/, '');
+            autoLabel = autoLabel.replace(/([A-Z])/g, ' $1').trim();
+            autoLabel = autoLabel.charAt(0).toUpperCase() + autoLabel.slice(1);
+            
+            mapping[placeholder] = {
+              ...baseField,
+              label: autoLabel,
+              group: 'UNKNOWN',
+              subgroup: 'INFO',
+              required: baseField.hasOwnProperty('required') ? baseField.required : false
+            };
+            
+            if (placeholder.includes("Address")) {
+              mapping[placeholder].type = "address-select";
+            }
+            
+            console.log(`🏷️ Created auto mapping for ${placeholder} (not in fieldMappings)`);
+          } else {
+            // Fallback: create default mapping
+            let autoLabel = placeholder;
+            autoLabel = autoLabel.replace(/[0-9_]+$/, '');
+            autoLabel = autoLabel.replace(/([A-Z])/g, ' $1').trim();
+            autoLabel = autoLabel.charAt(0).toUpperCase() + autoLabel.slice(1);
+            
+            mapping[placeholder] = {
+              type: placeholder.includes("Address") ? "address-select" : "text",
+              label: autoLabel,
+              group: 'UNKNOWN',
+              subgroup: 'INFO',
+              required: false
+            };
+            
+            console.warn(`⚠️ Placeholder ${placeholder} not found in config, created default mapping`);
+          }
+        }
       }
     });
   }

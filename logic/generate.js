@@ -185,6 +185,36 @@
       templatePhs.forEach(ph => {
         fullData[ph] = data[ph] !== undefined ? data[ph] : '';
       });
+      
+      // Helper function to convert UPPERCASE to Title Case
+      // Example: "LƯU THANH TÙNG" -> "Lưu Thanh Tùng"
+      function toTitleCase(str) {
+        if (!str || typeof str !== 'string') return str;
+        return str
+          .toLowerCase()
+          .split(' ')
+          .map(word => {
+            if (word.length === 0) return word;
+            // Handle Vietnamese characters properly
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join(' ');
+      }
+      
+      // Auto-generate NameT1, NameT2, ... from Name1, Name2, ... if template has NameT placeholders
+      templatePhs.forEach(ph => {
+        // Check if this is a NameT placeholder (e.g., NameT1, NameT2)
+        const nameTMatch = ph.match(/^NameT(\d+)$/);
+        if (nameTMatch) {
+          const number = nameTMatch[1];
+          const baseNamePh = `Name${number}`;
+          // Get the value from Name1, Name2, etc.
+          const baseValue = data[baseNamePh] || fullData[baseNamePh] || '';
+          // Convert to Title Case
+          fullData[ph] = toTitleCase(baseValue);
+        }
+      });
+      
       Object.keys(data).forEach(key => {
         if (typeof data[key] === 'string' && data[key].includes('m2')) {
           data[key] = data[key].replace(/m2/g, 'm²');
@@ -228,4 +258,3 @@
   }
 
   module.exports = { generateDocx };
-

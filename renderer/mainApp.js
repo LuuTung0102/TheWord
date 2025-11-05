@@ -233,25 +233,15 @@ class MainApp {
           console.log('🔄 MainApp: Reset visibleSubgroups and defaultVisibleSubgroups for new file');
           if (window.renderGenericForm) {
             await window.renderGenericForm(placeholders, filteredConfig, folderPath);
-          } else if (window.renderForm) {
-            window.renderForm(placeholders);
           } else {
-            throw new Error('No form renderer available');
+            throw new Error('renderGenericForm not available');
           }
         } else {
           console.warn('⚠️ MainApp: No template matches for file:', fileName);
-          if (window.renderForm) {
-            window.renderForm(placeholders);
-          } else {
-            throw new Error('No form renderer available');
-          }
+          throw new Error(`No template matches found for file: ${fileName}`);
         }
       } else {
-        if (window.renderForm) {
-          window.renderForm(placeholders);
-        } else {
-          throw new Error('No form renderer available');
-        }
+        throw new Error('No config.json found in folder');
       }
       
       console.log('✅ MainApp: Form loaded successfully');
@@ -264,43 +254,17 @@ class MainApp {
 
   findMatchingTemplate(placeholders, templates, fileName) {
     console.log('🔍 MainApp: Finding matching template for file:', fileName);
-    console.log('🔍 MainApp: File placeholders:', placeholders);
+    
+    // Chỉ match theo filename
     for (const template of templates) {
       if (template.filename === fileName) {
-        console.log(`✅ MainApp: Exact filename match found: ${template.id}`);
+        console.log(`✅ MainApp: Template match found: ${template.id}`);
         console.log(`✅ MainApp: Template groups:`, template.groups);
         return template;
       }
     }
     
-    console.log('⚠️ MainApp: No exact filename match, trying placeholder-based matching...');
-    
-    const filePlaceholdersSet = new Set(placeholders);
-    let bestMatch = null;
-    let bestScore = 0;
-    
-    for (const template of templates) {
-      if (template.placeholders) {
-        const templatePlaceholders = new Set();
-        Object.values(template.placeholders).forEach(groupPlaceholders => {
-          groupPlaceholders.forEach(ph => templatePlaceholders.add(ph));
-        });
-        const intersection = new Set([...filePlaceholdersSet].filter(ph => templatePlaceholders.has(ph)));
-        const matchPercentage = intersection.size / filePlaceholdersSet.size;
-        
-        if (matchPercentage > bestScore) {
-          bestScore = matchPercentage;
-          bestMatch = template;
-        }
-      }
-    }
-    
-    if (bestMatch && bestScore > 0.7) {
-      console.log(`✅ MainApp: Best match found: ${bestMatch.id} with score ${(bestScore * 100).toFixed(1)}%`);
-      return bestMatch;
-    }
-    
-    console.log('❌ MainApp: No template matches found (best score:', (bestScore * 100).toFixed(1), '%)');
+    console.log('❌ MainApp: No template matches found for file:', fileName);
     return null;
   }
 
@@ -329,7 +293,8 @@ class MainApp {
       if (window.ipcRenderer) {
         return await window.ipcRenderer.invoke("get-file-placeholders", folderPath, fileName);
       } else {
-        return ['Name1', 'Name2', 'Name7', 'Date1', 'Date2', 'Date7', 'CCCD1', 'CCCD2', 'CCCD7'];
+        console.warn('⚠️ MainApp: ipcRenderer not available');
+        return [];
       }
     } catch (error) {
       console.error('❌ MainApp: Error loading placeholders for file:', error);
@@ -337,18 +302,6 @@ class MainApp {
     }
   }
 
-  async loadPlaceholders(folderPath) {
-    try {
-      if (window.ipcRenderer) {
-        return await window.ipcRenderer.invoke("get-template-placeholders", folderPath);
-      } else {
-        return ['Name1', 'Name2', 'Name7', 'Date1', 'Date2', 'Date7', 'CCCD1', 'CCCD2', 'CCCD7'];
-      }
-    } catch (error) {
-      console.error('❌ MainApp: Error loading placeholders:', error);
-      return [];
-    }
-  }
 
   async loadConfig(folderPath) {
     try {
@@ -448,14 +401,12 @@ class MainApp {
 
   collectFormData() {
     try {
-      if (window.collectGenericFormData && window.idToPhGeneric && Object.keys(window.idToPhGeneric).length > 0) {
+      // Chỉ sử dụng collectGenericFormData (hệ thống mới)
+      if (window.collectGenericFormData) {
         return window.collectGenericFormData();
       }
       
-      if (window.collectFormData) {
-        return window.collectFormData();
-      }
-      
+      // Fallback: collect manually nếu không có collectGenericFormData
       const data = {};
       document.querySelectorAll('input[data-ph], select[data-ph], textarea[data-ph]').forEach(el => {
         const ph = el.getAttribute('data-ph');

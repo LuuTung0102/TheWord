@@ -17,7 +17,10 @@ function setupExportButton() {
       showLoading();
     }
     
-    const data = typeof collectFormData === 'function' ? collectFormData() : {};
+    // Sử dụng collectGenericFormData (hệ thống mới)
+    const data = typeof window.collectGenericFormData === 'function' 
+      ? window.collectGenericFormData() 
+      : {};
     const selectedTemplates = typeof getSelectedTemplates === 'function' ? getSelectedTemplates() : (window.selectedTemplates || []);
     
     if (selectedTemplates.length === 0) {

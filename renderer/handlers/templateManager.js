@@ -131,9 +131,6 @@ function setupTemplateEventListeners() {
 async function updateForm() {
   if (!selectedTemplates.length) {
     document.getElementById("formArea").innerHTML = "";
-    if (typeof updateDynamicTaskbar === 'function') {
-      updateDynamicTaskbar();
-    }
     return;
   }
 
@@ -160,29 +157,12 @@ async function updateForm() {
   }
   
   if (folderConfig && typeof window.renderGenericForm === 'function') {
-    const hasBDorUQ = folderConfig.groups && folderConfig.groups.some(group => 
-      group.id === 'BD' || group.id === 'UQ' || 
-      group.label.toLowerCase().includes('biến động') || 
-      group.label.toLowerCase().includes('ủy quyền')
-    );
-    
-    if (hasBDorUQ) {
-      console.log("⚠️ Config has BD/UQ - Using OLD system for advanced features");
-      renderForm([...phSet]);
-    } else {
-      console.log("🆕 Using NEW config-based system");
-      await window.renderGenericForm([...phSet], folderConfig, folderPath);
-    }
-  } else if (typeof renderForm === 'function') {
-    console.log("⚠️ Using OLD legacy system (no config.json found)");
-    renderForm([...phSet]);
+    console.log("🆕 Using config-based system");
+    await window.renderGenericForm([...phSet], folderConfig, folderPath);
+  } else {
+    console.error("❌ No config.json found or renderGenericForm not available");
+    document.getElementById("formArea").innerHTML = "<p style='padding: 20px; color: #dc3545;'>⚠️ Vui lòng thêm config.json vào folder template</p>";
   }
-  
-  setTimeout(() => {
-    if (typeof window.reSetupAllInputs === 'function') {
-      window.reSetupAllInputs();
-    }
-  }, 500);
 }
 
 function setupSearch() {

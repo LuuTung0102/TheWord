@@ -56,23 +56,13 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
 
   console.log('🔍 Validating form with visible subgroups:', Array.from(visibleSubgroups));
   
-  const actualPlaceholders = window.currentTemplate?.selectedFile?.placeholders || {};
-  const allPlaceholders = new Set();
+  // Get placeholders from phMapping (which contains all placeholders from Word file)
+  const phMapping = window.__renderDataStructures?.phMapping || {};
+  const allPlaceholders = new Set(Object.keys(phMapping));
   
-  console.log('🔍 Layer 3: Getting placeholders from template...');
-  console.log('  actualPlaceholders object:', actualPlaceholders);
-  console.log('  templateGroups:', templateGroups);
-  
-  templateGroups.forEach(groupKey => {
-    if (actualPlaceholders[groupKey]) {
-      console.log(`  Group ${groupKey} has ${actualPlaceholders[groupKey].length} placeholders:`, actualPlaceholders[groupKey]);
-      actualPlaceholders[groupKey].forEach(ph => allPlaceholders.add(ph));
-    } else {
-      console.warn(`  ⚠️ Group ${groupKey} has NO placeholders in template!`);
-    }
-  });
-  
-  console.log('✅ Layer 3: Template has', allPlaceholders.size, 'actual placeholders:', Array.from(allPlaceholders));
+  console.log('🔍 Getting placeholders from phMapping...');
+  console.log('  Total placeholders from Word file:', allPlaceholders.size);
+  console.log('  Template groups:', templateGroups);
 
   for (const mapping of fieldMappings) {
     if (!templateGroups.includes(mapping.group)) {
@@ -105,15 +95,17 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
         const fieldName = suffix ? `${field.name}${suffix}` : field.name;
         
         if (!allPlaceholders.has(fieldName)) {
-          console.log(`⏭️ Layer 3 SKIP: ${fieldName} (field "${field.label}") not in template placeholders`);
+          console.log(`⏭️ SKIP: ${fieldName} (field "${field.label}") not in template Word file`);
           continue;
         }
         
-        console.log(`✅ Layer 3 PASS: ${fieldName} exists in template → will validate`);
+        console.log(`✅ Validating: ${fieldName} (${field.label}) - required: ${field.required}`);
         
         const fieldValue = formData[fieldName];
+        const isEmpty = !fieldValue || (typeof fieldValue === 'string' && fieldValue.trim() === '') || 
+                       (Array.isArray(fieldValue) && fieldValue.length === 0);
         
-        if (!fieldValue || fieldValue.toString().trim() === '') {
+        if (isEmpty) {
           const groupInfo = mapping.group;
           errors.push({
             subgroup: subgroupId,
@@ -123,6 +115,7 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
             fieldLabel: field.label,
             message: `"${field.label}" là bắt buộc (${subgroupLabel || subgroupId})`
           });
+          console.log(`❌ Validation error: ${fieldName} (${field.label}) is empty`);
         }
       }
     }
@@ -139,31 +132,8 @@ function displayValidationErrors(errors) {
   if (errors.length === 0) return;
 
   console.error('❌ Form validation errors:', errors);
-
-  const errorsBySubgroup = {};
-  errors.forEach(error => {
-    if (!errorsBySubgroup[error.subgroupLabel]) {
-      errorsBySubgroup[error.subgroupLabel] = [];
-    }
-    errorsBySubgroup[error.subgroupLabel].push(error.fieldLabel);
-  });
-
-  let message = '❌ Vui lòng điền đầy đủ thông tin bắt buộc:\n\n';
   
-  Object.keys(errorsBySubgroup).forEach(subgroupLabel => {
-    const fields = errorsBySubgroup[subgroupLabel];
-    message += `📝 ${subgroupLabel}:\n`;
-    fields.forEach(fieldLabel => {
-      message += `   • ${fieldLabel}\n`;
-    });
-    message += '\n';
-  });
-
-  if (typeof window.showError === 'function') {
-    window.showError(message);
-  } else {
-    alert(message);
-  }
+  // Chỉ highlight và scroll, không hiển thị thông báo
   scrollToFirstError(errors);
 }
 
@@ -174,6 +144,34 @@ function displayValidationErrors(errors) {
 function scrollToFirstError(errors) {
   if (errors.length === 0) return;
 
+  // Highlight all error fields
+  errors.forEach(error => {
+    const fieldName = error.field;
+    const inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
+    
+    if (inputElement) {
+      // Add error styling
+      inputElement.style.borderColor = '#dc3545';
+      inputElement.style.borderWidth = '2px';
+      inputElement.style.backgroundColor = '#fff5f5';
+      inputElement.classList.add('validation-error');
+      
+      // Remove error styling after user interacts
+      const removeErrorStyle = () => {
+        inputElement.style.borderColor = '';
+        inputElement.style.borderWidth = '';
+        inputElement.style.backgroundColor = '';
+        inputElement.classList.remove('validation-error');
+        inputElement.removeEventListener('input', removeErrorStyle);
+        inputElement.removeEventListener('change', removeErrorStyle);
+      };
+      
+      inputElement.addEventListener('input', removeErrorStyle);
+      inputElement.addEventListener('change', removeErrorStyle);
+    }
+  });
+
+  // Scroll to first error
   const firstError = errors[0];
   const fieldName = firstError.field;
   const inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
@@ -181,12 +179,6 @@ function scrollToFirstError(errors) {
   if (inputElement) {
     inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     inputElement.focus();
-    
-    // Add error highlight
-    inputElement.classList.add('validation-error');
-    setTimeout(() => {
-      inputElement.classList.remove('validation-error');
-    }, 3000);
   }
 }
 

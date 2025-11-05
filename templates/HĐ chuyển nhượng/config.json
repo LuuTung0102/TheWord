@@ -14,9 +14,9 @@
       "description": "Chuyển nhượng quyền sử dụng đất",
       "groups": ["BCN", "NCN", "LAND"],
       "placeholders": {
-        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Address1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2"],
-        "NCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7", "Address7"],
-        "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "THSD", "TTGLVD", "Thua_dat_so"]
+        "BCN": ["MEN1", "MEN2"],
+        "NCN": ["MEN7"],
+        "LAND": ["INFO"]
       }
     },
     {
@@ -26,18 +26,18 @@
       "description": "Chuyển nhượng nhà",
       "groups": ["BCN", "BNCN", "LAND"],
       "placeholders": {
-        "BCN": ["Gender1", "Name1", "Date1", "CCCD1", "Noi_Cap1", "Ngay_Cap1", "Gender2", "Name2", "Date2", "CCCD2", "Noi_Cap2", "Ngay_Cap2", "Address1"],
-        "BNCN": ["Gender7", "Name7", "Date7", "CCCD7", "Noi_Cap7", "Ngay_Cap7","Gender8", "Name8", "Date8", "CCCD8", "Noi_Cap8", "Ngay_Cap8", "Address7"],
-        "LAND": ["AddressD", "Ban_do_so", "HTSD", "Loai_Dat", "S_Text","Noi_CapD", "TDCSPL","Money", "MoneyText", "Ngay_CapD", "Note", "QSH", "Responsibility", "S", "So_so", "NG","THSD", "TTGLVD", "Thua_dat_so"]
+        "BCN": ["MEN1", "MEN2"],
+        "BNCN": ["MEN7", "MEN8"],
+        "LAND": ["INFO"]
       }
     }
   ],
 
   "groups": [
     { "id": "BCN", "label": "Bên chuyển nhượng", "order": 1, "description": "Người chuyển nhượng tài sản" },
-    { "id": "BNCN", "label": "Bên nhận chuyển nhượng", "order": 2, "description": "Người nhận chuyển nhượng tài sản" },
+    { "id": "BNCN", "label": "Bên nhận chuyển nhượng GS25", "order": 2, "description": "Người nhận chuyển nhượng tài sản" },
     { "id": "BCT", "label": "Bên công trình", "order": 1, "description": "Người chuyển nhượng công trình" },
-    { "id": "NCN", "label": "Bên nhận chuyển nhượng", "order": 2, "description": "Người nhận chuyển nhượng tài sản" },
+    { "id": "NCN", "label": "Bên nhận chuyển nhượng GS26", "order": 2, "description": "Người nhận chuyển nhượng tài sản" },
     { "id": "LAND", "label": "Thông tin thửa đất", "order": 3, "description": "Thông tin đất đai, nhà cửa" }
   ],
 
@@ -113,6 +113,15 @@
       ],
       "suffixes": ["7", "8"],
       "defaultGenders": ["Ông", "Bà"]
+    },
+    {
+      "group": "NCN",
+      "schema": "PersonalInfo",
+      "subgroups": [
+        { "id": "MEN7", "label": "Thông tin cá nhân" ,"visible": true}
+      ],
+      "suffixes": ["7"],
+      "defaultGenders": ["Ông"]
     },
     {
       "group": "LAND",
