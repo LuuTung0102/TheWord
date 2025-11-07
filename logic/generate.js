@@ -200,8 +200,6 @@
         fullData[ph] = data[ph] !== undefined ? data[ph] : '';
       });
       
-      // Helper function to convert UPPERCASE to Title Case
-      // Example: "LƯU THANH TÙNG" -> "Lưu Thanh Tùng"
       function toTitleCase(str) {
         if (!str || typeof str !== 'string') return str;
         return str

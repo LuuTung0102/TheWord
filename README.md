@@ -9,10 +9,11 @@
 🗑️ **Quản lý linh hoạt** - Xóa dòng, xóa placeholder riêng lẻ, thêm/xóa subgroup động  
 👁️ **Ẩn/hiện nhóm** - Toggle subgroup để form gọn gàng, không mất dữ liệu khi thêm/xóa  
 ✅ **Smart Validation** - Single source of truth từ config.json, chỉ validate subgroup visible  
-📊 **Tự động chuyển đổi** - Money → MoneyText, S (diện tích) → S_Text (bằng chữ)  
+📊 **Tự động chuyển đổi** - Money → MoneyText, S (diện tích) → S_Text (bằng chữ), Name → NameT (Title Case)  
 🧹 **Tự động dọn dẹp** - Xóa dòng trống của subgroup ẩn khi xuất Word  
 🏷️ **Loại đất thông minh** - Loai_Dat (tên đầy đủ) và Loai_Dat_F (code + diện tích với m²)  
 ² **Superscript tự động** - Tự động chuyển m2 → m² (Unicode superscript) trong Word  
+🧹 **Cleanup dấu phẩy thừa** - Tự động xóa dấu phẩy thừa (", ,", ", , ,"...) từ placeholder rỗng  
 ⚡ **Nhanh chóng** - Xuất văn bản trong < 5 giây  
 🎨 **UI hiện đại** - Taskbar, dropdown, date picker, address cascading  
 📂 **Mở thư mục** - Mở trực tiếp thư mục output sau khi xuất  
@@ -109,6 +110,11 @@ Thêm người dùng thường xuyên:
    - UI hiển thị: 500 (có thể có dấu phẩy: 5,000)
    - Word nhận: 500 (số thuần, không dấu phẩy)
    - S_Text tự động: "năm trăm mét vuông"
+
+✅ Name → NameT (Title Case):
+   - Nhập Name1: "LƯU THANH TÙNG"
+   - NameT1 tự động: "Lưu Thanh Tùng"
+   - Áp dụng cho tất cả Name fields (Name1, Name2, Name3...)
 
 #### **📂 Mở thư mục nhanh**
 Sau khi xuất file Word thành công:
@@ -328,6 +334,35 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
 - Pre-process XML trước khi render với Docxtemplater
 - Chỉ xóa paragraph nếu TẤT CẢ subgroups trong đó đều thỏa điều kiện xóa
 - Không còn logic riêng cho MEN2-6 (đã được thay thế bởi logic subgroup-based)
+
+### **7. Comma Cleanup (Xóa dấu phẩy thừa)**
+
+**Logic cleanup dấu phẩy thừa từ placeholder rỗng:**
+
+**2 giai đoạn:**
+1. **PRE-RENDER (Trước khi render):**
+   - Quét tất cả paragraph trong Word template
+   - Đánh dấu paragraph có chứa `{{placeholder}}` bằng attribute `data-has-placeholder="true"`
+   - Paragraph không có placeholder → không đánh dấu
+
+2. **POST-RENDER (Sau khi render):**
+   - Chỉ xử lý paragraph có attribute `data-has-placeholder`
+   - Kiểm tra pattern dấu phẩy thừa: `, ,`, `, , ,`, `, , , ,`... (2+ dấu phẩy liên tiếp)
+   - Xóa hoàn toàn: `(,\s*){2,}` → `` (empty string)
+   - Paragraph không có placeholder → bỏ qua, giữ nguyên
+
+**Ví dụ:**
+- Template: `"Chúng tôi gồm: {{NameT1}}, {{NameT2}}, được nhận"`
+- NameT1 = "Lưu Thanh Tùng", NameT2 = "" (rỗng)
+- Sau render: `"Chúng tôi gồm: Lưu Thanh Tùng, , được nhận"`
+- Sau cleanup: `"Chúng tôi gồm: Lưu Thanh Tùng được nhận"` ✅
+
+**Technical:**
+- Pre-render: Tag paragraph với `data-has-placeholder` attribute
+- Post-render: Chỉ cleanup paragraph đã được tag
+- Regex: `(,\s*){2,}` match 2+ dấu phẩy liên tiếp (có thể có khoảng trắng)
+- Xóa hoàn toàn, không thay bằng khoảng trắng
+- An toàn: Không động vào paragraph không có placeholder
 ## ⚙️ Tạo Template Mới
 ### **Bước 1: Tạo file Word**
 1. Tạo file .docx trong folder templates/
@@ -471,7 +506,20 @@ npm start
 
 ## 🚀 Version History
 
-### **v4.3** ✅ (Current)
+### **v4.4** ✅ (Current)
+
+**🎯 Major Changes:**
+- [x] **Auto-generate NameT (Title Case)** - Tự động tạo NameT1, NameT2... từ Name1, Name2... (UPPERCASE → Title Case)
+- [x] **Comma cleanup 2 giai đoạn** - Pre-render tagging + Post-render cleanup, chỉ xử lý paragraph có placeholder
+- [x] **Xóa dấu phẩy thừa** - Tự động xóa ", ,", ", , ,"... (2+ dấu phẩy liên tiếp) từ placeholder rỗng
+
+**✨ Improvements:**
+- [x] NameT tự động generate từ Name với toTitleCase() function
+- [x] Cleanup an toàn: Chỉ xử lý paragraph có `data-has-placeholder` attribute
+- [x] Xóa hoàn toàn dấu phẩy thừa (không thay bằng khoảng trắng)
+- [x] Không động vào paragraph không có placeholder
+
+### **v4.3** ✅
 
 **🎯 Major Changes:**
 - [x] **Tách biệt Loai_Dat và Loai_Dat_F** - Loai_Dat xuất tên đầy đủ, Loai_Dat_F xuất code + diện tích với m²
