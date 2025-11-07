@@ -1048,7 +1048,6 @@ function fillAddressField(placeholder, addressString) {
         wardSelect.value = wardOption.value;
         wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
       }
-      
       if (parts.length === 4 && villageInput) {
         villageInput.value = parts[0];
       }
@@ -1074,7 +1073,6 @@ function collectGenericFormData() {
     if (activeButton && groupKey) {
       const personId = activeButton.getAttribute('data-person-id');
       const person = window.getPersonById ? window.getPersonById(personId) : null;
-      
       if (person && person.data) {
         Object.keys(person.data).forEach(key => {
           const placeholder = suffix ? `${key}${suffix}` : key;
@@ -1087,9 +1085,7 @@ function collectGenericFormData() {
   document.querySelectorAll('input[data-ph], select[data-ph], textarea[data-ph]').forEach(el => {
     const ph = el.getAttribute('data-ph');
     if (!ph) return;
-    
     let value = el.value.trim();
-    
     if (ph === 'Money' && value) {
       const rawMoney = value.replace(/\D/g, '');
       if (rawMoney) {
@@ -1102,7 +1098,6 @@ function collectGenericFormData() {
       }
     }
     
-    // Auto-generate NameT from Name (similar to MoneyText from Money)
     const nameMatch = ph.match(/^Name(\d+)$/);
     if (nameMatch && value) {
       const number = nameMatch[1];
@@ -1110,7 +1105,6 @@ function collectGenericFormData() {
       const nameT = window.toTitleCase ? window.toTitleCase(value.trim()) : value.trim();
       if (nameT) {
         data[nameTKey] = nameT;
-        // Also update the NameT field in the form if it exists
         const nameTField = document.querySelector(`[data-ph="${nameTKey}"]`);
         if (nameTField) {
           nameTField.value = nameT;
@@ -1131,13 +1125,9 @@ function collectGenericFormData() {
       }
     }
     
-    // Handle land_type_size - format from tags
     const landTypeSizeContainer = el.closest('.land-type-size-container');
     if (el.classList.contains('tag-input') && landTypeSizeContainer) {
-      // Lấy giá trị từ input (ngay cả khi input ẩn)
-      // Value is already formatted as "ONT 440; CHN 450" from setupLandTypeSizeInput
       if (!value || value.trim() === '') {
-        // Nếu input trống, thử lấy từ tags trực tiếp
         const tagsWrapper = landTypeSizeContainer.querySelector('.tags-wrapper');
         if (tagsWrapper) {
           const tags = tagsWrapper.querySelectorAll('.land-type-tag');
@@ -1155,11 +1145,9 @@ function collectGenericFormData() {
                     const areaMatch = areaText.match(/(\d+(?:\.\d+)?)/);
                     area = areaMatch ? areaMatch[1] : '';
                   }
-                  // Cho phép tag chỉ có code (không có area) - sẽ có format "CODE" hoặc "CODE "
                   if (area) {
                     tagValues.push(`${code} ${area}`);
                   } else {
-                    // Nếu không có area, chỉ thêm code (nhưng vẫn cần ít nhất 1 tag có area để validation pass)
                     tagValues.push(code);
                   }
                 }
@@ -1172,13 +1160,10 @@ function collectGenericFormData() {
         }
       }
       
-      // But we need to format for export: "440m2 ONT; 450 m2 CHN"
       if (value && value.trim()) {
         const pairs = value.split(';').map(p => p.trim()).filter(Boolean);
-        // Filter out pairs that are only code without area (for validation purposes)
         const pairsWithArea = pairs.filter(p => /\d/.test(p));
         if (pairsWithArea.length === 0 && pairs.length > 0) {
-          // Nếu chỉ có codes không có area, vẫn giữ lại để validation
           value = pairs.join('; ');
         } else {
           const formatted = pairsWithArea.map(pair => {
@@ -1188,12 +1173,10 @@ function collectGenericFormData() {
             }
             return pair;
           }).join('; ');
-          value = formatted || pairs.join('; '); // Fallback nếu không format được
+          value = formatted || pairs.join('; '); 
         }
         
-        // Tự động tạo Loai_Dat từ Loai_Dat_F nếu Loai_Dat chưa có giá trị
         if (ph === 'Loai_Dat_F' && !data['Loai_Dat']) {
-          // Extract chỉ các mã loại đất (không có diện tích)
           const codes = pairs.map(pair => {
             const match = pair.match(/^([A-Z]+)/);
             return match ? match[1] : '';

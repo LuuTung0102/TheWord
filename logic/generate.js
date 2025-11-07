@@ -6,7 +6,6 @@
   const path = require("path");
   const sax = require("sax");
 
-  // Hàm xử lý XML với SAX parser (streaming) cho file lớn
   function processXmlWithStreaming(xmlString, data, options = {}) {
     return new Promise((resolve, reject) => {
       const parser = sax.createStream(true, { trim: false, normalize: false, lowercase: false });
@@ -22,7 +21,7 @@
       let paragraphHasPlaceholder = false;
       let paragraphTextContent = '';
 
-      // Helper để escape XML
+  
       function escapeXml(str) {
         return str
           .replace(/&/g, '&amp;')
@@ -32,7 +31,7 @@
           .replace(/'/g, '&apos;');
       }
 
-      // Helper để merge placeholders
+  
       function mergePlaceholders(text) {
         let result = text;
         for (let i = 0; i < 5; i++) {
@@ -58,7 +57,6 @@
         return result;
       }
 
-      // Helper để xử lý m2 -> m²
       function replaceM2(text) {
         return text.replace(/(m2)/g, 'm²');
       }
@@ -68,7 +66,6 @@
         const attrs = Object.keys(node.attributes)
           .map(key => {
             const value = String(node.attributes[key]);
-            // Escape quotes trong attribute values
             const escapedValue = value.replace(/"/g, '&quot;');
             return `${key}="${escapedValue}"`;
           })
@@ -97,7 +94,6 @@
       });
 
       parser.on('text', (text) => {
-        // Không escape text content vì nó đã là text hợp lệ trong XML
         if (inText) {
           currentTextContent += text;
           textBuffer.push(text);
@@ -112,11 +108,9 @@
         depth--;
 
         if (tagName === 'w:t' && inText) {
-          // Xử lý text content
           let processedText = currentTextContent;
           processedText = replaceM2(processedText);
           
-          // Escape XML entities trong text content
           const escapedText = processedText
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -140,11 +134,9 @@
           textBuffer = [];
           currentTextContent = '';
         } else if (tagName === 'w:p' && inParagraph) {
-          // Xử lý paragraph
           const paraContent = paragraphBuffer.join('');
           let processedContent = mergePlaceholders(paraContent);
           
-          // Kiểm tra và tag paragraph có placeholder
           if (paragraphHasPlaceholder || /\{\{[^}]+\}\}/.test(processedContent)) {
             if (!paragraphAttrs.includes('data-has-placeholder')) {
               paragraphAttrs = paragraphAttrs 
@@ -153,7 +145,6 @@
             }
           }
 
-          // Xử lý subgroup removal nếu có options
           let shouldRemove = false;
           if (options && options.phMapping && options.visibleSubgroups && paragraphHasPlaceholder) {
             const placeholderMatches = processedContent.match(/\{\{([^}]+)\}\}/g);
@@ -216,7 +207,6 @@
     });
   }
 
-  // Hàm cleanup post-render với streaming
   function cleanupXmlWithStreaming(xmlString) {
     return new Promise((resolve, reject) => {
       const parser = sax.createStream(true, { trim: false, normalize: false, lowercase: false });
@@ -266,7 +256,6 @@
 
       parser.on('closetag', (tagName) => {
         if (tagName === 'w:t' && inText) {
-          // Escape XML entities trong text content
           const escapedText = textContent
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -338,7 +327,6 @@
 
   async function generateDocx(templatePath, data, outputPath, options = {}) {
     try {
-      // Kiểm tra kích thước file
       const stats = fs.statSync(templatePath);
       const fileSizeInMB = stats.size / (1024 * 1024);
       const useStreaming = fileSizeInMB > 10;
@@ -350,19 +338,14 @@
           let xml;
           
           if (useStreaming) {
-            // Sử dụng SAX parser cho file >10MB
             const originalXml = zip.files['word/document.xml'].asText();
             xml = await processXmlWithStreaming(originalXml, data, options);
           } else {
-            // Sử dụng cách cũ cho file nhỏ
             xml = zip.files['word/document.xml'].asText();
-
-            // Xử lý XML với cách cũ (cho file nhỏ)
-          for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 5; i++) {
             xml = xml.replace(/\{\{([^}]*)<\/w:t><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
             xml = xml.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
           }
-          
             xml = xml.replace(/\{\{[^}]*<[^>]*>[^}]*\}\}/g, (match) => {
             const textContent = match.replace(/<[^>]*>/g, '').replace(/[{}]/g, '');
             if (textContent.trim() && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(textContent.trim())) {
@@ -381,12 +364,9 @@
             return '';
           });
           
-          // PRE-RENDER: Tag paragraphs that contain placeholders
-          // This will be used later to only cleanup paragraphs with placeholders
           xml = xml.replace(/<w:p\b([^>]*)>([\s\S]*?)<\/w:p>/g, (matchP, attrs, contentP) => {
             const placeholderMatches = contentP.match(/\{\{([^}]+)\}\}/g);
             if (placeholderMatches && placeholderMatches.length > 0) {
-              // Tag this paragraph as having placeholders
               const newAttrs = attrs.includes('data-has-placeholder') 
                 ? attrs 
                 : `${attrs} data-has-placeholder="true"`;

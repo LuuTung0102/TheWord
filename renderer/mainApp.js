@@ -28,9 +28,7 @@ class MainApp {
   async loadTemplates() {
     try {
       console.log('📁 MainApp: Loading templates from config...');
-    
       const config = await this.loadMainConfig();
-      
       if (config && config.folders) {
         this.templates = await Promise.all(config.folders.map(async (folderConfig) => {
           try {
@@ -389,7 +387,6 @@ class MainApp {
         await new Promise(resolve => setTimeout(resolve, 2000));
         this.showSuccess('Văn bản đã được tạo thành công! (Demo)');
       }
-      
     } catch (error) {
       console.error('❌ MainApp: Export failed:', error);
       this.showError('Không thể tạo văn bản: ' + error.message);
@@ -401,12 +398,10 @@ class MainApp {
 
   collectFormData() {
     try {
-      // Chỉ sử dụng collectGenericFormData (hệ thống mới)
       if (window.collectGenericFormData) {
         return window.collectGenericFormData();
       }
       
-      // Fallback: collect manually nếu không có collectGenericFormData
       const data = {};
       document.querySelectorAll('input[data-ph], select[data-ph], textarea[data-ph]').forEach(el => {
         const ph = el.getAttribute('data-ph');
@@ -414,7 +409,6 @@ class MainApp {
           data[ph] = el.value.trim();
         }
       });
-      
       return data;
     } catch (error) {
       console.error('❌ MainApp: Error collecting form data:', error);
@@ -434,9 +428,7 @@ class MainApp {
   renderFiles() {
     const fileList = document.getElementById('fileList');
     const fileCount = document.getElementById('fileCount');
-    
     if (!fileList) return;
-    
     if (this.files.length === 0) {
       fileList.innerHTML = `
         <div class="empty-state-small">
@@ -456,12 +448,9 @@ class MainApp {
         </div>
       </div>
     `).join('');
-
     if (fileCount) fileCount.textContent = this.files.length;
-
     this.setupFileListeners();
   }
-
 
   setupFileListeners() {
     const fileItems = document.querySelectorAll('.file-item[data-file-name]');
@@ -474,11 +463,9 @@ class MainApp {
     });
   }
 
-
   renderTemplates() {
     const templateList = document.getElementById('templateList');
     if (!templateList) return;
-
     if (this.templates.length === 0) {
       templateList.innerHTML = `
         <div class="empty-state">
