@@ -84,6 +84,13 @@
             "required": true
           },
           {
+            "name": "NameT",
+            "label": "Họ và tên",
+            "type": "text",
+            "required": false,
+            "hidden": true
+          },
+          {
             "name": "Date",
             "label": "Ngày sinh",
             "type": "date",

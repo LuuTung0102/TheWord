@@ -185,6 +185,19 @@ function numberToAreaWords(number) {
     .trim();
 }
 
+function toTitleCase(str) {
+  if (!str || typeof str !== 'string') return str;
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => {
+      if (word.length === 0) return word;
+      // Handle Vietnamese characters properly
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+}
+
 window.expandLandType = expandLandType;
 window.formatCCCD = formatCCCD;
 window.formatPhoneNumber = formatPhoneNumber;
@@ -192,3 +205,4 @@ window.formatDate = formatDate;
 window.formatWithCommas = formatWithCommas;
 window.numberToVietnameseWords = numberToVietnameseWords;
 window.numberToAreaWords = numberToAreaWords;
+window.toTitleCase = toTitleCase;

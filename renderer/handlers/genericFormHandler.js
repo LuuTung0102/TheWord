@@ -1102,6 +1102,22 @@ function collectGenericFormData() {
       }
     }
     
+    // Auto-generate NameT from Name (similar to MoneyText from Money)
+    const nameMatch = ph.match(/^Name(\d+)$/);
+    if (nameMatch && value) {
+      const number = nameMatch[1];
+      const nameTKey = `NameT${number}`;
+      const nameT = window.toTitleCase ? window.toTitleCase(value.trim()) : value.trim();
+      if (nameT) {
+        data[nameTKey] = nameT;
+        // Also update the NameT field in the form if it exists
+        const nameTField = document.querySelector(`[data-ph="${nameTKey}"]`);
+        if (nameTField) {
+          nameTField.value = nameT;
+        }
+      }
+    }
+    
     if (ph === 'S' && value) {
       const rawArea = value.replace(/\D/g, '');
       if (rawArea) {

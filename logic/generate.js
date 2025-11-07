@@ -36,6 +36,20 @@
             return '';
           });
           
+          // PRE-RENDER: Tag paragraphs that contain placeholders
+          // This will be used later to only cleanup paragraphs with placeholders
+          xml = xml.replace(/<w:p\b([^>]*)>([\s\S]*?)<\/w:p>/g, (matchP, attrs, contentP) => {
+            const placeholderMatches = contentP.match(/\{\{([^}]+)\}\}/g);
+            if (placeholderMatches && placeholderMatches.length > 0) {
+              // Tag this paragraph as having placeholders
+              const newAttrs = attrs.includes('data-has-placeholder') 
+                ? attrs 
+                : `${attrs} data-has-placeholder="true"`;
+              return `<w:p${newAttrs}>${contentP}</w:p>`;
+            }
+            return matchP;
+          });
+
           if (options && options.phMapping && options.visibleSubgroups) {
             xml = xml.replace(/<w:p\b[^>]*>([\s\S]*?)<\/w:p>/g, (matchP, contentP) => {
               const placeholderMatches = contentP.match(/\{\{([^}]+)\}\}/g);
@@ -239,6 +253,51 @@
           msg += '\nDetails:\n' + details;
         }
         throw new Error(msg);
+      }
+
+      try {
+        const renderedZip = doc.getZip();
+        if (renderedZip.files['word/document.xml']) {
+          let xml = renderedZip.files['word/document.xml'].asText();
+
+          xml = xml.replace(/<w:p\b([^>]*)>([\s\S]*?)<\/w:p>/g, (match, paraAttrs, paraContent) => {
+            if (!paraAttrs.includes('data-has-placeholder')) {
+              return match; 
+            }
+
+            const textNodes = [];
+            paraContent.replace(/<w:t[^>]*>([^<]*)<\/w:t>/g, (m, text) => {
+              textNodes.push(text);
+            });
+            const fullText = textNodes.join('');
+            
+            if (!/,\s*,\s*(,\s*)+/.test(fullText) && !fullText.includes(', ,')) {
+              return match;
+            }
+            let paraModified = false;
+            const cleanedPara = paraContent.replace(/<w:t([^>]*)>([^<>&]*)<\/w:t>/g, (textMatch, attrs, textContent) => {
+              if (!textContent || textContent.trim().length === 0) {
+                return textMatch;
+              }
+              if (/,\s*,\s*/.test(textContent)) {
+                const cleaned = textContent.replace(/(,\s*){2,}/g, '');
+                paraModified = true;
+                return `<w:t${attrs}>${cleaned}</w:t>`;
+              }
+              
+              return textMatch;
+            });
+            
+            if (paraModified) {
+              return `<w:p${paraAttrs}>${cleanedPara}</w:p>`;
+            }
+            return match;
+          });
+          
+          renderedZip.file('word/document.xml', xml);
+        }
+      } catch (cleanupError) {
+        console.warn('⚠️ Warning: Comma cleanup failed:', cleanupError.message);
       }
 
       const buffer = doc.getZip().generate({

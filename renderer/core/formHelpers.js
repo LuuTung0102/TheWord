@@ -72,6 +72,9 @@ function isValidEmail(email) {
 }
 
 function setupNameInput(el) {
+  const ph = el.getAttribute('data-ph');
+  
+  // Original logic: Auto uppercase
   el.addEventListener("input", (e) => {
     const input = e.target;
     const start = input.selectionStart;
@@ -85,6 +88,45 @@ function setupNameInput(el) {
       } catch (err) {}
     }
   });
+  
+  // Auto-generate NameT from Name (similar to MoneyText from Money)
+  if (ph) {
+    const nameMatch = ph.match(/^Name(\d+)$/);
+    if (nameMatch) {
+      const number = nameMatch[1];
+      const nameTKey = `NameT${number}`;
+      
+      // Update NameT when Name changes
+      el.addEventListener('input', (e) => {
+        const value = e.target.value.trim();
+        if (value && window.toTitleCase) {
+          const nameT = window.toTitleCase(value);
+          const nameTField = document.querySelector(`[data-ph="${nameTKey}"]`);
+          if (nameTField) {
+            nameTField.value = nameT;
+            console.log(`📝 Name: ${value} -> NameT: "${nameT}"`);
+          }
+        } else {
+          // Clear NameT if Name is empty
+          const nameTField = document.querySelector(`[data-ph="${nameTKey}"]`);
+          if (nameTField) {
+            nameTField.value = '';
+          }
+        }
+      });
+      
+      el.addEventListener('blur', (e) => {
+        const value = e.target.value.trim();
+        if (value && window.toTitleCase) {
+          const nameT = window.toTitleCase(value);
+          const nameTField = document.querySelector(`[data-ph="${nameTKey}"]`);
+          if (nameTField) {
+            nameTField.value = nameT;
+          }
+        }
+      });
+    }
+  }
 }
 
 function setupLandTypeInput(el, id) {
