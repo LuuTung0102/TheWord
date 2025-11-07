@@ -4,15 +4,360 @@
   const expressionParser = require("docxtemplater/expressions.js");
   const { getPlaceholders } = require("./placeholder");
   const path = require("path");
+  const sax = require("sax");
 
-  function generateDocx(templatePath, data, outputPath, options = {}) {
+  // Hàm xử lý XML với SAX parser (streaming) cho file lớn
+  function processXmlWithStreaming(xmlString, data, options = {}) {
+    return new Promise((resolve, reject) => {
+      const parser = sax.createStream(true, { trim: false, normalize: false, lowercase: false });
+      let output = [];
+      let depth = 0;
+      let inParagraph = false;
+      let inText = false;
+      let paragraphBuffer = [];
+      let textBuffer = [];
+      let currentTextContent = '';
+      let paragraphAttrs = '';
+      let textAttrs = '';
+      let paragraphHasPlaceholder = false;
+      let paragraphTextContent = '';
+
+      // Helper để escape XML
+      function escapeXml(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
+      }
+
+      // Helper để merge placeholders
+      function mergePlaceholders(text) {
+        let result = text;
+        for (let i = 0; i < 5; i++) {
+          result = result.replace(/\{\{([^}]*)<\/w:t><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
+          result = result.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
+        }
+        result = result.replace(/\{\{[^}]*<[^>]*>[^}]*\}\}/g, (match) => {
+          const textContent = match.replace(/<[^>]*>/g, '').replace(/[{}]/g, '');
+          if (textContent.trim() && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(textContent.trim())) {
+            return `{{${textContent.trim()}}}`;
+          }
+          return '';
+        });
+        result = result.replace(/\}\}+}/g, '}}');
+        result = result.replace(/\{\{[^a-zA-Z_][^}]*\}\}/g, '');
+        result = result.replace(/\{\{[^}]*\s+[^}]*\}\}/g, (match) => {
+          const content = match.replace(/[{}]/g, '').trim();
+          if (content && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content)) {
+            return `{{${content}}}`;
+          }
+          return '';
+        });
+        return result;
+      }
+
+      // Helper để xử lý m2 -> m²
+      function replaceM2(text) {
+        return text.replace(/(m2)/g, 'm²');
+      }
+
+      parser.on('opentag', (node) => {
+        const tagName = node.name;
+        const attrs = Object.keys(node.attributes)
+          .map(key => {
+            const value = String(node.attributes[key]);
+            // Escape quotes trong attribute values
+            const escapedValue = value.replace(/"/g, '&quot;');
+            return `${key}="${escapedValue}"`;
+          })
+          .join(' ');
+        const openTag = attrs ? `<${tagName} ${attrs}>` : `<${tagName}>`;
+
+        if (tagName === 'w:p') {
+          inParagraph = true;
+          paragraphBuffer = [];
+          paragraphAttrs = attrs;
+          paragraphHasPlaceholder = false;
+          paragraphTextContent = '';
+        } else if (tagName === 'w:t') {
+          inText = true;
+          textBuffer = [];
+          textAttrs = attrs;
+          currentTextContent = '';
+        }
+
+        if (inParagraph) {
+          paragraphBuffer.push(openTag);
+        } else {
+          output.push(openTag);
+        }
+        depth++;
+      });
+
+      parser.on('text', (text) => {
+        // Không escape text content vì nó đã là text hợp lệ trong XML
+        if (inText) {
+          currentTextContent += text;
+          textBuffer.push(text);
+        } else if (inParagraph) {
+          paragraphBuffer.push(text);
+        } else {
+          output.push(text);
+        }
+      });
+
+      parser.on('closetag', (tagName) => {
+        depth--;
+
+        if (tagName === 'w:t' && inText) {
+          // Xử lý text content
+          let processedText = currentTextContent;
+          processedText = replaceM2(processedText);
+          
+          // Escape XML entities trong text content
+          const escapedText = processedText
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+          
+          const textOutput = textAttrs 
+            ? `<w:t ${textAttrs}>${escapedText}</w:t>`
+            : `<w:t>${escapedText}</w:t>`;
+
+          if (inParagraph) {
+            paragraphBuffer.push(textOutput);
+            paragraphTextContent += processedText;
+            if (/\{\{[^}]+\}\}/.test(processedText)) {
+              paragraphHasPlaceholder = true;
+            }
+          } else {
+            output.push(textOutput);
+          }
+          
+          inText = false;
+          textBuffer = [];
+          currentTextContent = '';
+        } else if (tagName === 'w:p' && inParagraph) {
+          // Xử lý paragraph
+          const paraContent = paragraphBuffer.join('');
+          let processedContent = mergePlaceholders(paraContent);
+          
+          // Kiểm tra và tag paragraph có placeholder
+          if (paragraphHasPlaceholder || /\{\{[^}]+\}\}/.test(processedContent)) {
+            if (!paragraphAttrs.includes('data-has-placeholder')) {
+              paragraphAttrs = paragraphAttrs 
+                ? `${paragraphAttrs} data-has-placeholder="true"`
+                : 'data-has-placeholder="true"';
+            }
+          }
+
+          // Xử lý subgroup removal nếu có options
+          let shouldRemove = false;
+          if (options && options.phMapping && options.visibleSubgroups && paragraphHasPlaceholder) {
+            const placeholderMatches = processedContent.match(/\{\{([^}]+)\}\}/g);
+            if (placeholderMatches) {
+              const placeholders = placeholderMatches.map(m => m.replace(/[{}]/g, ''));
+              const subgroupsInParagraph = new Set();
+              placeholders.forEach(ph => {
+                const phDef = options.phMapping[ph];
+                if (phDef && phDef.subgroup) {
+                  subgroupsInParagraph.add(phDef.subgroup);
+                }
+              });
+
+              if (subgroupsInParagraph.size > 0) {
+                shouldRemove = Array.from(subgroupsInParagraph).every(subgroupId => {
+                  const isVisible = options.visibleSubgroups.has(subgroupId);
+                  const subgroupPhs = placeholders.filter(ph => {
+                    const phDef = options.phMapping[ph];
+                    return phDef && phDef.subgroup === subgroupId;
+                  });
+                  if (subgroupPhs.length === 0) return false;
+                  const allEmpty = subgroupPhs.every(ph => !data[ph] || data[ph].toString().trim() === '');
+                  return !isVisible && allEmpty;
+                });
+              }
+            }
+          }
+
+          if (!shouldRemove) {
+            const paraOutput = paragraphAttrs
+              ? `<w:p ${paragraphAttrs}>${processedContent}</w:p>`
+              : `<w:p>${processedContent}</w:p>`;
+            output.push(paraOutput);
+          }
+
+          inParagraph = false;
+          paragraphBuffer = [];
+          paragraphAttrs = '';
+          paragraphHasPlaceholder = false;
+          paragraphTextContent = '';
+        } else {
+          if (inParagraph) {
+            paragraphBuffer.push(`</${tagName}>`);
+          } else {
+            output.push(`</${tagName}>`);
+          }
+        }
+      });
+
+      parser.on('error', (err) => {
+        reject(err);
+      });
+
+      parser.on('end', () => {
+        resolve(output.join(''));
+      });
+
+      parser.write(xmlString);
+      parser.end();
+    });
+  }
+
+  // Hàm cleanup post-render với streaming
+  function cleanupXmlWithStreaming(xmlString) {
+    return new Promise((resolve, reject) => {
+      const parser = sax.createStream(true, { trim: false, normalize: false, lowercase: false });
+      let output = [];
+      let inParagraph = false;
+      let paragraphBuffer = [];
+      let paragraphAttrs = '';
+      let paragraphTextNodes = [];
+      let inText = false;
+      let textAttrs = '';
+      let textContent = '';
+
+      parser.on('opentag', (node) => {
+        const tagName = node.name;
+        const attrs = Object.keys(node.attributes)
+          .map(key => `${key}="${String(node.attributes[key]).replace(/"/g, '&quot;')}"`)
+          .join(' ');
+        const openTag = attrs ? `<${tagName} ${attrs}>` : `<${tagName}>`;
+
+        if (tagName === 'w:p') {
+          inParagraph = true;
+          paragraphBuffer = [];
+          paragraphAttrs = attrs;
+          paragraphTextNodes = [];
+        } else if (tagName === 'w:t') {
+          inText = true;
+          textAttrs = attrs;
+          textContent = '';
+        }
+
+        if (inParagraph) {
+          paragraphBuffer.push(openTag);
+        } else {
+          output.push(openTag);
+        }
+      });
+
+      parser.on('text', (text) => {
+        if (inText) {
+          textContent += text;
+        } else if (inParagraph) {
+          paragraphBuffer.push(text);
+        } else {
+          output.push(text);
+        }
+      });
+
+      parser.on('closetag', (tagName) => {
+        if (tagName === 'w:t' && inText) {
+          // Escape XML entities trong text content
+          const escapedText = textContent
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+          
+          const textOutput = textAttrs 
+            ? `<w:t ${textAttrs}>${escapedText}</w:t>`
+            : `<w:t>${escapedText}</w:t>`;
+          
+          if (inParagraph) {
+            paragraphBuffer.push(textOutput);
+            paragraphTextNodes.push(textContent);
+          } else {
+            output.push(textOutput);
+          }
+          
+          inText = false;
+          textContent = '';
+        } else if (tagName === 'w:p' && inParagraph) {
+          const fullText = paragraphTextNodes.join('');
+          const hasPlaceholderTag = paragraphAttrs.includes('data-has-placeholder');
+          
+          if (hasPlaceholderTag && (/,\s*,\s*(,\s*)+/.test(fullText) || fullText.includes(', ,'))) {
+            // Cleanup commas
+            const cleanedContent = paragraphBuffer.join('').replace(/<w:t([^>]*)>([^<>&]*)<\/w:t>/g, (textMatch, attrs, content) => {
+              if (!content || content.trim().length === 0) {
+                return textMatch;
+              }
+              if (/,\s*,\s*/.test(content)) {
+                const cleaned = content.replace(/(,\s*){2,}/g, '');
+                return `<w:t${attrs}>${cleaned}</w:t>`;
+              }
+              return textMatch;
+            });
+            
+            const paraOutput = paragraphAttrs
+              ? `<w:p ${paragraphAttrs}>${cleanedContent}</w:p>`
+              : `<w:p>${cleanedContent}</w:p>`;
+            output.push(paraOutput);
+          } else {
+            output.push(paragraphBuffer.join('') + '</w:p>');
+          }
+
+          inParagraph = false;
+          paragraphBuffer = [];
+          paragraphAttrs = '';
+          paragraphTextNodes = [];
+        } else {
+          if (inParagraph) {
+            paragraphBuffer.push(`</${tagName}>`);
+          } else {
+            output.push(`</${tagName}>`);
+          }
+        }
+      });
+
+      parser.on('error', (err) => {
+        reject(err);
+      });
+
+      parser.on('end', () => {
+        resolve(output.join(''));
+      });
+
+      parser.write(xmlString);
+      parser.end();
+    });
+  }
+
+  async function generateDocx(templatePath, data, outputPath, options = {}) {
     try {
+      // Kiểm tra kích thước file
+      const stats = fs.statSync(templatePath);
+      const fileSizeInMB = stats.size / (1024 * 1024);
+      const useStreaming = fileSizeInMB > 10;
+
       const content = fs.readFileSync(templatePath);
       const zip = new PizZip(content);
       try {
         if (zip.files['word/document.xml']) {
-          let xml = zip.files['word/document.xml'].asText();
+          let xml;
+          
+          if (useStreaming) {
+            // Sử dụng SAX parser cho file >10MB
+            const originalXml = zip.files['word/document.xml'].asText();
+            xml = await processXmlWithStreaming(originalXml, data, options);
+          } else {
+            // Sử dụng cách cũ cho file nhỏ
+            xml = zip.files['word/document.xml'].asText();
 
+            // Xử lý XML với cách cũ (cho file nhỏ)
           for (let i = 0; i < 5; i++) {
             xml = xml.replace(/\{\{([^}]*)<\/w:t><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
             xml = xml.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
@@ -91,6 +436,7 @@
           xml = xml.replace(/(<w:t[^>]*>)([^<]*?)(m2)([^<]*?)(<\/w:t>)/g, (match, openTag, before, m2, after, closeTag) => {
           return `${openTag}${before}m²${after}${closeTag}`;
           });
+          }
           zip.file('word/document.xml', xml);
         }
       } catch (err) {
@@ -213,16 +559,13 @@
           .join(' ');
       }
       
-      // Auto-generate NameT1, NameT2, ... from Name1, Name2, ... if template has NameT placeholders
+     
       templatePhs.forEach(ph => {
-        // Check if this is a NameT placeholder (e.g., NameT1, NameT2)
         const nameTMatch = ph.match(/^NameT(\d+)$/);
         if (nameTMatch) {
           const number = nameTMatch[1];
           const baseNamePh = `Name${number}`;
-          // Get the value from Name1, Name2, etc.
           const baseValue = data[baseNamePh] || fullData[baseNamePh] || '';
-          // Convert to Title Case
           fullData[ph] = toTitleCase(baseValue);
         }
       });
@@ -258,6 +601,11 @@
         if (renderedZip.files['word/document.xml']) {
           let xml = renderedZip.files['word/document.xml'].asText();
 
+          if (useStreaming) {
+            // Sử dụng streaming cho cleanup
+            xml = await cleanupXmlWithStreaming(xml);
+          } else {
+            // Sử dụng cách cũ cho cleanup
           xml = xml.replace(/<w:p\b([^>]*)>([\s\S]*?)<\/w:p>/g, (match, paraAttrs, paraContent) => {
             if (!paraAttrs.includes('data-has-placeholder')) {
               return match; 
@@ -291,6 +639,7 @@
             }
             return match;
           });
+          }
           
           renderedZip.file('word/document.xml', xml);
         }
