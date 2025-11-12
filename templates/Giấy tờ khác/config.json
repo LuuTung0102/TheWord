@@ -1,74 +1,37 @@
 {
     "folder": {
       "id": "uy-quyen",
-      "name": "HĐ ủy quyền",
-      "description": "Nhóm hợp đồng ủy quyền",
-      "icon": "📜"
+      "name": "Giấy tờ khác",
+      "description": "",
+      "icon": ""
     },
   
     "templates": [
       {
-        "id": "hd-uq",
-        "filename": "Giấy ủy quyền.docx",
-        "name": "Giấy ủy quyền",
-        "description": "Giấy ủy quyền",
-        "groups": ["BUQ", "BNUQ", "LAND"],
+        "id": "hd-bd",
+        "filename": "Biến động.docx",
+        "name": "Biến động",
+        "description": "Biến động",
+        "groups": ["BD"],
         "placeholders": {
-          "BUQ": ["MEN1"],
-          "BNUQ": ["MEN2"],
-          "LAND": ["INFO"]
-        }
-      },
-      {
-        "id": "hd-cn",
-        "filename": "Chứng thực.docx",
-        "name": "Giấy chứng thực",
-        "description": "Giấy chứng thực",
-        "groups": ["BCN", "BNCN"],
-        "placeholders": {
-          "BCN": ["MEN1", "MEN2"],
-          "BNCN": ["MEN3", "MEN4"]
+          "BD": ["MEN1"]
         }
       }
     ],
   
     "groups": [
       {
-        "id": "BUQ",
-        "label": "Bên ủy quyền ",
+        "id": "BD",
+        "label": "Người sử hữu",
         "order": 1,
-        "description": "Người ủy quyền"
-      },
-      {
-        "id": "BCN",
-        "label": "Bên chuyển nhượng ",
-        "order": 1,
-        "description": "Bên chuyển nhượng"
-      },
-      {
-        "id": "BNCN",
-        "label": "Bên nhận chuyển nhượng ",
-        "order": 1,
-        "description": "Bên nhận chuyển nhượng"
-      },
-      {
-        "id": "BNUQ",
-        "label": "Bên nhận ủy quyền",
-        "order": 2,
-        "description": "Người nhận ủy quyền"
-      },
-      {
-        "id": "LAND",
-        "label": "Thông tin thửa đất",
-        "order": 3,
-        "description": "Thông tin thửa đất"
+        "description": "Người sử hữu"
       }
     ],
   
     "fieldSchemas": {
-      "UQInfo": {
-        "description": "Thông tin hai bên ủy quyền",
-        "applicableTo": ["BUQ", "BNUQ"],
+      "BDInfo": {
+        "description": "Thông tin biến động đất đai",
+        "applicableTo": ["BD"],
         "fields": [
           {
             "name": "Gender",
@@ -99,7 +62,7 @@
           {
             "name": "CCCD",
             "label": "CCCD",
-            "type": "number",
+            "type": "text",
             "required": true
           },
           {
@@ -120,6 +83,18 @@
             "label": "Địa chỉ thường trú",
             "type": "address-select",
             "required": true
+          },
+          {
+            "name": "SDT",
+            "label": "Số điện thoại",
+            "type": "tel",
+            "required": true
+          },
+          {
+            "name": "Email",
+            "label": "Địa chỉ email",
+            "type": "email",
+            "required": false
           }
         ]
       },
@@ -225,45 +200,15 @@
 
     "fieldMappings": [
       {
-        "group": "BUQ",
-        "schema": "UQInfo",
+        "group": "BD",
+        "schema": "BDInfo",
         "subgroups": [
-          {"id": "MEN1", "label": "Người ủy quyền","visible": true}
+          {"id": "MEN1", "label": "Người sử dụng","visible": true}
         ],
         "suffixes": ["1"],
         "defaultGenders": ["Ông"]
       },
       {
-        "group": "BCN",
-        "schema": "UQInfo",
-        "subgroups": [
-          {"id": "MEN1", "label": "Thông tin cá nhân","visible": true},
-          {"id": "MEN2", "label": "Thông tin cá nhân","visible": false}
-        ],
-        "suffixes": ["1", "2"],
-        "defaultGenders": ["Ông", "Bà"]
-      },
-      {
-        "group": "BNCN",
-        "schema": "UQInfo",
-        "subgroups": [
-          {"id": "MEN3", "label": "Thông tin cá nhân","visible": true},
-          {"id": "MEN4", "label": "Thông tin cá nhân","visible": false}
-        ],
-        "suffixes": ["3", "4"],
-        "defaultGenders": ["Ông", "Bà"]
-      },
-      {
-      "group": "BNUQ",
-      "schema": "UQInfo",
-      "subgroups": [
-        {"id": "MEN2", "label": "Người nhận ủy quyền","visible": true}
-      ],
-      "source": "localStorage",
-      "suffixes": ["2"],
-      "defaultGenders": ["Ông", "Bà"]
-    },
-    {
       "group": "LAND",
       "subgroups": [
         {"id": "INFO", "label": "Thông tin đất đai","visible": true}

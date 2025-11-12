@@ -17,7 +17,6 @@ function setupExportButton() {
       showLoading();
     }
     
-    // Sử dụng collectGenericFormData (hệ thống mới)
     const data = typeof window.collectGenericFormData === 'function' 
       ? window.collectGenericFormData() 
       : {};

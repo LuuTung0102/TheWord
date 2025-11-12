@@ -805,7 +805,7 @@ function setupPersonSelectionListeners(groupSources, grouped) {
         clickedButton.style.color = 'white';
         
         if (!window.__reusedGroups) window.__reusedGroups = new Set();
-        window.__reusedGroups.add(`localStorage:${groupKey}`); // Prefix để phân biệt
+        window.__reusedGroups.add(`localStorage:${groupKey}`); 
         
         const person = window.getPersonById ? window.getPersonById(personId) : null;
         
@@ -888,6 +888,8 @@ function setupReuseDataListeners() {
  * @param {string} targetSuffix - "1", "2", "7"... (hoặc "" cho LAND/INFO)
  */
 function fillFormWithMenData(groupData, targetSuffix) {
+  const hasLoaiDatF = Object.keys(groupData).some(key => key === 'Loai_Dat_F');
+  
   Object.keys(groupData).forEach(fieldName => {
     const value = groupData[fieldName];
     const placeholder = targetSuffix ? `${fieldName}${targetSuffix}` : fieldName;
@@ -897,10 +899,25 @@ function fillFormWithMenData(groupData, targetSuffix) {
       return;
     }
     
-    // Xử lý đặc biệt cho Loai_Dat_F (land_type_size component)
     if (fieldName === 'Loai_Dat_F' && value && typeof value === 'string') {
       fillLandTypeSizeField(placeholder, value);
       return;
+    }
+    
+
+    if (fieldName === 'Loai_Dat' && value && typeof value === 'string' && !hasLoaiDatF) {
+      const loaiDatFPlaceholder = targetSuffix ? `Loai_Dat_F${targetSuffix}` : 'Loai_Dat_F';
+      const loaiDatFContainer = document.querySelector(`.land-type-size-container[data-ph="${loaiDatFPlaceholder}"]`);
+      
+      if (loaiDatFContainer) {
+        const codes = value.split('+').map(c => c.trim().toUpperCase()).filter(Boolean);
+        if (codes.length > 0) {
+          const convertedValue = codes.join('; ');
+          console.log(`🔄 Converting Loai_Dat to Loai_Dat_F: "${value}" → "${convertedValue}"`);
+          fillLandTypeSizeField(loaiDatFPlaceholder, convertedValue);
+          return;
+        }
+      }
     }
     
     const element = document.querySelector(`[data-ph="${placeholder}"]`);
@@ -921,7 +938,6 @@ function fillFormWithMenData(groupData, targetSuffix) {
 function fillLandTypeSizeField(placeholder, valueString) {
   if (!valueString || !valueString.trim()) return;
   
-  // Tìm container và input
   const container = document.querySelector(`.land-type-size-container[data-ph="${placeholder}"]`);
   if (!container) {
     console.warn(`⚠️ Land type size container not found for ${placeholder}`);
@@ -934,27 +950,30 @@ function fillLandTypeSizeField(placeholder, valueString) {
     return;
   }
   
-  // Parse format export: "454m2 BCS; 1111m2 CCC" → "BCS 454; CCC 1111"
   const pairs = valueString.split(';').map(p => p.trim()).filter(Boolean);
   const convertedPairs = [];
   
   pairs.forEach(pair => {
-    // Match format: "454m2 BCS" hoặc "454 m2 BCS" hoặc "454m² BCS"
+
     const match = pair.match(/^(\d+(?:\.\d+)?)\s*m2?\s*([A-Z]+)$/i);
     if (match) {
       const area = match[1];
       const code = match[2].toUpperCase();
       convertedPairs.push(`${code} ${area}`);
     } else {
-      // Nếu không match, thử parse format khác: "BCS 454m2"
       const match2 = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)\s*m2?$/i);
       if (match2) {
         const code = match2[1].toUpperCase();
         const area = match2[2];
         convertedPairs.push(`${code} ${area}`);
       } else {
-        // Fallback: giữ nguyên nếu không parse được
-        convertedPairs.push(pair);
+        const codeMatch = pair.match(/^([A-Z]+)$/i);
+        if (codeMatch) {
+          const code = codeMatch[1].toUpperCase();
+          convertedPairs.push(code);
+        } else {
+          convertedPairs.push(pair);
+        }
       }
     }
   });
@@ -964,36 +983,30 @@ function fillLandTypeSizeField(placeholder, valueString) {
     return;
   }
   
-  // Convert về format input: "BCS 454; CCC 1111"
+ 
   const convertedValue = convertedPairs.join('; ');
   console.log(`🔄 Filling Loai_Dat_F: "${valueString}" → "${convertedValue}"`);
   
-  // Đảm bảo component đã được setup trước
+
   if (!container.dataset.landTypeSizeSetup && window.setupLandTypeSizeInput) {
     const inputId = input.id;
     if (inputId) {
-      // Set giá trị vào input trước khi setup (để loadExistingValue có thể load)
       input.value = convertedValue;
       window.setupLandTypeSizeInput(container, inputId);
       container.dataset.landTypeSizeSetup = 'true';
-      // Component sẽ tự động load giá trị trong loadExistingValue()
       return;
     }
   }
   
-  // Nếu component đã được setup, set giá trị và trigger reload
   input.value = convertedValue;
   
-  // Trigger reload nếu component đã được setup
   if (container.reloadLandTypeSizeValue && typeof container.reloadLandTypeSizeValue === 'function') {
     container.reloadLandTypeSizeValue();
   } else {
-    // Nếu chưa được setup, đợi một chút rồi thử lại
     setTimeout(() => {
       if (container.reloadLandTypeSizeValue && typeof container.reloadLandTypeSizeValue === 'function') {
         container.reloadLandTypeSizeValue();
       } else {
-        // Fallback: trigger events và để component tự load khi được setup
         input.dispatchEvent(new Event('input', { bubbles: true }));
         input.dispatchEvent(new Event('change', { bubbles: true }));
       }

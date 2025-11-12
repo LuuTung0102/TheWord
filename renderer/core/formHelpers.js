@@ -648,7 +648,7 @@ function setupLandTypeSizeInput(container, inputId) {
         }
       });
     } else {
-      // Try format: "ONT 440; CHN 450" hoặc "BCS 454; CCC 1111"
+      // Try format: "ONT 440; CHN 450" hoặc "BCS 454; CCC 1111" hoặc "ONT; CHN" (chỉ có code)
       const pairs = existingValue.split(';').map(p => p.trim());
       pairs.forEach(pair => {
         // Match format: "BCS 454" hoặc "BCS 454m2" hoặc "454m2 BCS"
@@ -665,6 +665,12 @@ function setupLandTypeSizeInput(container, inputId) {
             match = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)$/);
             if (match) {
               tags.push({ code: match[1].toUpperCase(), area: match[2] });
+            } else {
+              // Try format: chỉ có code "ONT" hoặc "BCS" (không có diện tích)
+              match = pair.match(/^([A-Z]+)$/i);
+              if (match) {
+                tags.push({ code: match[1].toUpperCase(), area: '' });
+              }
             }
           }
         }

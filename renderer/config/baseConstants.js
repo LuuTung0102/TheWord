@@ -32,30 +32,29 @@ const BASE_PLACEHOLDERS = {
     order: 7
   },
   
-  Address: {
-    type: "address-select",
-    order: 8
-  },
-  
   MST: {
     type: "number",
     maxLength: 13,
-    order: 9
+    order: 8
   },
   
   SDT: {
     type: "tel",
     maxLength: 10,
-    hidden: true,
+    order: 9
+  },
+  
+  Email: {
+    type: "email",
     order: 10
   },
   
-  EMAIL: {
-    type: "email",
-    hidden: true,
+  Address: {
+    type: "address-select",
     order: 11
   },
-  
+
+  ///////////////////////////////////////////////////////////////////
 
   Relation: {
     type: "select",
