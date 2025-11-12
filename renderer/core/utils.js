@@ -6,7 +6,6 @@ let landTypeMap = {};
     landTypeMap = await response.json();
     window.landTypeMap = landTypeMap;
   } catch (error) {
-    console.error('❌ Error loading land_types.json:', error);
   }
 })();
 
@@ -119,9 +118,47 @@ function numberToVietnameseWords(number) {
 }
 
 function numberToAreaWords(number) {
+  // Handle both number and string (for decimal support)
+  const numStr = typeof number === 'string' ? number : number.toString();
+  const hasDecimal = numStr.includes('.');
+  
+  if (hasDecimal) {
+    const [integerPart, decimalPart] = numStr.split('.');
+    const integerNum = parseInt(integerPart, 10);
+    const decimalNum = decimalPart ? parseInt(decimalPart, 10) : 0;
+    
+    if (isNaN(integerNum) && isNaN(decimalNum)) return "";
+    if (integerNum === 0 && decimalNum === 0) return "không mét vuông";
+    
+    let result = "";
+    
+    // Convert integer part
+    if (integerNum > 0) {
+      result = numberToAreaWordsInteger(integerNum);
+    } else {
+      result = "không";
+    }
+    
+    // Convert decimal part
+    if (decimalNum > 0) {
+      const decimalWords = numberToAreaWordsInteger(decimalNum);
+      result += (result ? " phẩy " : "") + decimalWords;
+    }
+    
+    return result + " mét vuông";
+  } else {
+    // Integer only
+    const num = Number(number);
+    if (!Number.isFinite(num) || isNaN(num)) return "";
+    if (num === 0) return "không mét vuông";
+    return numberToAreaWordsInteger(num) + " mét vuông";
+  }
+}
+
+function numberToAreaWordsInteger(number) {
   number = Number(number);
   if (!Number.isFinite(number) || isNaN(number)) return "";
-  if (number === 0) return "không mét vuông";
+  if (number === 0) return "không";
 
   const units = ["", "nghìn", "triệu", "tỷ"];
   const words = [
@@ -180,9 +217,7 @@ function numberToAreaWords(number) {
     number = Math.floor(number / 1000);
     i++;
   }
-  return (result.join(" ").replace(/ +/g, " ").trim() + " mét vuông")
-    .replace(/ +/g, " ")
-    .trim();
+  return result.join(" ").replace(/ +/g, " ").trim();
 }
 
 function toTitleCase(str) {

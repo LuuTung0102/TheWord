@@ -874,11 +874,31 @@ label.required::after {
   border-radius: 0.25rem;
   outline: none;
   min-width: 3rem;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.tag-area:focus {
+.tag-area:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.tag-area-input {
+  width: 60px;
+  padding: 2px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
   background: rgba(255, 255, 255, 0.2);
-  outline: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  font-size: 0.875rem;
+  text-align: center;
+  outline: none;
+  font-weight: 400;
+}
+
+.tag-area-input:focus {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
 .tag-delete {

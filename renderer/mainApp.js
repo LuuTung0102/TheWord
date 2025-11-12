@@ -12,32 +12,25 @@ class MainApp {
   }
 
   async init() {
-    console.log('🚀 MainApp: Initializing...');
-    
     try {
       await this.loadTemplates();
       this.setupEventListeners();
       this.updateUI();
-      console.log('✅ MainApp: Initialized successfully');
     } catch (error) {
-      console.error('❌ MainApp: Initialization failed:', error);
       this.showError('Không thể khởi tạo ứng dụng');
     }
   }
 
   async loadTemplates() {
     try {
-      console.log('📁 MainApp: Loading templates from config...');
       const config = await this.loadMainConfig();
       if (config && config.folders) {
         this.templates = await Promise.all(config.folders.map(async (folderConfig) => {
           try {
             const templatesRoot = await window.ipcRenderer.invoke("get-templates-root");
             const folderPath = `${templatesRoot}\\${folderConfig.path.replace(/\//g, '\\')}`;
-            console.log(`🔍 MainApp: Checking folder path: ${folderPath}`);
             const folderExists = await window.ipcRenderer.invoke("check-folder-exists", folderPath);
             if (!folderExists) {
-              console.warn(`⚠️ MainApp: Folder not found: ${folderConfig.path}`);
               return null;
             }
             
@@ -53,20 +46,15 @@ class MainApp {
               path: folderConfig.path
             };
           } catch (error) {
-            console.warn(`⚠️ MainApp: Could not load folder ${folderConfig.name}:`, error);
             return null;
           }
         }));
         
         this.templates = this.templates.filter(template => template !== null);
-        
-        console.log('📁 MainApp: Templates loaded from config:', this.templates);
       } else {
-        console.warn('⚠️ MainApp: No folders found in config');
         this.templates = [];
       }
     } catch (error) {
-      console.error('❌ MainApp: Error loading templates from config:', error);
       throw error;
     }
   }
@@ -87,7 +75,6 @@ class MainApp {
         };
       }
     } catch (error) {
-      console.error('❌ MainApp: Error loading main config:', error);
       return null;
     }
   }
@@ -128,8 +115,6 @@ class MainApp {
 
   async selectFolder(folderName) {
     try {
-      console.log('📁 MainApp: Toggling folder:', folderName);
-      
       if (this.expandedFolder === folderName) {
         this.expandedFolder = null;
         this.selectedFolder = null;
@@ -154,14 +139,12 @@ class MainApp {
       this.updateExportButton();
       
     } catch (error) {
-      console.error('❌ MainApp: Error toggling folder:', error);
       this.showError('Không thể tải files trong folder này');
     }
   }
 
   async selectFile(fileName) {
     try {
-      console.log('📄 MainApp: Selecting file:', fileName);
       this.selectedFile = fileName;
       this.updateFileSelection();
       this.updateFormStatus();
@@ -169,15 +152,12 @@ class MainApp {
       this.updateExportButton();
       
     } catch (error) {
-      console.error('❌ MainApp: Error selecting file:', error);
       this.showError('Không thể tải form cho file này');
     }
   }
 
   async loadFilesInFolder(folderName) {
     try {
-      console.log('📁 MainApp: Loading files in folder:', folderName);
-      
       const template = this.templates.find(t => t.name === folderName);
       if (template) {
         this.files = template.files.map(fileName => ({
@@ -185,12 +165,10 @@ class MainApp {
           displayName: fileName.replace('.docx', ''),
           icon: '📄'
         }));
-        console.log('📁 MainApp: Files loaded:', this.files);
       } else {
         this.files = [];
       }
     } catch (error) {
-      console.error('❌ MainApp: Error loading files:', error);
       this.files = [];
     }
   }
@@ -198,7 +176,6 @@ class MainApp {
 
   async loadFormForFile(fileName) {
     try {
-      console.log('📝 MainApp: Loading form for file:', fileName);
       this.showFormLoading();
       const templatesRoot = window.ipcRenderer ? 
         await window.ipcRenderer.invoke("get-templates-root") : 
@@ -208,7 +185,6 @@ class MainApp {
         throw new Error(`Template not found: ${this.selectedFolder}`);
       }
       const folderPath = `${templatesRoot}\\${selectedTemplate.path.replace(/\//g, '\\')}`;
-      console.log(`🔍 MainApp: Loading form for file in path: ${folderPath}`);
       const placeholders = await this.loadPlaceholdersForFile(folderPath, fileName);
       const folderConfig = await this.loadConfig(folderPath);
       this.currentConfig = folderConfig; 
@@ -217,7 +193,6 @@ class MainApp {
         const matchedTemplate = this.findMatchingTemplate(placeholders, folderConfig.templates, fileName);
         
         if (matchedTemplate) {
-          console.log('📝 MainApp: File matches template:', matchedTemplate.id);
           const filteredConfig = this.buildFilteredConfig(folderConfig, matchedTemplate);
           window.currentTemplate = {
             config: filteredConfig,
@@ -225,44 +200,31 @@ class MainApp {
             fileName: fileName,
             folderPath: folderPath
           };
-          console.log('✅ MainApp: Saved currentTemplate for validation:', window.currentTemplate);
           window.visibleSubgroups = new Set();
           window.defaultVisibleSubgroups = new Set();
-          console.log('🔄 MainApp: Reset visibleSubgroups and defaultVisibleSubgroups for new file');
           if (window.renderGenericForm) {
             await window.renderGenericForm(placeholders, filteredConfig, folderPath);
           } else {
             throw new Error('renderGenericForm not available');
           }
         } else {
-          console.warn('⚠️ MainApp: No template matches for file:', fileName);
           throw new Error(`No template matches found for file: ${fileName}`);
         }
       } else {
         throw new Error('No config.json found in folder');
       }
-      
-      console.log('✅ MainApp: Form loaded successfully');
-      
     } catch (error) {
-      console.error('❌ MainApp: Error loading form:', error);
       this.showFormError('Không thể tải form');
     }
   }
 
   findMatchingTemplate(placeholders, templates, fileName) {
-    console.log('🔍 MainApp: Finding matching template for file:', fileName);
-    
     // Chỉ match theo filename
     for (const template of templates) {
       if (template.filename === fileName) {
-        console.log(`✅ MainApp: Template match found: ${template.id}`);
-        console.log(`✅ MainApp: Template groups:`, template.groups);
         return template;
       }
     }
-    
-    console.log('❌ MainApp: No template matches found for file:', fileName);
     return null;
   }
 
@@ -280,7 +242,6 @@ class MainApp {
 
       return filtered;
     } catch (e) {
-      console.error('❌ MainApp: Error building filtered config:', e);
       return folderConfig;
     }
   }
@@ -291,11 +252,9 @@ class MainApp {
       if (window.ipcRenderer) {
         return await window.ipcRenderer.invoke("get-file-placeholders", folderPath, fileName);
       } else {
-        console.warn('⚠️ MainApp: ipcRenderer not available');
         return [];
       }
     } catch (error) {
-      console.error('❌ MainApp: Error loading placeholders for file:', error);
       return [];
     }
   }
@@ -308,7 +267,6 @@ class MainApp {
       }
       return null;
     } catch (error) {
-      console.error('❌ MainApp: Error loading config:', error);
       return null;
     }
   }
@@ -321,28 +279,17 @@ class MainApp {
     }
 
     if (window.validateForm && typeof window.validateForm === 'function') {
-      console.log('🔍 MainApp: Validating form before export...');
       const isValid = window.validateForm();
       if (!isValid) {
-        console.log('❌ MainApp: Form validation failed, stopping export');
         return; 
       }
-      console.log('✅ MainApp: Form validation passed, proceeding with export');
     } else {
-      console.warn('⚠️ MainApp: validateForm not available, skipping validation');
     }
 
     try {
-      console.log('📤 MainApp: Starting export...'); 
       this.showLoading();
       const formData = this.collectFormData();
       if (window.sessionStorageManager && this.selectedFile) {
-        console.log(`🔍 Before saveFormData:`, {
-          selectedFile: this.selectedFile,
-          formData,
-          reusedGroups: Array.from(window.__reusedGroups || []),
-          reusedGroupSources: window.__reusedGroupSources
-        });
         
         const saved = window.sessionStorageManager.saveFormData(
           this.selectedFile, 
@@ -352,10 +299,7 @@ class MainApp {
           this.currentConfig 
         );
         
-        console.log(`🔍 saveFormData returned:`, saved);
-        
         if (saved) {
-          console.log(`💾 Saved new session data for: ${this.selectedFile}`);
         }
 
         window.__formDataReused = false;
@@ -388,7 +332,6 @@ class MainApp {
         this.showSuccess('Văn bản đã được tạo thành công! (Demo)');
       }
     } catch (error) {
-      console.error('❌ MainApp: Export failed:', error);
       this.showError('Không thể tạo văn bản: ' + error.message);
     } finally {
       this.hideLoading();
@@ -411,7 +354,6 @@ class MainApp {
       });
       return data;
     } catch (error) {
-      console.error('❌ MainApp: Error collecting form data:', error);
       return {};
     }
   }

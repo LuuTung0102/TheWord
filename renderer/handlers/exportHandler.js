@@ -2,7 +2,6 @@ function setupExportButton() {
   const exportBtn = document.getElementById("btnExport");
   
   if (!exportBtn) {
-    console.error("❌ Export button not found");
     return;
   }
   
@@ -35,7 +34,6 @@ function setupExportButton() {
     }
     
     const folderName = selectedTemplates[0];
-    console.log(`📤 Xuất folder: ${folderName}`);
     
     try {
       const result = await window.ipcRenderer.invoke("export-word", {

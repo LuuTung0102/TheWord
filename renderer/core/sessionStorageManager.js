@@ -43,9 +43,7 @@
       }
     }
     
-    if (differences.length > 0) {
-      console.log(`   🔍 Found ${differences.length} differences:`, differences);
-    }
+    if (differences.length > 0) {}
 
     if (!hasModifications && !hasAdditions)
       return { type: "NO_CHANGE" };
@@ -88,25 +86,16 @@
       }
 
       const groupsToRemove = [];
-
-      console.log(`📋 Reused groups:`, Array.from(reusedGroups || []));
       
       if (reusedGroups?.size > 0) {
         reusedGroups.forEach((reusedKey) => {
-          console.log(`   🔄 Processing reusedKey: ${reusedKey}`);
+          
           const isFromLocalStorage = reusedKey.startsWith("localStorage:");
           const groupKey = isFromLocalStorage
             ? reusedKey.replace("localStorage:", "")
             : reusedKey;
-
-          console.log(`   🔍 Checking groupKey: ${groupKey}, dataGroups keys:`, Object.keys(dataGroups));
           
-          if (!dataGroups[groupKey]) {
-            console.log(`   ⚠️ groupKey ${groupKey} not found in dataGroups, skipping`);
-            return;
-          }
-          
-          console.log(`   ✅ Found ${groupKey} in dataGroups`);
+          if (!dataGroups[groupKey]) { return; }
 
           if (isFromLocalStorage) {
             groupsToRemove.push(groupKey);
@@ -116,10 +105,7 @@
         
           const sourceInfo = reusedGroupSources?.get?.(reusedKey); 
           
-          if (!sourceInfo || !sourceInfo.sourceData) {
-            console.warn(`⚠️ No source info for ${reusedKey}, skipping analysis`);
-            return;
-          }
+          if (!sourceInfo || !sourceInfo.sourceData) { return;}
           
           const sourceFileName = sourceInfo.sourceFileName;
           const sourceGroupKey = sourceInfo.sourceGroupKey; 
@@ -138,78 +124,59 @@
             normalizedCurrent
           );
 
-          console.log(`   Change type: ${changeAnalysis.type}`);
-          console.log(`   Same file: ${isSameFile}`);
           const isSubgroup = isSubgroupInConfig(groupKey, config);
           if (isSubgroup) {
             if (changeAnalysis.type === "NO_CHANGE") {
               if (isSameFile) {
-                console.log(`📘 ${groupKey}: Copy không sửa + cùng file → Giữ nguyên session`);
               } else {
-                console.log(`📘 ${groupKey}: Copy không sửa + khác file → Không lưu duplicate`);
                 groupsToRemove.push(groupKey);
               }
             } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
               if (isSameFile) {
-                console.log(`📘 ${groupKey}: Copy và thêm field mới + cùng file → Gộp dữ liệu`);
                 dataGroups[groupKey] = {
                   ...normalizedSource,
                   ...normalizedCurrent,
                 };
               } else {
-                console.log(`📘 ${groupKey}: Copy và thêm field mới + khác file → Tạo session mới, xóa session cũ`);
                 dataGroups[groupKey] = {
                   ...normalizedSource,
                   ...normalizedCurrent,
                 };
                 if (existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
                   delete existingData[sourceFileName].dataGroups[sourceGroupKey];
-                  console.log(`   🗑️ Đã xóa ${sourceGroupKey} từ ${sourceFileName}`);
                 }
               }
             } else {
-              console.log(`📘 ${groupKey}: Copy và sửa → Giữ cả 2 sessions (không merge)`);
             }
           } else {
             if (changeAnalysis.type === "NO_CHANGE") {
-              if (isSameFile) {
-                console.log(`📦 ${groupKey}: Copy không sửa + cùng file → Giữ nguyên session`);
+              if (isSameFile) { 
               } else {
-                console.log(`📦 ${groupKey}: Copy không sửa + khác file → Không lưu duplicate`);
                 groupsToRemove.push(groupKey);
               }
             } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
               if (isSameFile) {
-                console.log(`📦 ${groupKey}: Copy và thêm field mới + cùng file → Gộp dữ liệu`);
                 dataGroups[groupKey] = {
                   ...normalizedSource,
                   ...normalizedCurrent,
                 };
               } else {
-                console.log(`📦 ${groupKey}: Copy và thêm field mới + khác file → Tạo session mới, xóa session cũ`);
                 dataGroups[groupKey] = {
                   ...normalizedSource,
                   ...normalizedCurrent,
                 };
                 if (existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
                   delete existingData[sourceFileName].dataGroups[sourceGroupKey];
-                  console.log(`   🗑️ Đã xóa ${sourceGroupKey} từ ${sourceFileName}`);
                 }
               }
             } else {
-              console.log(`📦 ${groupKey}: Copy và sửa → Giữ cả 2 sessions (không merge)`);
             }
           }
         });
       }
-
-      console.log(`🗑️ Groups to remove:`, groupsToRemove);
       groupsToRemove.forEach((groupKey) => {
-        console.log(`   🗑️ Removing ${groupKey} from dataGroups`);
         delete dataGroups[groupKey];
       });
-      console.log(`📊 Remaining groups after removal:`, Object.keys(dataGroups));
-
  
       const remainingGroups = Object.keys(dataGroups);
       const processedReusedKeys = new Set(Array.from(reusedGroups || []).map(key => 
@@ -231,7 +198,6 @@
             const normalizedOther = normalizeDataForComparison(otherGroupData);
             const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
             if (changeAnalysis.type === "NO_CHANGE") {
-              console.log(`🔍 ${groupKey} not in reusedGroups but matches ${otherFileName} → NO_CHANGE, removing duplicate`);
               groupsToRemove.push(groupKey);
               delete dataGroups[groupKey];
               break;
@@ -244,12 +210,10 @@
         const fileData = existingData[file];
         if (fileData.dataGroups && Object.keys(fileData.dataGroups).length === 0) {
           delete existingData[file];
-          console.log(`🗑️ Đã xóa file ${file} (không còn session nào)`);
         }
       });
 
       if (Object.keys(dataGroups).length === 0) return false;
-
       existingData[fileName] = {
         fileName,
         dataGroups,
@@ -257,10 +221,8 @@
       };
 
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
-      console.log(`✅ Saved session for ${fileName}:`, Object.keys(dataGroups));
       return true;
     } catch (error) {
-      console.error("❌ Error saving session data:", error);
       return false;
     }
   }
@@ -299,24 +261,19 @@
         groups[groupKey][key] = formData[key];
       }
     });
-
-    console.log("📊 Parsed dataGroups:", Object.keys(groups));
     return groups;
   }
 
   function getAvailableMenGroups() {
     const allData = getAllSessionData();
     const available = [];
-
     Object.keys(allData).forEach(fileName => {
       const fileData = allData[fileName];
       const groups = fileData.dataGroups;
-
       if (groups) {
         Object.keys(groups).forEach(groupKey => {
           const groupData = groups[groupKey];
           const shortFileName = fileName.replace('.docx', '');
-
           let displayName;
           if (groupKey.startsWith('MEN')) {
             displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName})`;

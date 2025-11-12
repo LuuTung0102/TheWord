@@ -73,8 +73,6 @@ function isValidEmail(email) {
 
 function setupNameInput(el) {
   const ph = el.getAttribute('data-ph');
-  
-  // Original logic: Auto uppercase
   el.addEventListener("input", (e) => {
     const input = e.target;
     const start = input.selectionStart;
@@ -89,14 +87,11 @@ function setupNameInput(el) {
     }
   });
   
-  // Auto-generate NameT from Name (similar to MoneyText from Money)
   if (ph) {
     const nameMatch = ph.match(/^Name(\d+)$/);
     if (nameMatch) {
       const number = nameMatch[1];
       const nameTKey = `NameT${number}`;
-      
-      // Update NameT when Name changes
       el.addEventListener('input', (e) => {
         const value = e.target.value.trim();
         if (value && window.toTitleCase) {
@@ -104,10 +99,8 @@ function setupNameInput(el) {
           const nameTField = document.querySelector(`[data-ph="${nameTKey}"]`);
           if (nameTField) {
             nameTField.value = nameT;
-            console.log(`📝 Name: ${value} -> NameT: "${nameT}"`);
           }
         } else {
-          // Clear NameT if Name is empty
           const nameTField = document.querySelector(`[data-ph="${nameTKey}"]`);
           if (nameTField) {
             nameTField.value = '';
@@ -297,39 +290,56 @@ function setupMoneyInput(el) {
     const moneyTextField = document.querySelector('[data-ph="MoneyText"]');
     if (moneyTextField && moneyText) {
       moneyTextField.value = moneyText;
-      console.log(`💰 Money: ${formatted} -> Text: "${moneyText}"`);
     }
   });
 }
 
 function setupAreaInput(el) {
+  function cleanValue(value) {
+    if (!value || value === '') return '';
+    let cleaned = value.replace(/[^\d.]/g, '');
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+    return cleaned;
+  }
+
   el.addEventListener("input", (e) => {
-    let value = e.target.value.replace(/\D/g, ""); 
-    e.target.value = value; 
+    const cleaned = cleanValue(e.target.value);
+    e.target.value = cleaned;
   });
 
   el.addEventListener("focus", (e) => {
-    let value = e.target.value.replace(/\D/g, ""); 
-    e.target.value = value;
+    const cleaned = cleanValue(e.target.value);
+    e.target.value = cleaned;
   });
 
   el.addEventListener("blur", (e) => {
-    let value = e.target.value.replace(/\D/g, "");
+    let rawValue = cleanValue(e.target.value);
     
-    if (value.length === 0) {
+    if (rawValue.length === 0 || rawValue === '.') {
+      e.target.value = '';
       const sTextField = document.querySelector('[data-ph="S_Text"]');
       if (sTextField) {
         sTextField.value = "";
       }
       return;
     }
-    const formatted = window.formatWithCommas ? window.formatWithCommas(value) : value;
-    e.target.value = formatted;
-    const sText = window.numberToAreaWords ? window.numberToAreaWords(value) : "";
-    const sTextField = document.querySelector('[data-ph="S_Text"]');
-    if (sTextField && sText) {
-      sTextField.value = sText;
-      console.log(`📐 Area: ${formatted} -> Text: "${sText}"`);
+    
+    if (rawValue.endsWith('.')) {
+      rawValue = rawValue.slice(0, -1);
+    }
+    
+    e.target.value = rawValue;
+    
+    const numericValue = parseFloat(rawValue);
+    if (!isNaN(numericValue)) {
+      const sText = window.numberToAreaWords ? window.numberToAreaWords(rawValue) : "";
+      const sTextField = document.querySelector('[data-ph="S_Text"]');
+      if (sTextField && sText) {
+        sTextField.value = sText;
+      }
     }
   });
 }
@@ -346,15 +356,12 @@ function setupNoteTextarea(el) {
 function setupDatePickers() {
   try {
     if (typeof flatpickr === "undefined") {
-      console.warn("⚠️ Flatpickr not loaded");
       return;
     }
     const dateInputs = document.querySelectorAll(".date-input, .date-picker");
     if (dateInputs.length === 0) {
-      console.warn("⚠️ No date inputs found");
       return;
     }
-    console.log(`✅ Found ${dateInputs.length} date inputs`);
     
     dateInputs.forEach((input) => {
       if (input._flatpickr) {
@@ -396,7 +403,6 @@ function setupDatePickers() {
       });
     });
   } catch (err) {
-    console.error("❌ Error setting up date pickers:", err);
   }
 }
 
@@ -523,7 +529,6 @@ function reSetupAllInputs() {
 }
 
 function cleanupAllEventListeners() {
-  console.log('🗑️ Cleaning up old event listeners...');
   document.querySelectorAll('input[data-ph="Loai_Dat"]').forEach(input => {
     if (input._cleanupFunctions) {
       input._cleanupFunctions.forEach(fn => fn());
@@ -536,7 +541,6 @@ function cleanupAllEventListeners() {
     dropdown.style.display = 'none';
   });
   
-  console.log('✅ Cleanup completed');
 }
 
 
@@ -601,16 +605,14 @@ function setupLandTypeSizeInput(container, inputId) {
   const ph = container.dataset.ph;
   
   if (!input || !tagsWrapper || !dropdown || !addBtn || !inputWrapper) {
-    console.warn('⚠️ Missing elements for land_type_size:', { input, tagsWrapper, dropdown, addBtn, inputWrapper });
     return;
   }
   
   const landKeys = window.landTypeMap ? Object.keys(window.landTypeMap).sort() : [];
-  let tags = []; // Array of {code: "ONT", area: "440"}
+  let tags = []; 
   let selectedIndex = -1;
-  let currentTagIndex = -1; // Index of tag being edited
+  let currentTagIndex = -1; 
   
-  // Hàm hiển thị input
   function showInput() {
     inputWrapper.classList.add('show');
     input.value = '';
@@ -618,26 +620,21 @@ function setupLandTypeSizeInput(container, inputId) {
     updateDropdown('');
   }
   
-  // Hàm ẩn input
   function hideInput() {
     inputWrapper.classList.remove('show');
     dropdown.style.display = 'none';
     input.value = '';
     currentTagIndex = -1;
-    // Remove editing highlight
     document.querySelectorAll('.land-type-tag').forEach(t => t.classList.remove('editing'));
   }
   
-  // Load existing value if any
   function loadExistingValue() {
     const existingValue = input.value.trim();
     if (!existingValue) return;
     
-    // Parse format: "ONT+CHN 440; 450" hoặc "ONT 440; CHN 450"
     const parts = existingValue.split(/\s+/);
     if (parts.length === 0) return;
     
-    // Try format: "ONT+CHN 440; 450"
     if (parts.length === 2 && parts[1].includes(';')) {
       const codes = parts[0].split('+').map(c => c.trim().toUpperCase());
       const areas = parts[1].split(';').map(a => a.trim().replace(/m2/g, '').trim());
@@ -648,25 +645,20 @@ function setupLandTypeSizeInput(container, inputId) {
         }
       });
     } else {
-      // Try format: "ONT 440; CHN 450" hoặc "BCS 454; CCC 1111" hoặc "ONT; CHN" (chỉ có code)
       const pairs = existingValue.split(';').map(p => p.trim());
       pairs.forEach(pair => {
-        // Match format: "BCS 454" hoặc "BCS 454m2" hoặc "454m2 BCS"
         let match = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)\s*m2?$/i);
         if (match) {
           tags.push({ code: match[1].toUpperCase(), area: match[2] });
         } else {
-          // Try format: "454m2 BCS" hoặc "454 m2 BCS"
           match = pair.match(/^(\d+(?:\.\d+)?)\s*m2?\s*([A-Z]+)$/i);
           if (match) {
             tags.push({ code: match[2].toUpperCase(), area: match[1] });
           } else {
-            // Try format: "BCS 454" (không có m2)
             match = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)$/);
             if (match) {
               tags.push({ code: match[1].toUpperCase(), area: match[2] });
             } else {
-              // Try format: chỉ có code "ONT" hoặc "BCS" (không có diện tích)
               match = pair.match(/^([A-Z]+)$/i);
               if (match) {
                 tags.push({ code: match[1].toUpperCase(), area: '' });
@@ -678,14 +670,11 @@ function setupLandTypeSizeInput(container, inputId) {
     }
     
     renderTags();
-    
-    // Ẩn input sau khi load giá trị có sẵn
     if (tags.length > 0) {
       hideInput();
     }
   }
   
-  // Render all tags
   function renderTags() {
     tagsWrapper.innerHTML = '';
     
@@ -702,8 +691,23 @@ function setupLandTypeSizeInput(container, inputId) {
       const areaSpan = document.createElement('span');
       areaSpan.className = 'tag-area';
       areaSpan.textContent = ` - ${tag.area}m²`;
-      areaSpan.contentEditable = 'true';
       areaSpan.dataset.tagIndex = idx;
+      
+      const areaInput = document.createElement('input');
+      areaInput.type = 'text';
+      areaInput.className = 'tag-area-input';
+      areaInput.value = tag.area || '';
+      areaInput.dataset.tagIndex = idx;
+      areaInput.style.display = 'none';
+      areaInput.style.width = '60px';
+      areaInput.style.padding = '2px 4px';
+      areaInput.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+      areaInput.style.borderRadius = '3px';
+      areaInput.style.background = 'rgba(255, 255, 255, 0.2)';
+      areaInput.style.color = 'white';
+      areaInput.style.fontSize = '0.875rem';
+      areaInput.style.textAlign = 'center';
+      areaInput.style.outline = 'none';
       
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'tag-delete';
@@ -718,39 +722,72 @@ function setupLandTypeSizeInput(container, inputId) {
       
       tagEl.appendChild(codeSpan);
       tagEl.appendChild(areaSpan);
+      tagEl.appendChild(areaInput);
       tagEl.appendChild(deleteBtn);
       
-      // Click to edit
       tagEl.onclick = (e) => {
         if (e.target === deleteBtn || e.target.parentElement === deleteBtn) return;
+        if (e.target === areaInput || e.target === areaSpan) {
+          e.stopPropagation();
+          areaSpan.style.display = 'none';
+          areaInput.style.display = 'inline-block';
+          areaInput.focus();
+          areaInput.select();
+          return;
+        }
         
         currentTagIndex = idx;
         showInput();
         input.value = tag.code;
         updateDropdown(input.value);
-        
-        // Highlight tag being edited
         document.querySelectorAll('.land-type-tag').forEach(t => t.classList.remove('editing'));
         tagEl.classList.add('editing');
       };
       
-      // Edit area inline
-      areaSpan.addEventListener('blur', () => {
-        const newArea = areaSpan.textContent.replace(/[^\d.]/g, '');
-        if (newArea) {
+      areaSpan.addEventListener('click', (e) => {
+        e.stopPropagation();
+        areaSpan.style.display = 'none';
+        areaInput.style.display = 'inline-block';
+        areaInput.focus();
+        areaInput.select();
+      });
+      
+      areaInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/[^\d.]/g, '');
+        const parts = value.split('.');
+        if (parts.length > 2) {
+          value = parts[0] + '.' + parts.slice(1).join('');
+        }
+        e.target.value = value;
+      });
+      
+      areaInput.addEventListener('blur', () => {
+        const newArea = areaInput.value.trim();
+        if (newArea && !isNaN(parseFloat(newArea)) && parseFloat(newArea) >= 0) {
           tag.area = newArea;
           areaSpan.textContent = ` - ${newArea}m²`;
+          areaInput.style.display = 'none';
+          areaSpan.style.display = 'inline';
           updateHiddenValue();
+        } else if (newArea === '') {
+          areaInput.value = tag.area || '';
+          areaInput.style.display = 'none';
+          areaSpan.style.display = 'inline';
         } else {
-          areaSpan.textContent = ` - ${tag.area}m²`;
+          areaInput.value = tag.area || '';
+          areaInput.style.display = 'none';
+          areaSpan.style.display = 'inline';
         }
       });
       
-      // Press Enter to save area
-      areaSpan.addEventListener('keydown', (e) => {
+      areaInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
-          areaSpan.blur();
+          areaInput.blur();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          areaInput.value = tag.area || '';
+          areaInput.blur();
         }
       });
       
@@ -760,26 +797,20 @@ function setupLandTypeSizeInput(container, inputId) {
     updateHiddenValue();
   }
   
-  // Update hidden input value
   function updateHiddenValue() {
     if (tags.length === 0) {
       input.value = '';
-      // Trigger change event even when empty (for validation)
       input.dispatchEvent(new Event('change', { bubbles: true }));
       input.dispatchEvent(new Event('input', { bubbles: true }));
       return;
     }
     
-    // Format: "ONT 440; CHN 450"
     const value = tags.map(t => `${t.code} ${t.area}`).join('; ');
     input.value = value;
-    
-    // Trigger change event for form data collection and validation
     input.dispatchEvent(new Event('change', { bubbles: true }));
     input.dispatchEvent(new Event('input', { bubbles: true }));
   }
   
-  // Update dropdown suggestions
   function updateDropdown(query) {
     if (!dropdown) return;
     selectedIndex = -1;
@@ -800,12 +831,9 @@ function setupLandTypeSizeInput(container, inputId) {
     dropdown.style.display = filtered.length ? "block" : "none";
   }
   
-  // Handle input
   input.addEventListener('input', (e) => {
     const query = e.target.value.trim().toUpperCase();
     updateDropdown(query);
-    
-    // Remove editing highlight if typing
     document.querySelectorAll('.land-type-tag').forEach(t => t.classList.remove('editing'));
     currentTagIndex = -1;
   });
@@ -815,10 +843,8 @@ function setupLandTypeSizeInput(container, inputId) {
     updateDropdown(query);
   });
   
-  // Keyboard navigation
   input.addEventListener('keydown', (e) => {
     const items = dropdown.querySelectorAll('.suggestion-item');
-    
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (items.length > 0) {
@@ -842,7 +868,6 @@ function setupLandTypeSizeInput(container, inputId) {
       if (selectedIndex >= 0 && items[selectedIndex]) {
         items[selectedIndex].click();
       } else if (input.value.trim()) {
-        // Add as new tag if valid code
         const code = input.value.trim().toUpperCase();
         if (landKeys.includes(code) && !tags.find(t => t.code === code)) {
           addTag(code, '');
@@ -855,7 +880,6 @@ function setupLandTypeSizeInput(container, inputId) {
     }
   });
   
-  // Click on suggestion
   dropdown.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -870,18 +894,14 @@ function setupLandTypeSizeInput(container, inputId) {
     }
   });
   
-  // Add tag
   function addTag(code, area = '') {
-    // If editing existing tag, update it
     if (currentTagIndex >= 0 && currentTagIndex < tags.length) {
       tags[currentTagIndex].code = code;
       if (area) tags[currentTagIndex].area = area;
       currentTagIndex = -1;
     } else {
-      // Check if code already exists
       const existingIndex = tags.findIndex(t => t.code === code);
       if (existingIndex >= 0) {
-        // Focus on existing tag
         const tagEl = tagsWrapper.querySelector(`[data-tag-index="${existingIndex}"]`);
         if (tagEl) tagEl.click();
         return;
@@ -892,9 +912,7 @@ function setupLandTypeSizeInput(container, inputId) {
     
     renderTags();
     
-    // Ẩn input sau khi thêm tag (trừ khi đang edit area)
     if (!area) {
-      // Nếu chưa có diện tích, focus vào area input của tag mới
       const newTagIndex = tags.findIndex(t => t.code === code);
       if (newTagIndex >= 0) {
         setTimeout(() => {
@@ -903,7 +921,6 @@ function setupLandTypeSizeInput(container, inputId) {
             const areaSpan = tagEl.querySelector('.tag-area');
             if (areaSpan) {
               areaSpan.focus();
-              // Select the number part
               const range = document.createRange();
               range.selectNodeContents(areaSpan);
               const sel = window.getSelection();
@@ -911,44 +928,36 @@ function setupLandTypeSizeInput(container, inputId) {
               sel.addRange(range);
             }
           }
-          // Ẩn input sau khi focus vào area
           hideInput();
         }, 50);
       } else {
         hideInput();
       }
     } else {
-      // Nếu đã có diện tích, ẩn input ngay
       hideInput();
     }
   }
   
-  // Add button click - toggle input visibility
   addBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     if (inputWrapper.classList.contains('show')) {
-      // Nếu đang hiện, chỉ focus (không ẩn)
       input.focus();
     } else {
-      // Nếu đang ẩn, hiện input
       showInput();
     }
   });
   
-  // Click outside to close dropdown and hide input
   document.addEventListener('click', (e) => {
     if (!container.contains(e.target)) {
       hideInput();
     }
   });
   
-  // Expose reload function để có thể gọi từ bên ngoài
+
   container.reloadLandTypeSizeValue = function() {
-    tags = []; // Reset tags trước khi load lại
+    tags = []; 
     loadExistingValue();
   };
-  
-  // Load existing value
   loadExistingValue();
 }
 

@@ -1,44 +1,30 @@
 
 function validateForm() {
-  console.log('🔍 Validation: Starting form validation...');
   const currentTemplate = window.currentTemplate;
   if (!currentTemplate || !currentTemplate.config) {
-    console.warn('⚠️ Validation: No template config found, skipping validation');
     return true; 
   }
-  
-  console.log('✅ Validation: Found currentTemplate:', {
-    fileName: currentTemplate.fileName,
-    hasConfig: !!currentTemplate.config,
-    hasSelectedFile: !!currentTemplate.selectedFile
-  });
 
   const config = currentTemplate.config;
   const { fieldMappings, fieldSchemas, groups } = config;
   
   if (!fieldMappings || !fieldSchemas) {
-    console.warn('⚠️ Validation: Missing fieldMappings or fieldSchemas, skipping validation');
     return true;
   }
 
   const selectedFile = window.currentTemplate.selectedFile;
   if (!selectedFile || !selectedFile.groups) {
-    console.warn('⚠️ Validation: No template file selected');
     return true;
   }
   
-  console.log('✅ Validation: Template groups:', selectedFile.groups);
+
   const formData = window.collectGenericFormData ? window.collectGenericFormData() : {};
-  console.log('✅ Validation: Collected form data:', Object.keys(formData).length, 'fields');
   const errors = validateFormData(formData, fieldMappings, fieldSchemas, selectedFile.groups);
   
   if (errors.length > 0) {
-    console.error('❌ Validation: Found', errors.length, 'validation errors');
     displayValidationErrors(errors);
     return false;
   }
-
-  console.log('✅ Validation: All fields valid!');
   return true;
 }
 
@@ -53,16 +39,8 @@ function validateForm() {
 function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups) {
   const errors = [];
   const visibleSubgroups = window.visibleSubgroups || new Set();
-
-  console.log('🔍 Validating form with visible subgroups:', Array.from(visibleSubgroups));
-  
-  // Get placeholders from phMapping (which contains all placeholders from Word file)
   const phMapping = window.__renderDataStructures?.phMapping || {};
   const allPlaceholders = new Set(Object.keys(phMapping));
-  
-  console.log('🔍 Getting placeholders from phMapping...');
-  console.log('  Total placeholders from Word file:', allPlaceholders.size);
-  console.log('  Template groups:', templateGroups);
 
   for (const mapping of fieldMappings) {
     if (!templateGroups.includes(mapping.group)) {
@@ -71,7 +49,6 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
 
     const schema = fieldSchemas[mapping.schema];
     if (!schema || !schema.fields) {
-      console.warn(`⚠️ Schema not found: ${mapping.schema}`);
       continue;
     }
 
@@ -80,12 +57,10 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
       const subgroupId = typeof subgroup === 'string' ? subgroup : subgroup.id;
       const subgroupLabel = typeof subgroup === 'string' ? subgroup : subgroup.label;
       if (!visibleSubgroups.has(subgroupId)) {
-        console.log(`⏭️ Skipping validation for hidden subgroup: ${subgroupId}`);
         continue;
       }
 
       const suffix = mapping.suffixes ? mapping.suffixes[i] : '';
-      console.log(`✅ Validating visible subgroup: ${subgroupId} (suffix: ${suffix})`);
 
       for (const field of schema.fields) {
         if (field.hidden) continue;
@@ -95,11 +70,9 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
         const fieldName = suffix ? `${field.name}${suffix}` : field.name;
         
         if (!allPlaceholders.has(fieldName)) {
-          console.log(`⏭️ SKIP: ${fieldName} (field "${field.label}") not in template Word file`);
           continue;
         }
         
-        console.log(`✅ Validating: ${fieldName} (${field.label}) - required: ${field.required}`);
         
         const fieldValue = formData[fieldName];
         const isEmpty = !fieldValue || (typeof fieldValue === 'string' && fieldValue.trim() === '') || 
@@ -115,7 +88,6 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
             fieldLabel: field.label,
             message: `"${field.label}" là bắt buộc (${subgroupLabel || subgroupId})`
           });
-          console.log(`❌ Validation error: ${fieldName} (${field.label}) is empty`);
         }
       }
     }
@@ -130,10 +102,6 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
  */
 function displayValidationErrors(errors) {
   if (errors.length === 0) return;
-
-  console.error('❌ Form validation errors:', errors);
-  
-  // Chỉ highlight và scroll, không hiển thị thông báo
   scrollToFirstError(errors);
 }
 
@@ -144,19 +112,16 @@ function displayValidationErrors(errors) {
 function scrollToFirstError(errors) {
   if (errors.length === 0) return;
 
-  // Highlight all error fields
   errors.forEach(error => {
     const fieldName = error.field;
     const inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
     
     if (inputElement) {
-      // Add error styling
       inputElement.style.borderColor = '#dc3545';
       inputElement.style.borderWidth = '2px';
       inputElement.style.backgroundColor = '#fff5f5';
       inputElement.classList.add('validation-error');
       
-      // Remove error styling after user interacts
       const removeErrorStyle = () => {
         inputElement.style.borderColor = '';
         inputElement.style.borderWidth = '';
@@ -171,7 +136,6 @@ function scrollToFirstError(errors) {
     }
   });
 
-  // Scroll to first error
   const firstError = errors[0];
   const fieldName = firstError.field;
   const inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
@@ -223,7 +187,6 @@ if (typeof window !== 'undefined') {
   window.validateField = validateField;
 }
 
-// Export for Node.js (if needed)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     validateForm,

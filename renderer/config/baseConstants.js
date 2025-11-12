@@ -31,7 +31,7 @@ const BASE_PLACEHOLDERS = {
     type: "date",
     order: 7
   },
-  
+    
   MST: {
     type: "number",
     maxLength: 13,

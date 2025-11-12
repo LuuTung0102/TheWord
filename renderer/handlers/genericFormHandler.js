@@ -136,7 +136,6 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
 }
 
 async function renderGenericForm(placeholders, config, folderPath) {
-  console.log("🎨 Rendering GENERIC form", { placeholders, config });
   window.__renderParams = { placeholders, config, folderPath };
   const phMapping = window.buildPlaceholderMapping(config, placeholders);
   const groupLabels = window.getGroupLabels(config);
@@ -145,7 +144,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
   placeholders.forEach(ph => {
     const def = phMapping[ph];
     if (!def) {
-      console.warn(`⚠️ Placeholder ${ph} not in mapping (not in schema or filtered out)`);
       return;
     }
     
@@ -177,11 +175,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
   window.idToPhGeneric = idToPhGeneric;
 
   if (!config || !config.groups) {
-    console.error("❌ Invalid config - missing groups");
     return;
   }
 
-  console.log("📊 Grouped placeholders:", grouped);
   const groupOrder = config.groups
     .sort((a, b) => (a.order || 999) - (b.order || 999))
     .map(group => group.id);
@@ -192,7 +188,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
   
   if (!window.visibleSubgroups || window.visibleSubgroups.size === 0) {
     window.visibleSubgroups = new Set();
-    console.log('🔄 Initialize visibleSubgroups for new form');
     if (config.fieldMappings) {
       config.fieldMappings.forEach(mapping => {
         if (mapping.subgroups && mapping.subgroups.length > 0) {
@@ -203,15 +198,13 @@ async function renderGenericForm(placeholders, config, folderPath) {
               if (subgroup.visible === true) {
                 window.visibleSubgroups.add(subgroupId);
                 window.defaultVisibleSubgroups.add(subgroupId); 
-                console.log(`✅ Default visible (config): ${subgroupId}`);
               }
             } else {
               if (index === 0) {
                 window.visibleSubgroups.add(subgroupId);
                 window.defaultVisibleSubgroups.add(subgroupId); 
-                console.log(`✅ Default visible (first): ${subgroupId}`);
               } else {
-                console.log(`⏭️ Default hidden (not first): ${subgroupId}`);
+               
               }
             }
           });
@@ -219,12 +212,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
       });
     }
   } else {
-    console.log('♻️ Re-rendering with existing visibleSubgroups:', Array.from(window.visibleSubgroups));
+    
   }
   
-  console.log('✅ Current visibleSubgroups:', Array.from(window.visibleSubgroups));
-  console.log('✅ Default visible subgroups (cannot delete):', Array.from(window.defaultVisibleSubgroups));
-
 
   const taskbarHtml = `
     <div class="form-taskbar">
@@ -274,12 +264,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
           return;
         }
         
-        console.log('🗑️ Clearing all session data...');
         if (window.sessionStorageManager && window.sessionStorageManager.clearAllSessionData) {
           window.sessionStorageManager.clearAllSessionData();
-          console.log('✅ All session data cleared');
         } else {
-          console.error('❌ sessionStorageManager.clearAllSessionData not available');
           alert('❌ Không thể xóa session data. Vui lòng thử lại.');
           return;
         }
@@ -341,8 +328,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
     }
 
     if (groupSources[groupKey] === "localStorage") {
-      console.log(`📂 Group ${groupKey} uses localStorage`);
-      
       let suffix = '';
       if (config.fieldMappings) {
         const mapping = config.fieldMappings.find(m => m.group === groupKey && m.source === "localStorage");
@@ -351,11 +336,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
         }
       }
       
-      console.log(`🔍 Loading saved people for group ${groupKey}...`);
-      console.log(`🔍 window.loadSavedPeople exists? ${!!window.loadSavedPeople}`);
-      
       const savedPeople = window.loadSavedPeople ? await window.loadSavedPeople() : [];
-      console.log(`🔍 Loaded ${savedPeople.length} saved people:`, savedPeople);
       
       const buttonsHtml = `
         <div class="form-subgroup">
@@ -484,7 +465,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
       const renderParams = window.__renderParams;
       const renderData = window.__renderDataStructures;
       if (!renderParams || !renderData) {
-        console.error('❌ No render params or data structures found');
         return;
       }
       
@@ -518,7 +498,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
                     }
                     window.visibleSubgroups.delete(subgroupIdToRemove);
                     groupDiv.removeChild(newSubgroupDiv);
-                    console.log(`✅ Subgroup ${subgroupIdToRemove} removed`);
                   });
                 }
                 setupReuseDataListeners();
@@ -543,7 +522,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
       const subgroupId = btn.dataset.subgroup;
       
       if (!subgroupId) {
-        console.error('❌ Remove button: Missing subgroup ID');
         return;
       }
       
@@ -551,16 +529,14 @@ async function renderGenericForm(placeholders, config, folderPath) {
       if (!confirm(`Bạn có chắc muốn xóa "${subgroupLabel}"?\n\nDữ liệu đã nhập sẽ bị xóa.`)) {
         return;
       }
-      console.log(`🗑️ Removing subgroup: ${subgroupId} from group: ${groupKey}`);
       window.visibleSubgroups.delete(subgroupId);
-      console.log('✅ Removed from visibleSubgroups:', Array.from(window.visibleSubgroups));
       
       const subgroupElement = document.querySelector(`[data-subgroup-id="${subgroupId}"]`);
       if (subgroupElement && subgroupElement.parentNode) {
         subgroupElement.parentNode.removeChild(subgroupElement);
-        console.log(`✅ Subgroup ${subgroupId} removed from DOM`);
+       
       } else {
-        console.warn(`⚠️ Subgroup element not found: ${subgroupId}`);
+        
       }
     });
   });
@@ -588,7 +564,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
         window.setupFormEventListeners();
       }
       if (typeof window.reSetupAllInputs === 'function') {
-        console.log('🔧 Setting up all inputs for generic form...');
         window.reSetupAllInputs();
       }
       setupPersonSelectionListeners(groupSources, grouped);
@@ -596,7 +571,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
     }, 100); 
   });
   
-  console.log("✅ Generic form rendered");
 }
 
 /**
@@ -827,8 +801,7 @@ function setupPersonSelectionListeners(groupSources, grouped) {
         html += '</div>';
         previewContent.innerHTML = html;
         previewDiv.style.display = 'block';
-        
-        console.log(`✅ Selected person: ${person.name} for group ${groupKey}`);
+
       });
     });
   });
@@ -843,8 +816,6 @@ function setupReuseDataListeners() {
       const targetSubgroup = e.target.getAttribute('data-target-subgroup'); // MEN1, MEN2, LAND...
       const targetSuffix = e.target.getAttribute('data-target-suffix');
       
-      console.log(`🔄 Reuse data selected: ${value} for ${targetSubgroup} (suffix ${targetSuffix})`);
-      
       if (!value) {
         window.__formDataReused = false;
         return;
@@ -853,19 +824,14 @@ function setupReuseDataListeners() {
       const [fileName, sourceGroupKey] = value.split('|');
       
       if (!fileName || !sourceGroupKey) {
-        console.error('❌ Invalid reuse data value:', value);
         return;
       }
       
       const sourceData = window.sessionStorageManager.getMenGroupData(fileName, sourceGroupKey);
       
       if (!sourceData) {
-        console.error(`❌ No data found for ${fileName} - ${sourceGroupKey}`);
         return;
       }
-      
-      console.log(`✅ Loading data: ${sourceGroupKey} (${fileName}) → ${targetSubgroup}`);
-      console.log(`   Source data:`, sourceData);
       
       if (!window.__reusedGroups) window.__reusedGroups = new Set();
       window.__reusedGroups.add(targetSubgroup); 
@@ -913,7 +879,6 @@ function fillFormWithMenData(groupData, targetSuffix) {
         const codes = value.split('+').map(c => c.trim().toUpperCase()).filter(Boolean);
         if (codes.length > 0) {
           const convertedValue = codes.join('; ');
-          console.log(`🔄 Converting Loai_Dat to Loai_Dat_F: "${value}" → "${convertedValue}"`);
           fillLandTypeSizeField(loaiDatFPlaceholder, convertedValue);
           return;
         }
@@ -940,13 +905,11 @@ function fillLandTypeSizeField(placeholder, valueString) {
   
   const container = document.querySelector(`.land-type-size-container[data-ph="${placeholder}"]`);
   if (!container) {
-    console.warn(`⚠️ Land type size container not found for ${placeholder}`);
     return;
   }
   
   const input = container.querySelector('.tag-input');
   if (!input) {
-    console.warn(`⚠️ Tag input not found for ${placeholder}`);
     return;
   }
   
@@ -979,14 +942,11 @@ function fillLandTypeSizeField(placeholder, valueString) {
   });
   
   if (convertedPairs.length === 0) {
-    console.warn(`⚠️ Could not parse land type size value: ${valueString}`);
     return;
   }
   
  
   const convertedValue = convertedPairs.join('; ');
-  console.log(`🔄 Filling Loai_Dat_F: "${valueString}" → "${convertedValue}"`);
-  
 
   if (!container.dataset.landTypeSizeSetup && window.setupLandTypeSizeInput) {
     const inputId = input.id;
@@ -1126,12 +1086,12 @@ function collectGenericFormData() {
     }
     
     if (ph === 'S' && value) {
-      const rawArea = value.replace(/\D/g, '');
+      // Keep value as is (with decimal point if exists), remove only commas
+      const rawArea = value.replace(/,/g, '');
       if (rawArea) {
-        if (!value.includes(',')) {
-          const formatted = window.formatWithCommas ? window.formatWithCommas(rawArea) : rawArea;
-          el.value = formatted;
-        }
+        // Keep the value with decimal point for saving
+        data[ph] = rawArea;
+        // Convert to text with decimal support
         const sText = window.numberToAreaWords ? window.numberToAreaWords(rawArea) : "";
         if (sText) data['S_Text'] = sText;
         value = rawArea;

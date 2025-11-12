@@ -3,9 +3,7 @@ let selectedTemplates = window.selectedTemplates || [];
 
 async function loadTemplates() {
   try {
-    console.log('🔍 TemplateManager: Loading templates...');
     allTemplates = await window.ipcRenderer.invoke("get-templates");
-    console.log('🔍 TemplateManager: Templates loaded:', allTemplates);
     window.allTemplates = allTemplates;
     renderLeftTable(allTemplates);
     selectedTemplates = [];
@@ -15,7 +13,6 @@ async function loadTemplates() {
     updateTemplateCounts();
     setupTemplateEventListeners();
   } catch (err) {
-    console.error('❌ TemplateManager: Error loading templates:', err);
   }
 }
 
@@ -51,7 +48,6 @@ function renderTemplateItem(folder, actionType) {
 function renderLeftTable(templates) {
   const container = document.querySelector("#leftTable");
   if (!container) {
-    console.error("❌ TemplateManager: #leftTable not found");
     return;
   }
   container.innerHTML = "";
@@ -64,7 +60,6 @@ function renderLeftTable(templates) {
 function renderRightTable(templates) {
   const container = document.querySelector("#rightTable");
   if (!container) {
-    console.error("❌ TemplateManager: #rightTable not found");
     return;
   }
   container.innerHTML = "";
@@ -136,31 +131,26 @@ async function updateForm() {
 
   const phSet = new Set();
   for (const folderName of selectedTemplates) {
-    console.log(`📋 Loading placeholders from folder: ${folderName}`);
     const ph = await window.ipcRenderer.invoke("get-folder-placeholders", folderName);
     if (Array.isArray(ph)) {
       ph.forEach((p) => phSet.add(p));
     }
   }
 
-  console.log(`✅ Total placeholders: ${phSet.size}`);
   let folderConfig = null;
   let folderPath = null;
   
   if (selectedTemplates.length > 0) {
     const templatesRoot = await window.ipcRenderer.invoke("get-templates-root");
     folderPath = `${templatesRoot}\\${selectedTemplates[0]}`;
-    console.log(`🔍 Trying to load config from: ${folderPath}`);
     if (typeof window.loadFolderConfig === 'function') {
       folderConfig = await window.loadFolderConfig(folderPath);
     }
   }
   
   if (folderConfig && typeof window.renderGenericForm === 'function') {
-    console.log("🆕 Using config-based system");
     await window.renderGenericForm([...phSet], folderConfig, folderPath);
   } else {
-    console.error("❌ No config.json found or renderGenericForm not available");
     document.getElementById("formArea").innerHTML = "<p style='padding: 20px; color: #dc3545;'>⚠️ Vui lòng thêm config.json vào folder template</p>";
   }
 }
