@@ -55,7 +55,6 @@ npm start
 #### **🔄 Tái sử dụng dữ liệu (Session Storage)**
 
 **Scenario:** Tạo nhiều văn bản cho cùng một người
-
 1. Điền "HĐ chuyển nhượng" cho ông A
 2. Xuất văn bản
 3. Mở "Giấy ủy quyền"
@@ -111,6 +110,8 @@ Thêm người dùng thường xuyên:
    - Word nhận: 500 (số thuần, không dấu phẩy)
    - S_Text tự động: "năm trăm mét vuông"
 
+   
+
 ✅ Name → NameT (Title Case):
    - Nhập Name1: "LƯU THANH TÙNG"
    - NameT1 tự động: "Lưu Thanh Tùng"
@@ -151,9 +152,7 @@ Sau khi xuất file Word thành công:
 }
 ```
 
-
 **2️⃣ UI tự động đọc từ config:**
-
 ```javascript
 const isRequired = fieldDef.required === true;
 const requiredClass = isRequired ? ' class="required"' : '';
@@ -161,7 +160,6 @@ const requiredClass = isRequired ? ' class="required"' : '';
 ```  
 
 ## 📂 Cấu Trúc Dự Án
-
 ```
 TheWord/
 ├── main.js                       # Electron main process
@@ -216,13 +214,13 @@ TheWord/
 │    "fieldSchemas": {                                             │
 │      "PersonalInfo": {                                           │
 │        "fields":                                                 │
-│          { "name": "Name", "required": true },  ← Định nghĩa 1 lần│
+│          { "name": "Name", "required": true },                   │
 │          { "name": "CCCD", "required": true },                   │
 │          { "name": "Note", "required": false }                   │
 │        ]                                                         │
 │      }                                                           │
 │    },                                                            │
-│    "fieldMappings": []                                      │
+│    "fieldMappings": []                                           │
 │  }                                                               │
 └─────────────────────────────────────────────────────────────────┘
                            │
@@ -245,9 +243,7 @@ TheWord/
 
 ✅ Chỉnh sửa 1 lần trong config.json → UI + Validation tự động sync
 ### **2. Config-based System**
-
 Mỗi folder template có `config.json`:
-
 ```json
 {
   "folder": {
@@ -276,11 +272,9 @@ Mỗi folder template có `config.json`:
   }]
 }
 ### **3. Dynamic Form Rendering**
-
 ```
 config.json → configLoader.js → genericFormHandler.js → Form UI
 ```
-
 - **Không cần code mới** cho file Word mới
 - Chỉ cần cập nhật `config.json`
 - Form tự động render theo config
@@ -314,7 +308,6 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
    - ONLY_ADDITIONS → Merge data, xóa session cũ nếu khác file
    - HAS_MODIFICATIONS → Giữ cả 2 sessions
 ### **6. Smart Line Removal (Auto-cleanup)**
-
 **Logic xóa dòng tự động khi xuất Word:**
 1. Subgroup có visible = false (ẩn):
    → Xóa dòng nếu TẤT CẢ placeholders của subgroup đều rỗng
@@ -334,11 +327,8 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
 - Pre-process XML trước khi render với Docxtemplater
 - Chỉ xóa paragraph nếu TẤT CẢ subgroups trong đó đều thỏa điều kiện xóa
 - Không còn logic riêng cho MEN2-6 (đã được thay thế bởi logic subgroup-based)
-
 ### **7. Comma Cleanup (Xóa dấu phẩy thừa)**
-
 **Logic cleanup dấu phẩy thừa từ placeholder rỗng:**
-
 **2 giai đoạn:**
 1. **PRE-RENDER (Trước khi render):**
    - Quét tất cả paragraph trong Word template
@@ -370,9 +360,7 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
 3. Format đẹp (font, spacing, alignment)
 
 ### **Bước 2: Cập nhật config.json**
-
 **✅ Single Source of Truth - Định nghĩa `required` 1 lần duy nhất:**
-
 ```json
 {
   "templates": [
@@ -431,9 +419,7 @@ config.json → configLoader.js → genericFormHandler.js → Form UI
 
 ### **Bước 3: Khởi động TheWord**
 npm start → Template sẵn sàng! ✅
-
 ## 🔧 Field Types
-
 | Type | Description | Example |
 |------|-------------|---------|
 | `text` | Text input | Name, Address |
@@ -445,55 +431,37 @@ npm start → Template sẵn sàng! ✅
 | `land_type_size` | Land type + area | ONT 440 → 440m² ONT (tags + dropdown) |
 | `currency` | Money input | 1,000,000 (tự động tạo MoneyText) |
 | `textarea` | Multi-line text | Notes |
-
 ---
-
 ## 🐛 Troubleshooting
-
 ### **App không khởi động**
-
 ```bash
 rm -rf node_modules
 npm install
 npm start
 ```
-
 ### **Form không hiển thị**
-
-```
 ✅ F12 → Console → Xem lỗi
 ✅ Kiểm tra config.json syntax (JSONLint.com)
 ✅ Restart app (Ctrl+R)
 ```
-
 ### **Export ra Word lỗi**
-
-```
 ✅ Kiểm tra placeholders trong Word: {Name} (không phải {{Name}})
 ✅ Kiểm tra file Word không bị corrupt
 ✅ Xem console logs trong terminal
 ```
-
 ### **Validation báo lỗi dù đã điền đủ**
-
-```
 ✅ Check console: window.visibleSubgroups có chứa subgroup đang điền không?
 ✅ Kiểm tra field có đúng data-ph attribute không
 ✅ F12 → Console → Xem validateFormData() output
 ✅ Reload app (Ctrl+R) để reset visible state
 ```
-
 ### **Tái sử dụng dữ liệu không hoạt động**
-
-```
 ✅ Check console: window.__reusedGroups có chứa subgroup đã chọn không?
 ✅ Kiểm tra config.json có định nghĩa subgroup đúng không
 ✅ Xem console logs: analyzeChanges() type là gì?
 ✅ Subgroup phải được định nghĩa trong fieldMappings
 ```
-
 ## 📊 Performance Benchmarks
-
 | Task | Time |
 |------|------|
 | App startup | ~2s |
@@ -501,73 +469,56 @@ npm start
 | Form render | ~300ms |
 | Export 1 Word | ~2s |
 | Load session data | ~50ms |
-
 ---
-
 ## 🚀 Version History
-
 ### **v4.4** ✅ (Current)
-
 **🎯 Major Changes:**
 - [x] **Auto-generate NameT (Title Case)** - Tự động tạo NameT1, NameT2... từ Name1, Name2... (UPPERCASE → Title Case)
 - [x] **Comma cleanup 2 giai đoạn** - Pre-render tagging + Post-render cleanup, chỉ xử lý paragraph có placeholder
 - [x] **Xóa dấu phẩy thừa** - Tự động xóa ", ,", ", , ,"... (2+ dấu phẩy liên tiếp) từ placeholder rỗng
-
 **✨ Improvements:**
 - [x] NameT tự động generate từ Name với toTitleCase() function
 - [x] Cleanup an toàn: Chỉ xử lý paragraph có `data-has-placeholder` attribute
 - [x] Xóa hoàn toàn dấu phẩy thừa (không thay bằng khoảng trắng)
 - [x] Không động vào paragraph không có placeholder
-
 ### **v4.3** ✅
-
 **🎯 Major Changes:**
 - [x] **Tách biệt Loai_Dat và Loai_Dat_F** - Loai_Dat xuất tên đầy đủ, Loai_Dat_F xuất code + diện tích với m²
 - [x] **Unicode superscript m²** - Tự động chuyển m2 → m² (Unicode U+00B2) trong data và template
 - [x] **Land type size component** - Tags + dropdown cho Loai_Dat_F, input ẩn/hiện khi cần
 - [x] **Loại bỏ logic MEN riêng** - Chỉ dùng logic subgroup-based, code gọn hơn
-
 **✨ Improvements:**
 - [x] Format Loai_Dat_F với code ngắn gọn (440m² ONT) thay vì tên đầy đủ
 - [x] Tự động tạo Loai_Dat từ Loai_Dat_F nếu chưa có
 - [x] Xử lý nhiều format input: "ONT 440", "440m2 ONT", "440m² Đất bằng..." → chuẩn hóa
 - [x] An toàn: Không post-process XML sau render (tránh phá hỏng cấu trúc)
 - [x] Logic xóa dòng tập trung: chỉ dùng subgroup-based, không còn logic MEN riêng
-
 ### **v4.2** ✅
-
 **🎯 Major Changes:**
 - [x] **S_Text tự động** - Field `S` (diện tích) tự động tạo `S_Text` (bằng chữ) tương tự MoneyText
 - [x] **Dynamic form không reload** - Thêm/xóa subgroup không làm mất dữ liệu, chỉ DOM manipulation
 - [x] **Auto-remove empty lines** - Tự động xóa dòng chứa placeholders trống của subgroup ẩn (visible=false)
 - [x] **S field không format** - Xuất số thuần (không dấu phẩy) cho field S trong Word
-
 **✨ Improvements:**
 - [x] UI vẫn format S với dấu phẩy (1,234) nhưng xuất Word là số thuần (1234)
 - [x] Subgroup visible = true: placeholder rỗng thay bằng "" (không xóa dòng)
 - [x] Subgroup visible = false: xóa dòng nếu tất cả placeholders đều rỗng
 - [x] Preserve data khi thêm/xóa subgroup - không mất dữ liệu đã nhập
 - [x] Tối ưu performance - DOM manipulation thay vì full re-render
-
 ### **v4.1** ✅
-
 **🎯 Major Changes:**
 - [x] **Rút gọn code session** - Xóa code không dùng (findGroupDataFromAnyFile, menGroups backward compatibility)
 - [x] **Config-based subgroup detection** - Tự động nhận diện subgroup từ config.json
 - [x] **Cải thiện logic tái sử dụng** - Xử lý thông minh cho NO_CHANGE, ONLY_ADDITIONS, HAS_MODIFICATIONS
 - [x] **Xóa determineGroupByFieldName** - Thay bằng logic dựa trên config (suffixToGroupMap)
-
 **✨ Improvements:**
 - [x] Session storage logic dựa hoàn toàn vào config.json
 - [x] Tự động map field không suffix vào subgroup với suffix = ""
 - [x] Code gọn hơn, dễ maintain hơn
-
 ### **v4.0** ✅
-
 **🎯 Major Changes:**
 - [x] **Clean code architecture** - Giảm 60% code (4,600 → 2,800 dòng)
 - [x] **Universal form renderer** - genericFormHandler.js thay thế formHandler.js cũ
-
 **✨ New Features:**
 - [x] **Tái sử dụng dữ liệu** - Merge thông minh, auto-detect, preserve data
 - [x] **Xóa dòng** - Click [X] để xóa toàn bộ dữ liệu dòng
@@ -575,24 +526,17 @@ npm start
 - [x] **Ẩn/hiện subgroup** - Toggle để form gọn gàng
 - [x] **Mở thư mục output** - Button mở trực tiếp folder sau khi xuất
 - [x] **Smart validation** - Chỉ validate subgroup visible, không validate ẩn
-
 ### **v5.0** (Future)
 - [ ] Electron-builder setup (đóng gói .exe)
 - [ ] Export history (lịch sử văn bản đã tạo)
 - [ ] Multiple file export (ZIP)
 - [ ] Template preview
 - [ ] Auto-update mechanism
-
 ---
-
 ## 📄 License
-
 **Private** - All rights reserved
-
 ---
-
 ## 💻 Tech Stack
-
 - **Platform:** Electron 38.2.2
 - **Template Engine:** Docxtemplater 3.66.7
 - **UI Framework:** Vanilla JS (no framework, lightweight)
@@ -600,25 +544,19 @@ npm start
 - **File Processing:** Node.js fs, path, adm-zip
 - **Document Generation:** PizZip 3.2.0, Docxtemplater
 - **Expressions:** Angular-expressions 1.5.1
-
 ---
-
 ## 🔌 Offline Capability
-
 ### **✅ 100% Offline - Hoàn toàn có thể sử dụng offline**
-
 **Đã cài đặt dependencies:**
 ```bash
 npm install  # Chạy 1 lần khi setup
 npm start    # Chạy offline mãi mãi ✅
 ```
-
 **Không cần internet vì:**
 - ✅ Tất cả libraries load từ `node_modules/` (local)
 - ✅ Tất cả data file đều local (`address.json`, `land_types.json`)
 - ✅ Không có API calls, không có external requests
 - ✅ Template files đều nằm trong project
-
 **Copy sang máy khác:**
 ```bash
 1. Copy toàn bộ folder TheWord
