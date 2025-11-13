@@ -35,9 +35,9 @@
 
   "groups": [
     { "id": "BCN", "label": "Bên chuyển nhượng", "order": 1, "description": "Người chuyển nhượng tài sản" },
-    { "id": "BNCN", "label": "Bên nhận chuyển nhượng GS25", "order": 2, "description": "Người nhận chuyển nhượng tài sản" },
+    { "id": "BNCN", "label": "Bên nhận chuyển nhượng", "order": 2, "description": "Người nhận chuyển nhượng tài sản" },
     { "id": "BCT", "label": "Bên công trình", "order": 1, "description": "Người chuyển nhượng công trình" },
-    { "id": "NCN", "label": "Bên nhận chuyển nhượng GS26", "order": 2, "description": "Người nhận chuyển nhượng tài sản" },
+    { "id": "NCN", "label": "Bên nhận chuyển nhượng", "order": 2, "description": "Người nhận chuyển nhượng tài sản" },
     { "id": "LAND", "label": "Thông tin thửa đất", "order": 3, "description": "Thông tin đất đai, nhà cửa" }
   ],
 

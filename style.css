@@ -60,7 +60,6 @@ body {
 
 .data-panel,
 .template-panel {
-  background: white;
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -70,10 +69,14 @@ body {
 
 .data-panel {
   flex: 2;
+  background: #bbdefb;
+  border: 2px solid #2196F3;
 }
 
 .template-panel {
   flex: 1;
+  background: #ffe0b2;
+  border: 2px solid #ff9800;
 }
 
 .panel-header {
