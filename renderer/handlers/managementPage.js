@@ -74,10 +74,11 @@
     /**
      * Open File Management
      */
-    openFileManagement() {
+    async openFileManagement() {
       this.hide();
-      // TODO: Implement file management page
-      alert('🚧 Tính năng Quản lý File Word đang được phát triển');
+      if (window.fileManager) {
+        await window.fileManager.init();
+      }
     }
 
     /**

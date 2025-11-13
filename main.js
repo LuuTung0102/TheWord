@@ -497,3 +497,81 @@ ipcMain.handle("open-output-folder", async (event, filePath) => {
     return { success: false, error: err.message };
   }
 });
+
+ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, fileName }) => {
+  try {
+    console.log("📋 copy-file-to-folder: Copying from:", sourcePath);
+    console.log("📋 copy-file-to-folder: To folder:", targetFolder);
+    
+    if (!fs.existsSync(sourcePath)) {
+      throw new Error('Source file not found');
+    }
+    
+    if (!fs.existsSync(targetFolder)) {
+      fs.mkdirSync(targetFolder, { recursive: true });
+    }
+    
+    let targetPath = path.join(targetFolder, fileName);
+    let finalFileName = fileName;
+    let counter = 1;
+    
+    // Check if file exists, add counter if needed
+    while (fs.existsSync(targetPath)) {
+      const ext = path.extname(fileName);
+      const name = path.basename(fileName, ext);
+      finalFileName = `${name}_${counter}${ext}`;
+      targetPath = path.join(targetFolder, finalFileName);
+      counter++;
+    }
+    
+    fs.copyFileSync(sourcePath, targetPath);
+    console.log(`✅ copy-file-to-folder: Copied to: ${targetPath}`);
+    
+    // Clean up temp file
+    try {
+      fs.unlinkSync(sourcePath);
+    } catch (cleanupError) {
+      console.warn("⚠️ Could not clean up temp file:", cleanupError);
+    }
+    
+    return finalFileName;
+  } catch (err) {
+    console.error("❌ copy-file-to-folder: Error:", err);
+    throw err;
+  }
+});
+
+ipcMain.handle("open-file-path", async (event, filePath) => {
+  try {
+    const { shell } = require("electron");
+    console.log("👁️ open-file-path: Opening:", filePath);
+    
+    if (!fs.existsSync(filePath)) {
+      throw new Error('File not found');
+    }
+    
+    await shell.openPath(filePath);
+    console.log("✅ open-file-path: Opened successfully");
+    return { success: true };
+  } catch (err) {
+    console.error("❌ open-file-path: Error:", err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle("delete-file-path", async (event, filePath) => {
+  try {
+    console.log("🗑️ delete-file-path: Deleting:", filePath);
+    
+    if (!fs.existsSync(filePath)) {
+      throw new Error('File not found');
+    }
+    
+    fs.unlinkSync(filePath);
+    console.log("✅ delete-file-path: Deleted successfully");
+    return { success: true };
+  } catch (err) {
+    console.error("❌ delete-file-path: Error:", err);
+    return { success: false, error: err.message };
+  }
+});
