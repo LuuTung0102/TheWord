@@ -13,11 +13,11 @@
         <main class="main-content">
             <div class="data-panel">
                 <div class="panel-header">
-                    <h2 class="panel-title">
-                        <span class="panel-icon">📝</span>
-                        Nhập dữ liệu
-                    </h2>
+                     <button id="managePeopleBtn" class="manage-people-header-btn" title="Quản lý dữ liệu PERSON">
+                            ⚙️ Quản lý
+                        </button>
                     <div class="panel-status">
+                       
                         <span class="status-indicator" id="formStatus">Chưa chọn file</span>
                     </div>
                 </div>
@@ -115,8 +115,10 @@
     <script src="renderer/config/configLoader.js"></script>
     <script src="renderer/core/utils.js"></script>
     <script src="renderer/core/localStorageLoader.js"></script>
+    <script src="renderer/core/personDataService.js"></script>
     <script src="renderer/core/sessionStorageManager.js"></script>
     <script src="renderer/core/formValidator.js"></script>
+    <script src="renderer/handlers/personManager.js"></script>
     <script src="renderer/handlers/genericFormHandler.js"></script>
     <script src="renderer/handlers/templateManager.js"></script>
     <script src="renderer/handlers/exportHandler.js"></script>
@@ -146,6 +148,25 @@
                 const app = new window.MainApp();
                 window.mainAppInstance = app; 
                 app.init();
+            }
+            
+            // Setup manage people button
+            const managePeopleBtn = document.getElementById('managePeopleBtn');
+            if (managePeopleBtn) {
+                managePeopleBtn.addEventListener('click', async () => {
+                    if (window.personManager) {
+                        await window.personManager.init(async () => {
+                            // Callback để refresh person-buttons nếu có
+                            const personButtonsContainers = document.querySelectorAll('[id^="person-buttons-"]');
+                            for (const container of personButtonsContainers) {
+                                const groupKey = container.getAttribute('data-group');
+                                if (groupKey && typeof window.refreshPersonButtons === 'function') {
+                                    await window.refreshPersonButtons(groupKey);
+                                }
+                            }
+                        });
+                    }
+                });
             }
         });
     </script>

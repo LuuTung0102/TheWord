@@ -69,7 +69,7 @@
             "name": "Noi_Cap",
             "label": "Nơi cấp",
             "type": "select",
-            "options": ["Cục Cảnh sát QLHC về TTXH cấp", "Công an T. Đắk Lắk cấp"],
+            "options": ["Cục Cảnh sát QLHC về TTXH", "Công an T. Đắk Lắk"],
             "required": true
           },
           {

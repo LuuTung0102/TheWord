@@ -71,7 +71,7 @@
         { "name": "Name", "label": "Họ và tên", "type": "text", "required": true },
         { "name": "Date", "label": "Ngày sinh", "type": "date", "required": true },
         { "name": "CCCD", "label": "CCCD", "type": "number", "required": true },
-        { "name": "Noi_Cap", "label": "Nơi cấp", "type": "select", "options": ["Cục Cảnh sát QLHC về TTXH cấp", "Công an T. Đắk Lắk cấp"], "required": true },
+        { "name": "Noi_Cap", "label": "Nơi cấp", "type": "select", "options": ["Cục Cảnh sát QLHC về TTXH", "Công an T. Đắk Lắk"], "required": true },
         { "name": "Ngay_Cap", "label": "Ngày cấp", "type": "date", "required": true },
         { "name": "Address", "label": "Địa chỉ thường trú", "type": "address-select", "required": true }
       ]

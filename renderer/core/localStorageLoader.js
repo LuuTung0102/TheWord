@@ -45,9 +45,18 @@
     return null;
   }
 
+  /**
+   * Clear saved people cache
+   */
+  function clearSavedPeopleCache() {
+    savedPeopleCache = null;
+    console.log('✅ Cleared saved people cache');
+  }
+
   if (typeof window !== 'undefined') {
     window.loadSavedPeople = loadSavedPeople;
     window.getPersonById = getPersonById;
+    window.clearSavedPeopleCache = clearSavedPeopleCache;
   }
 })();
 

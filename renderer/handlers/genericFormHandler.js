@@ -136,6 +136,11 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
 }
 
 async function renderGenericForm(placeholders, config, folderPath) {
+  // Load labels từ local_storage.json nếu chưa load
+  if (window.personDataService && !window.personDataService.labelsLoaded) {
+    await window.personDataService.loadPeople();
+  }
+  
   window.__renderParams = { placeholders, config, folderPath };
   const phMapping = window.buildPlaceholderMapping(config, placeholders);
   const groupLabels = window.getGroupLabels(config);
@@ -748,6 +753,106 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
   `;
 }
 
+/**
+ * Refresh person-buttons sau khi thay đổi trong PersonManager
+ */
+async function refreshPersonButtons(groupKey) {
+  // Clear cache
+  if (typeof window.savedPeopleCache !== 'undefined') {
+    window.savedPeopleCache = null;
+  }
+  
+  // Reload saved people
+  const savedPeople = window.loadSavedPeople ? await window.loadSavedPeople() : [];
+  
+  // Find và update person-buttons container
+  const buttonsContainer = document.getElementById(`person-buttons-${groupKey}`);
+  if (!buttonsContainer) return;
+  
+  // Re-render buttons
+  buttonsContainer.innerHTML = savedPeople.map(person => `
+    <button type="button" 
+      class="person-btn" 
+      data-person-id="${person.id}"
+      data-group="${groupKey}"
+      style="
+        padding: 15px 20px;
+        margin: 10px 10px 10px 0;
+        font-size: 16px;
+        font-weight: normal;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        background: white;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 150px;
+      "
+      onmouseover="this.style.borderColor='#4CAF50'"
+      onmouseout="if(!this.classList.contains('active')) this.style.borderColor='#ddd'"
+    >
+      ${person.name}
+    </button>
+  `).join('');
+  
+  // Re-setup event listeners
+  const buttons = buttonsContainer.querySelectorAll('.person-btn');
+  buttons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      const clickedButton = e.currentTarget;
+      const personId = clickedButton.getAttribute('data-person-id');
+      const previewDiv = document.getElementById(`preview-${groupKey}`);
+      const previewContent = document.getElementById(`preview-content-${groupKey}`);
+      
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.fontWeight = 'normal';
+        btn.style.borderColor = '#ddd';
+        btn.style.background = 'white';
+        btn.style.color = '#333';
+      });
+      
+      clickedButton.classList.add('active');
+      clickedButton.style.fontWeight = 'bold';
+      clickedButton.style.borderColor = '#4CAF50';
+      clickedButton.style.background = '#4CAF50';
+      clickedButton.style.color = 'white';
+      
+      if (!window.__reusedGroups) window.__reusedGroups = new Set();
+      window.__reusedGroups.add(`localStorage:${groupKey}`);
+      
+      const person = window.getPersonById ? window.getPersonById(personId) : null;
+      
+      if (!person) {
+        previewDiv.style.display = 'none';
+        return;
+      }
+      
+      let html = `<p style="margin-bottom: 10px; font-size: 16px;"><strong>📋 ${person.name}</strong></p>`;
+      html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">';
+      
+      Object.keys(person.data).forEach(key => {
+        const value = person.data[key];
+        if (value) {
+          const label = window.personDataService ? window.personDataService.getLabel(key) : key;
+          html += `<div style="padding: 8px; background: white; border-radius: 4px;"><strong>${label}:</strong> ${value}</div>`;
+        }
+      });
+      
+      html += '</div>';
+      previewContent.innerHTML = html;
+      previewDiv.style.display = 'block';
+    });
+  });
+  
+  console.log('✅ Person buttons refreshed');
+}
+
+// Expose refreshPersonButtons to window
+if (typeof window !== 'undefined') {
+  window.refreshPersonButtons = refreshPersonButtons;
+}
+
 function setupPersonSelectionListeners(groupSources, grouped) {
   Object.keys(groupSources).forEach(groupKey => {
     if (groupSources[groupKey] !== "localStorage") return;
@@ -794,7 +899,8 @@ function setupPersonSelectionListeners(groupSources, grouped) {
         Object.keys(person.data).forEach(key => {
           const value = person.data[key];
           if (value) {
-            html += `<div style="padding: 8px; background: white; border-radius: 4px;"><strong>${key}:</strong> ${value}</div>`;
+            const label = window.personDataService ? window.personDataService.getLabel(key) : key;
+            html += `<div style="padding: 8px; background: white; border-radius: 4px;"><strong>${label}:</strong> ${value}</div>`;
           }
         });
         

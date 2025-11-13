@@ -992,3 +992,319 @@ label.required::after {
 .suggestion-item:last-child {
   border-bottom: none;
 }
+
+
+/* ========================================
+   Person Manager Modal Styles
+   ======================================== */
+
+.person-manager-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+}
+
+.person-manager-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.person-manager-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 900px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.person-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.person-manager-header h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #333;
+}
+
+.person-manager-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.person-manager-close:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.person-manager-body {
+  padding: 20px 25px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.person-manager-actions {
+  margin-bottom: 20px;
+}
+
+.person-add-btn {
+  padding: 12px 24px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.person-add-btn:hover {
+  background: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.person-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.person-item {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  background: #fafafa;
+  transition: all 0.2s;
+}
+
+.person-item:hover {
+  border-color: #2196F3;
+  background: #f5f9ff;
+}
+
+.person-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.person-item-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.person-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.person-edit-btn, .person-delete-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.person-edit-btn {
+  background: #2196F3;
+  color: white;
+}
+
+.person-edit-btn:hover {
+  background: #1976D2;
+}
+
+.person-delete-btn {
+  background: #f44336;
+  color: white;
+}
+
+.person-delete-btn:hover {
+  background: #d32f2f;
+}
+
+.person-item-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.person-detail-row {
+  display: flex;
+  gap: 5px;
+}
+
+.person-detail-label {
+  font-weight: 600;
+  color: #555;
+}
+
+.person-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.person-empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.person-form-container {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 15px;
+}
+
+.person-form-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.person-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.person-form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.person-form-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.person-form-label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #555;
+  font-size: 14px;
+}
+
+.person-form-input, .person-form-select {
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.person-form-input:focus, .person-form-select:focus {
+  outline: none;
+  border-color: #2196F3;
+}
+
+.person-form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.person-form-cancel, .person-form-save {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.person-form-cancel {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.person-form-cancel:hover {
+  background: #d0d0d0;
+}
+
+.person-form-save {
+  background: #4CAF50;
+  color: white;
+}
+
+.person-form-save:hover {
+  background: #45a049;
+}
+
+.person-error-message {
+  background: #ffebee;
+  color: #c62828;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+
+/* ========================================
+   Manage People Header Button
+   ======================================== */
+
+.manage-people-header-btn {
+  padding: 8px 16px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-right: 15px;
+}
+
+.manage-people-header-btn:hover {
+  background: #1976D2;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+.manage-people-header-btn:active {
+  transform: translateY(0);
+}

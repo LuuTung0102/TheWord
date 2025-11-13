@@ -456,6 +456,22 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
 });
 
 
+ipcMain.handle("write-local-storage", async (event, data) => {
+  try {
+    const localStoragePath = path.join(__dirname, "renderer", "config", "local_storage.json");
+    console.log("💾 write-local-storage: Writing to:", localStoragePath);
+    
+    // Write file với format đẹp
+    fs.writeFileSync(localStoragePath, JSON.stringify(data, null, 2), 'utf8');
+    
+    console.log("✅ write-local-storage: Successfully saved");
+    return { success: true };
+  } catch (err) {
+    console.error("❌ write-local-storage: Error:", err);
+    return { success: false, error: err.message };
+  }
+});
+
 ipcMain.handle("open-output-folder", async (event, filePath) => {
   try {
     const { shell } = require("electron");

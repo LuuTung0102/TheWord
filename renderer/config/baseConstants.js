@@ -9,6 +9,12 @@ const BASE_PLACEHOLDERS = {
     type: "text",
     order: 2
   },
+
+  Relation: {
+    type: "select",
+    options: ["Con", "Vợ", "Chồng"],
+    order: 3
+  },
   
   Date: {
     type: "date",
@@ -56,11 +62,7 @@ const BASE_PLACEHOLDERS = {
 
   ///////////////////////////////////////////////////////////////////
 
-  Relation: {
-    type: "select",
-    options: ["Con", "Vợ", "Chồng"],
-    order: 3
-  },
+  
   
   QSH: {
     type: "text",
