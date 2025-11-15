@@ -3,7 +3,7 @@
     "name": "T. Đắk Lắk",
     "districts": [
       {
-        "name": "TP Buôn Ma Thuột",
+        "name": "TP buôn Ma Thuột",
         "wards": [
           {
             "name": "Phường Tân Lập",
@@ -65,8 +65,8 @@
               "TDP 13",
               "TDP 14",
               "TDP 15",
-              "Buôn Êrang",
-              "Buôn Ky"
+              "buôn Êrang",
+              "buôn Ky"
             ]
           },
           {
@@ -129,7 +129,7 @@
           {
             "name": "Phường Ea Tam",
             "villages": [
-              "Buôn Tân",
+              "buôn Tân",
               "A Trung",
               "Tùng Toét",
               "Tùng Tủh",
@@ -175,7 +175,7 @@
         ]
       },
       {
-        "name": "Thị xã Buôn Hồ",
+        "name": "Thị xã buôn Hồ",
         "wards": [
           {
             "name": "Phường An Lạc",
@@ -322,7 +322,7 @@
         ]
       },
       {
-        "name": "H.Buôn Đôn",
+        "name": "H.buôn Đôn",
         "wards": [
           {
             "name": "xã Krông Na",
@@ -531,10 +531,10 @@
               "TDP 10",
               "TDP 11",
               "TDP 12",
-              "Buôn Krông Pách",
-              "Buôn Ma Đê",
-              "Buôn Ea Tung",
-              "Buôn Ea Ô"
+              "buôn Krông Pách",
+              "buôn Ma Đê",
+              "buôn Ea Tung",
+              "buôn Ea Ô"
             ]
           },
           {
@@ -557,16 +557,17 @@
           {
             "name": "xã Ea Sô",
             "villages": [
-              "Thôn 1",
-              "Thôn 2",
-              "Thôn 3",
-              "Thôn 4",
-              "Thôn 5",
-              "Thôn 6",
-              "Thôn 7",
-              "Thôn 8",
-              "Thôn 9",
-              "Thôn 10"
+              "thôn 1",
+              "thôn 2",
+              "thôn 3",
+              "thôn 4",
+              "thôn 5",
+              "thôn 6",
+              "thôn 7",
+              "thôn 8",
+              "thôn 9",
+              "thôn 10",
+              "buôn Ea Puk"
             ]
           },
           {
@@ -584,12 +585,12 @@
               "Cư An",
               "An Cư",
               "Hợp Thành",
-              "Buôn M’Oa",
-              "Buôn Duôn Tại",
-              "Buôn M’ar",
-              "Buôn M’hăng",
-              "Buôn M’Briu",
-              "Buôn Dja"
+              "buôn M’Oa",
+              "buôn Duôn Tại",
+              "buôn M’ar",
+              "buôn M’hăng",
+              "buôn M’Briu",
+              "buôn Dja"
             ]
           },
           {
@@ -599,25 +600,25 @@
           {
             "name": "xã Ea Đar",
             "villages": [
-              "Buôn Sứk",
-              "Buôn Tăng Sinh",
-              "Thôn 1",
-              "Thôn 2",
-              "Thôn 3",
-              "Thôn 4",
-              "Thôn 5",
-              "Thôn 6",
-              "Thôn 7",
-              "Thôn 8",
-              "Thôn 9",
-              "Thôn 10",
-              "Thôn 11",
-              "Thôn 12",
-              "Thôn 13",
-              "Thôn 14",
-              "Thôn 15",
-              "Thôn 16",
-              "Thôn Hữu Nghị"
+              "buôn Sứk",
+              "buôn Tăng Sinh",
+              "thôn 1",
+              "thôn 2",
+              "thôn 3",
+              "thôn 4",
+              "thôn 5",
+              "thôn 6",
+              "thôn 7",
+              "thôn 8",
+              "thôn 9",
+              "thôn 10",
+              "thôn 11",
+              "thôn 12",
+              "thôn 13",
+              "thôn 14",
+              "thôn 15",
+              "thôn 16",
+              "thôn Hữu Nghị"
             ]
           },
           {
@@ -841,7 +842,7 @@
         "name": "H. Krông A Na",
         "wards": [
           {
-            "name": "TT.Buôn Trấp",
+            "name": "TT.buôn Trấp",
             "villages": []
           },
           {
@@ -894,11 +895,11 @@
             "villages": []
           },
           {
-            "name": "xã Buôn Triết",
+            "name": "xã buôn Triết",
             "villages": []
           },
           {
-            "name": "xã Buôn Tría",
+            "name": "xã buôn Tría",
             "villages": []
           },
           {
