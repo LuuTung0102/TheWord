@@ -4,8 +4,6 @@
   function normalizeDataForComparison(data) {
     const normalized = {};
     Object.keys(data).forEach((key) => {
-      // Skip synced fields to avoid false positives
-      // If Loai_Dat_D exists, skip Loai_Dat_F and Loai_Dat
       if (key === 'Loai_Dat_F' && data.Loai_Dat_D) return;
       if (key === 'Loai_Dat' && (data.Loai_Dat_D || data.Loai_Dat_F)) return;
       
@@ -14,6 +12,10 @@
         value = value.replace(/\./g, "");
       } else if (key.includes("Money") && typeof value === "string") {
         value = value.replace(/,/g, "");
+      } else if (key.includes("SDT") && typeof value === "string") {
+        value = value.replace(/\./g, "");
+      } else if (key.includes("MST") && typeof value === "string") {
+        value = value.replace(/\./g, "");
       }
       normalized[key] = value;
     });
@@ -73,191 +75,193 @@
     return false;
   }
 
+  function getGroupType(groupKey) {
+    if (groupKey.startsWith('MEN')) return 'MEN';
+    if (groupKey === 'INFO') return 'INFO';
+    return groupKey; // For other groups, treat the key itself as the type
+  }
+
+  // --- helper: merge duplicates into existingData ---
+  function mergeDuplicateGroupsAcrossFiles(dataGroups, existingData, fileName) {
+    if (!dataGroups || !existingData) return;
+    const groupsToDelete = new Set();
+
+    for (const [groupKey, groupData] of Object.entries(dataGroups)) {
+      const normalizedCurrent = normalizeDataForComparison(groupData);
+      const currentType = getGroupType(groupKey);
+
+      // compare with all saved files
+      for (const [otherFile, otherFileData] of Object.entries(existingData)) {
+        if (!otherFileData || !otherFileData.dataGroups) continue;
+
+        for (const [otherGroupKey, otherGroupData] of Object.entries(otherFileData.dataGroups)) {
+          // skip if same file (we'll handle same-file logic elsewhere)
+          if (otherFile === fileName) continue;
+
+          const otherType = getGroupType(otherGroupKey);
+          if (currentType !== otherType) continue;
+
+          const normalizedOther = normalizeDataForComparison(otherGroupData);
+          const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
+
+          // if identical or current only adds fields -> merge into other file
+          if (changeAnalysis.type === "NO_CHANGE" || changeAnalysis.type === "ONLY_ADDITIONS") {
+            existingData[otherFile].dataGroups[otherGroupKey] = {
+              ...normalizedOther,
+              ...normalizedCurrent
+            };
+            groupsToDelete.add(groupKey);
+            console.log(`🔄 Merged ${groupKey} (from ${fileName}) --> ${otherGroupKey} (in ${otherFile})`);
+            // don't `return` here — continue checking other groups
+            break; // stop scanning other groups in this otherFile for this groupKey
+          }
+        }
+        if (groupsToDelete.has(groupKey)) break; // go next groupKey
+      }
+    }
+
+    // perform deletions after scanning
+    for (const g of groupsToDelete) {
+      delete dataGroups[g];
+    }
+  }
+
+  // --- corrected saveFormData ---
   function saveFormData(fileName, formData, reusedGroups, reusedGroupSources, config) {
     try {
       console.log('💾 saveFormData called:', { fileName, formData });
-      
-      // Check if Loai_Dat_D exists in formData
-      if (formData.Loai_Dat_D) {
-        console.log('✅ Loai_Dat_D found in formData:', formData.Loai_Dat_D);
-      } else {
-        console.warn('⚠️ Loai_Dat_D NOT found in formData');
-      }
-      
+
       const existingData = getAllSessionData();
       let dataGroups = parseFormDataToGroups(formData, config);
-      
       console.log('📦 Parsed data groups:', dataGroups);
 
+      // First: remove groups that are supplied from localStorage via config
       if (config?.fieldMappings) {
         config.fieldMappings.forEach((mapping) => {
           if (mapping.source === "localStorage" && mapping.subgroups) {
             mapping.subgroups.forEach((subgroup) => {
-              const groupId =
-                typeof subgroup === "string" ? subgroup : subgroup.id;
+              const groupId = typeof subgroup === "string" ? subgroup : subgroup.id;
               if (dataGroups[groupId]) delete dataGroups[groupId];
             });
           }
         });
       }
 
+      // NEW: merge duplicates across existingData BEFORE creating a new session entry
+      mergeDuplicateGroupsAcrossFiles(dataGroups, existingData, fileName);
+
+      // Process reusedGroups (existing logic) - keep but ensure it uses updated dataGroups & existingData
       const groupsToRemove = [];
-      
       if (reusedGroups?.size > 0) {
         reusedGroups.forEach((reusedKey) => {
-          
           const isFromLocalStorage = reusedKey.startsWith("localStorage:");
-          const groupKey = isFromLocalStorage
-            ? reusedKey.replace("localStorage:", "")
-            : reusedKey;
-          
-          if (!dataGroups[groupKey]) { return; }
+          const groupKey = isFromLocalStorage ? reusedKey.replace("localStorage:", "") : reusedKey;
+          if (!dataGroups[groupKey]) return;
 
           if (isFromLocalStorage) {
             groupsToRemove.push(groupKey);
             return;
           }
 
-        
-          const sourceInfo = reusedGroupSources?.get?.(reusedKey); 
-          
-          if (!sourceInfo || !sourceInfo.sourceData) { return;}
-          
+          const sourceInfo = reusedGroupSources?.get?.(reusedKey);
+          if (!sourceInfo || !sourceInfo.sourceData) return;
+
           const sourceFileName = sourceInfo.sourceFileName;
-          const sourceGroupKey = sourceInfo.sourceGroupKey; 
+          const sourceGroupKey = sourceInfo.sourceGroupKey;
           const sourceData = sourceInfo.sourceData;
           const isSameFile = sourceFileName === fileName;
 
-          const normalizedCurrent = normalizeDataForComparison(
-            dataGroups[groupKey]
-          );
+          const normalizedCurrent = normalizeDataForComparison(dataGroups[groupKey]);
           const normalizedSource = normalizeDataForComparison(sourceData);
-          
-         
-          
-          const changeAnalysis = analyzeChanges(
-            normalizedSource,
-            normalizedCurrent
-          );
+          const changeAnalysis = analyzeChanges(normalizedSource, normalizedCurrent);
 
-          const isSubgroup = isSubgroupInConfig(groupKey, config);
-          if (isSubgroup) {
-            if (changeAnalysis.type === "NO_CHANGE") {
-              if (isSameFile) {
-              } else {
-                groupsToRemove.push(groupKey);
-              }
-            } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-              if (isSameFile) {
-                dataGroups[groupKey] = {
-                  ...normalizedSource,
-                  ...normalizedCurrent,
-                };
-              } else {
-                dataGroups[groupKey] = {
-                  ...normalizedSource,
-                  ...normalizedCurrent,
-                };
-                if (existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
-                  delete existingData[sourceFileName].dataGroups[sourceGroupKey];
-                }
-              }
+          if (changeAnalysis.type === "NO_CHANGE" && !isSameFile) {
+            groupsToRemove.push(groupKey);
+          } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
+            if (!isSameFile && existingData[sourceFileName]) {
+              // merge into source file and remove current
+              existingData[sourceFileName].dataGroups = existingData[sourceFileName].dataGroups || {};
+              existingData[sourceFileName].dataGroups[sourceGroupKey] = {
+                ...normalizedSource,
+                ...normalizedCurrent
+              };
+              groupsToRemove.push(groupKey);
             } else {
-            }
-          } else {
-            if (changeAnalysis.type === "NO_CHANGE") {
-              if (isSameFile) { 
-              } else {
-                groupsToRemove.push(groupKey);
-              }
-            } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-              if (isSameFile) {
-                dataGroups[groupKey] = {
-                  ...normalizedSource,
-                  ...normalizedCurrent,
-                };
-              } else {
-                dataGroups[groupKey] = {
-                  ...normalizedSource,
-                  ...normalizedCurrent,
-                };
-                if (existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
-                  delete existingData[sourceFileName].dataGroups[sourceGroupKey];
-                }
-              }
-            } else {
+              dataGroups[groupKey] = { ...normalizedSource, ...normalizedCurrent };
             }
           }
+          // HAS_MODIFICATIONS => keep current (no automatic override)
         });
       }
-      groupsToRemove.forEach((groupKey) => {
-        delete dataGroups[groupKey];
-      });
- 
-      const remainingGroups = Object.keys(dataGroups);
-      const processedReusedKeys = new Set(Array.from(reusedGroups || []).map(key => 
-        key.startsWith("localStorage:") ? key.replace("localStorage:", "") : key
+
+      // delete groups marked by reusedGroups
+      groupsToRemove.forEach(g => delete dataGroups[g]);
+
+      // Deduplicate remaining groups against existingData (if any left)
+      const processedReusedKeys = new Set(Array.from(reusedGroups || []).map(k =>
+        k.startsWith("localStorage:") ? k.replace("localStorage:", "") : k
       ));
-      
-      remainingGroups.forEach(groupKey => {
-        if (processedReusedKeys.has(groupKey)) return;
-        const isSubgroup = isSubgroupInConfig(groupKey, config);
-        if (isSubgroup) return;
-        
-        const currentGroupData = dataGroups[groupKey];
-        const normalizedCurrent = normalizeDataForComparison(currentGroupData);
+
+      for (const groupKey of Object.keys(dataGroups)) {
+        if (processedReusedKeys.has(groupKey)) continue;
+        if (isSubgroupInConfig(groupKey, config)) continue;
+
+        const normalizedCurrent = normalizeDataForComparison(dataGroups[groupKey]);
+
         for (const [otherFileName, otherFileData] of Object.entries(existingData)) {
-          if (otherFileName === fileName) continue; 
+          if (otherFileName === fileName) continue;
           const otherGroups = otherFileData.dataGroups || {};
-          if (otherGroups[groupKey]) {
-            const otherGroupData = otherGroups[groupKey];
-            const normalizedOther = normalizeDataForComparison(otherGroupData);
-            const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
-            if (changeAnalysis.type === "NO_CHANGE") {
-              groupsToRemove.push(groupKey);
-              delete dataGroups[groupKey];
-              break;
-            }
+          if (!otherGroups[groupKey]) continue;
+
+          const normalizedOther = normalizeDataForComparison(otherGroups[groupKey]);
+          const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
+
+          if (changeAnalysis.type === "NO_CHANGE") {
+            // identical -> remove current group
+            delete dataGroups[groupKey];
+            break;
+          } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
+            // merge into existing other file and remove current
+            existingData[otherFileName].dataGroups[groupKey] = {
+              ...normalizedOther,
+              ...normalizedCurrent
+            };
+            delete dataGroups[groupKey];
+            break;
           }
+          // HAS_MODIFICATIONS -> keep current
         }
+      }
+
+      // cleanup: remove empty files in existingData
+      Object.keys(existingData).forEach(f => {
+        const fd = existingData[f];
+        if (fd?.dataGroups && Object.keys(fd.dataGroups).length === 0) delete existingData[f];
       });
 
-      Object.keys(existingData).forEach(file => {
-        const fileData = existingData[file];
-        if (fileData.dataGroups && Object.keys(fileData.dataGroups).length === 0) {
-          delete existingData[file];
-        }
-      });
-
+      // If nothing to save for current file, still persist existingData (because merges may have happened)
       if (Object.keys(dataGroups).length === 0) {
-        console.log('⚠️ No data groups to save');
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+        console.log('⚠️ No data groups to save for current file after merging/deduplication.');
         return false;
       }
-      
-      console.log('💾 Saving to session storage:', { fileName, dataGroups });
-      
+
+      // Save resulting state (new or updated file)
       existingData[fileName] = {
         fileName,
         dataGroups,
-        rawData: formData,
+        rawData: formData
       };
-
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
-      
-      console.log('✅ Session storage saved successfully');
-      
-      // Verify Loai_Dat_D was saved
-      const savedData = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
-      if (savedData[fileName]?.rawData?.Loai_Dat_D) {
-        console.log('✅ Loai_Dat_D verified in session storage:', savedData[fileName].rawData.Loai_Dat_D);
-      } else {
-        console.warn('⚠️ Loai_Dat_D NOT found in saved session storage');
-      }
+      console.log('✅ Session storage saved successfully (with merges applied).');
+
       return true;
-    } catch (error) {
+    } catch (err) {
+      console.error('saveFormData error', err);
       return false;
     }
   }
+
 
   function parseFormDataToGroups(formData, config) {
     const groups = {};
