@@ -1392,7 +1392,7 @@ function fillAddressField(placeholder, addressString) {
   
   const districtSelect = addressGroup.querySelector('select[data-level="district"]');
   const wardSelect = addressGroup.querySelector('select[data-level="ward"]');
-  const villageInput = addressGroup.querySelector('input[data-level="village"]');
+  const villageElement = addressGroup.querySelector('select[data-level="village"], input[data-level="village"]');
   
   const provinceName = parts[parts.length - 1];
   const provinceOption = Array.from(provinceSelect.options).find(opt => 
@@ -1414,7 +1414,12 @@ function fillAddressField(placeholder, addressString) {
     }
     
     setTimeout(() => {
-      const wardName = parts[0];
+      // If 4 parts: [village, ward, district, province]
+      // If 3 parts: [ward, district, province]
+      const wardIndex = parts.length === 4 ? 1 : 0;
+      const villageIndex = 0;
+      
+      const wardName = parts[wardIndex];
       const wardOption = Array.from(wardSelect.options).find(opt => 
         opt.text.includes(wardName.replace('Xã ', '').replace('Phường ', '').replace('TT. ', ''))
       );
@@ -1422,8 +1427,29 @@ function fillAddressField(placeholder, addressString) {
         wardSelect.value = wardOption.value;
         wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
       }
-      if (parts.length === 4 && villageInput) {
-        villageInput.value = parts[0];
+      
+      // Fill village if exists (4 parts)
+      if (parts.length === 4 && villageElement) {
+        setTimeout(() => {
+          const villageName = parts[villageIndex];
+          
+          if (villageElement.tagName === 'SELECT') {
+            // It's a select dropdown
+            const villageOption = Array.from(villageElement.options).find(opt => 
+              opt.text.includes(villageName.replace('Thôn ', '').replace('Buôn ', ''))
+            );
+            if (villageOption) {
+              villageElement.value = villageOption.value;
+              villageElement.dispatchEvent(new Event('change', { bubbles: true }));
+              console.log('✅ Filled village select:', villageName);
+            }
+          } else {
+            // It's an input field
+            villageElement.value = villageName;
+            villageElement.dispatchEvent(new Event('input', { bubbles: true }));
+            console.log('✅ Filled village input:', villageName);
+          }
+        }, 100);
       }
     }, 100);
   }, 100);
