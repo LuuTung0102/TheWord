@@ -8,7 +8,7 @@
 
   "templates": [
     {
-      "id": "hd-pc-testtest",
+      "id": "hd-pc-test",
       "filename": "test.docx",
       "name": "Hợp đồng phân chia tài sản thừa kế",
       "description": "Phân chia tài sản thừa kế",

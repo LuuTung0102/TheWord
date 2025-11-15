@@ -227,6 +227,15 @@
         }
       });
       
+      // Validate CCCD format: phải là 9 hoặc 12 số
+      if (data.CCCD && data.CCCD.trim() !== '') {
+        const cccdValue = data.CCCD.trim().replace(/\D/g, '');
+        if (!/^\d{9}$|^\d{12}$/.test(cccdValue)) {
+          const label = this.getLabel('CCCD');
+          errors.push(`${label} phải là 9 hoặc 12 số`);
+        }
+      }
+      
       return {
         isValid: errors.length === 0,
         errors: errors

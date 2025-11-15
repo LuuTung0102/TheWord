@@ -4,6 +4,11 @@
   function normalizeDataForComparison(data) {
     const normalized = {};
     Object.keys(data).forEach((key) => {
+      // Skip synced fields to avoid false positives
+      // If Loai_Dat_D exists, skip Loai_Dat_F and Loai_Dat
+      if (key === 'Loai_Dat_F' && data.Loai_Dat_D) return;
+      if (key === 'Loai_Dat' && (data.Loai_Dat_D || data.Loai_Dat_F)) return;
+      
       let value = data[key];
       if (key.includes("CCCD") && typeof value === "string") {
         value = value.replace(/\./g, "");
@@ -70,8 +75,19 @@
 
   function saveFormData(fileName, formData, reusedGroups, reusedGroupSources, config) {
     try {
+      console.log('💾 saveFormData called:', { fileName, formData });
+      
+      // Check if Loai_Dat_D exists in formData
+      if (formData.Loai_Dat_D) {
+        console.log('✅ Loai_Dat_D found in formData:', formData.Loai_Dat_D);
+      } else {
+        console.warn('⚠️ Loai_Dat_D NOT found in formData');
+      }
+      
       const existingData = getAllSessionData();
       let dataGroups = parseFormDataToGroups(formData, config);
+      
+      console.log('📦 Parsed data groups:', dataGroups);
 
       if (config?.fieldMappings) {
         config.fieldMappings.forEach((mapping) => {
@@ -213,7 +229,13 @@
         }
       });
 
-      if (Object.keys(dataGroups).length === 0) return false;
+      if (Object.keys(dataGroups).length === 0) {
+        console.log('⚠️ No data groups to save');
+        return false;
+      }
+      
+      console.log('💾 Saving to session storage:', { fileName, dataGroups });
+      
       existingData[fileName] = {
         fileName,
         dataGroups,
@@ -221,6 +243,16 @@
       };
 
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+      
+      console.log('✅ Session storage saved successfully');
+      
+      // Verify Loai_Dat_D was saved
+      const savedData = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+      if (savedData[fileName]?.rawData?.Loai_Dat_D) {
+        console.log('✅ Loai_Dat_D verified in session storage:', savedData[fileName].rawData.Loai_Dat_D);
+      } else {
+        console.warn('⚠️ Loai_Dat_D NOT found in saved session storage');
+      }
       return true;
     } catch (error) {
       return false;

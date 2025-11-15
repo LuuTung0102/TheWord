@@ -20,6 +20,17 @@ const BASE_PLACEHOLDERS = {
     type: "date",
     order: 4
   },
+
+  Sex:{
+    type: "select",
+    options: ["Nam", "Nữ"],
+    order: 5
+  },
+
+  Folk:{
+    type: "text",
+    order: 6
+  },
   
   CCCD: {
     type: "number",
@@ -117,6 +128,14 @@ const BASE_PLACEHOLDERS = {
     validation: {
       pattern: "^[A-Z]+(\\+[A-Z]+)*$"
     },
+    order: 9
+  },
+
+   Loai_Dat_F: {
+    order: 9
+  },
+
+  Loai_Dat_D: {
     order: 9
   },
   

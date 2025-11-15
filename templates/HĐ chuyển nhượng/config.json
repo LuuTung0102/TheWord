@@ -9,13 +9,13 @@
   "templates": [
     {
       "id": "hd-cn-dat",
-      "filename": "HĐ chuyển nhượng quyền sử dụng đất.docx",
+      "filename": "HĐ chuyển nhượng(1).docx",
       "name": "Hợp đồng chuyển nhượng đất",
       "description": "Chuyển nhượng quyền sử dụng đất",
-      "groups": ["BCN", "NCN", "LAND"],
+      "groups": ["BCN", "BNCN", "LAND"],
       "placeholders": {
         "BCN": ["MEN1", "MEN2"],
-        "NCN": ["MEN7"],
+        "BNCN": ["MEN7", "MEN8"],
         "LAND": ["INFO"]
       }
     },
@@ -27,6 +27,18 @@
       "groups": ["BCN", "BNCN", "LAND"],
       "placeholders": {
         "BCN": ["MEN1", "MEN2"],
+        "BNCN": ["MEN7", "MEN8"],
+        "LAND": ["INFO"]
+      }
+    },
+     {
+      "id": "hd-cn-hgd",
+      "filename": "HĐ chuyển nhượng(HGĐ).docx",
+      "name": "Hợp đồng chuyển nhượng (HGĐ)",
+      "description": "Chuyển nhượng đất hộ gia đình",
+      "groups": ["BCN", "BNCN", "LAND"],
+      "placeholders": {
+        "BCN": ["MEN1", "MEN2", "MEN3", "MEN4","MEN5","MEN6"],
         "BNCN": ["MEN7", "MEN8"],
         "LAND": ["INFO"]
       }
@@ -70,6 +82,7 @@
         { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "required": true },
         { "name": "Noi_CapD", "label": "Nơi cấp", "type": "textarea", "required": true },
         { "name": "NG", "label": "Nguồn gốc", "type": "textarea", "required": true },
+        { "name": "Loai_Dat_F", "label": "Loại đất (có diện tích)", "type": "land_type_size", "required": true },
         { "name": "TDCSPL", "label": "Thay đổi cơ sở pháp lý", "type": "date", "required": true },
         { "name": "HTSD", "label": "Hình thức sử dụng", "type": "select", "options": ["Sử dụng chung", "Sử dụng riêng"], "required": true },
         { "name": "THSD", "label": "Thời hạn sử dụng", "type": "textarea", "required": true },
@@ -89,9 +102,13 @@
       "schema": "PersonalInfo",
       "subgroups": [
         { "id": "MEN1", "label": "Thông tin cá nhân","visible": true},
-        { "id": "MEN2", "label": "Thông tin cá nhân","visible": false }
+        { "id": "MEN2", "label": "Thông tin cá nhân","visible": false },
+        { "id": "MEN3", "label": "Thông tin cá nhân","visible": false },
+        { "id": "MEN4", "label": "Thông tin cá nhân","visible": false },
+        { "id": "MEN5", "label": "Thông tin cá nhân","visible": false },
+        { "id": "MEN6", "label": "Thông tin cá nhân","visible": false }
       ],
-      "suffixes": ["1", "2"],
+      "suffixes": ["1", "2", "3","4","5","6"],
       "defaultGenders": ["Ông", "Bà"]
     },
     {

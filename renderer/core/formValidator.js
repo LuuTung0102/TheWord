@@ -88,6 +88,19 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
             fieldLabel: field.label,
             message: `"${field.label}" là bắt buộc (${subgroupLabel || subgroupId})`
           });
+        } else if (field.type === 'number' && field.name === 'CCCD' && fieldValue) {
+          // Validate CCCD: phải là 9 hoặc 12 số (loại bỏ dấu chấm trước khi validate)
+          const cccdValue = fieldValue.toString().trim().replace(/\D/g, '');
+          if (!/^\d{9}$|^\d{12}$/.test(cccdValue)) {
+            errors.push({
+              subgroup: subgroupId,
+              subgroupLabel: subgroupLabel,
+              group: mapping.group,
+              field: fieldName,
+              fieldLabel: field.label,
+              message: `"${field.label}" phải là 9 hoặc 12 số (${subgroupLabel || subgroupId})`
+            });
+          }
         }
       }
     }

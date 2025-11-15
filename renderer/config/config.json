@@ -1,7 +1,7 @@
 {
   "folders": [
     {
-      "name": "HĐ chuyển nhượng",
+      "name": "HĐ Chuyển Nhượng",
       "path": "templates/HĐ chuyển nhượng",
       "description": "Hợp đồng chuyển nhượng quyền sử dụng đất",
       "icon": "📜"
@@ -13,23 +13,31 @@
       "icon": "🏛️"
     },
     {
-      "name": "Giấy ủy quyền",
+      "name": "Giấy Ủy Quyền",
       "path": "templates/Giấy Ủy Quyền",
       "description": "Giấy ủy quyền",
       "icon": "📄"
     },
     {
-      "name": "Giấy tờ khác",
-      "path": "templates/Giấy tờ khác",
+      "name": "Giấy Biến động đất đai",
+      "path": "templates/Biến động đất đai",
       "description": "Giấy đăng ký biến động đất đai",
       "icon": "📋"
     },
+    {
+      "name": "Xác nhận hôn nhân",
+      "path": "templates/Xác nhận hôn nhân",
+      "description": "Giấy tờ xác nhận hôn nhân",
+      "icon": "🕊️"
+    },
+
     {
       "name": "Thuế",
       "path": "templates/Thuế",
       "description": "Giấy tờ thuế",
       "icon": "💰"
     }
+
   ]
 
 }

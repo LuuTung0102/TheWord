@@ -13,26 +13,26 @@
       "id": "PERSON1",
       "name": "Người 1",
       "data": {
-        "Name": "LƯU THANH TÙNG",
+        "Name": "BÙI VĂN HẢO",
         "Gender": "Ông",
-        "Date": "01/02/2002",
-        "CCCD": "066.202.010.859",
+        "Date": "01/05/1985",
+        "CCCD": "051.085.017.813",
         "Noi_Cap": "Cục Cảnh sát QLHC về TTXH",
-        "Ngay_Cap": "31/05/2019",
-        "Address": "Thôn 9, Ea Đar, EaKar, Đắk Lắk"
+        "Ngay_Cap": "24/11/2023",
+        "Address": "thôn Ea Sô 1, xã Ea Knốp, tỉnh Đắk Lắk"
       }
     },
     {
       "id": "PERSON2",
       "name": "Người 2",
       "data": {
-        "Gender": "Ông",
-        "Name": "NGUYỄN CHÍ LONG",
-        "Date": "01/02/2002",
-        "CCCD": "116.565.487.898",
+        "Gender": "Bà",
+        "Name": "TRẦN THỊ NGỌC DIỄM",
+        "Date": "1992",
+        "CCCD": "066.192.004.803",
         "Noi_Cap": "Cục Cảnh sát QLHC về TTXH",
-        "Ngay_Cap": "12/12/2024",
-        "Address": "thôn 12, xã EAKAR"
+        "Ngay_Cap": "24/11/2023",
+        "Address": "thôn An Cư, X. Cư Huê, H.Ea Kar, T. Đắk Lắk"
       }
     },
     {

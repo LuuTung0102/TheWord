@@ -342,10 +342,23 @@
             xml = await processXmlWithStreaming(originalXml, data, options);
           } else {
             xml = zip.files['word/document.xml'].asText();
-            for (let i = 0; i < 5; i++) {
-            xml = xml.replace(/\{\{([^}]*)<\/w:t><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
-            xml = xml.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
-          }
+            
+            // Aggressive placeholder merging - run multiple times
+            for (let i = 0; i < 10; i++) {
+              // Merge across text runs
+              xml = xml.replace(/\{\{([^}]*)<\/w:t><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
+              xml = xml.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
+              
+              // Merge broken single braces
+              xml = xml.replace(/\{<\/w:t><w:t[^>]*>\{/g, '{{');
+              xml = xml.replace(/\}<\/w:t><w:t[^>]*>\}/g, '}}');
+              xml = xml.replace(/\{<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>\{/g, '{{');
+              xml = xml.replace(/\}<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>\}/g, '}}');
+              
+              // Merge content between braces
+              xml = xml.replace(/\{([^{}<]*)<\/w:t><w:t[^>]*>([^{}<]*)\}/g, '{$1$2}');
+              xml = xml.replace(/\{([^{}<]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^{}<]*)\}/g, '{$1$2}');
+            }
             xml = xml.replace(/\{\{[^}]*<[^>]*>[^}]*\}\}/g, (match) => {
             const textContent = match.replace(/<[^>]*>/g, '').replace(/[{}]/g, '');
             if (textContent.trim() && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(textContent.trim())) {
@@ -520,6 +533,51 @@
         }
       }
       
+      // Process Loai_Dat_D (land_type_detail)
+      if (data.Loai_Dat_D && typeof data.Loai_Dat_D === 'string' && data.Loai_Dat_D.trim()) {
+        try {
+          const landTypesPath = path.join(__dirname, '..', 'renderer', 'config', 'land_types.json');
+          const landTypeMap = JSON.parse(fs.readFileSync(landTypesPath, 'utf8'));
+          const entries = data.Loai_Dat_D.split(';').map(e => e.trim()).filter(Boolean);
+          
+          if (entries.length > 0) {
+            const formattedEntries = entries.map((entry, index) => {
+              const parts = entry.split('|');
+              if (parts.length >= 1) {
+                const code = parts[0] ? parts[0].trim() : '';
+                const location = parts[1] ? parts[1].trim() : '';
+                const area = parts[2] ? parts[2].trim() : '';
+                
+                if (!code) return '';
+                
+                const locationPart = location ? `   ${location}` : '';
+                const areaPart = area ? `                     Diện tích: ${area}m²` : '';
+                
+                
+                return `\t+ Loại đất ${index + 1}: ${code}:${locationPart}${areaPart}.`;
+              }
+              return '';
+            }).filter(Boolean);
+            
+            if (formattedEntries.length > 0) {
+              // Join with line break (each entry on new line)
+              data.Loai_Dat_D = formattedEntries.join('\n');
+            } else {
+              data.Loai_Dat_D = '';
+            }
+          } else {
+            data.Loai_Dat_D = '';
+          }
+        } catch (error) {
+          console.error('Error processing Loai_Dat_D:', error);
+          data.Loai_Dat_D = '';
+        }
+      } else {
+        if (data.Loai_Dat_D !== undefined) {
+          data.Loai_Dat_D = '';
+        }
+      }
+      
       const templatePhs = getPlaceholders(templatePath);
       const fullData = {};
       templatePhs.forEach(ph => {
@@ -551,14 +609,27 @@
       });
       
       Object.keys(data).forEach(key => {
-        if (typeof data[key] === 'string' && data[key].includes('m2')) {
-          data[key] = data[key].replace(/m2/g, 'm²');
-         
+        if (typeof data[key] === 'string') {
+          if (data[key].includes('m2')) {
+            data[key] = data[key].replace(/m2/g, 'm²');
+          }
+          // Check for problematic characters
+          if (data[key].includes('{') || data[key].includes('}')) {
+            console.warn(`Warning: Field ${key} contains curly braces:`, data[key]);
+            data[key] = data[key].replace(/[{}]/g, '');
+          }
         }
       });
       Object.keys(fullData).forEach(key => {
-        if (typeof fullData[key] === 'string' && fullData[key].includes('m2')) {
-          fullData[key] = fullData[key].replace(/m2/g, 'm²');
+        if (typeof fullData[key] === 'string') {
+          if (fullData[key].includes('m2')) {
+            fullData[key] = fullData[key].replace(/m2/g, 'm²');
+          }
+          // Check for problematic characters
+          if (fullData[key].includes('{') || fullData[key].includes('}')) {
+            console.warn(`Warning: Field ${key} contains curly braces:`, fullData[key]);
+            fullData[key] = fullData[key].replace(/[{}]/g, '');
+          }
         }
       });
 
@@ -580,6 +651,9 @@
         const renderedZip = doc.getZip();
         if (renderedZip.files['word/document.xml']) {
           let xml = renderedZip.files['word/document.xml'].asText();
+          
+          // Replace {{LINEBREAK}} with Word line break (disabled for now)
+          // xml = xml.replace(/\{\{LINEBREAK\}\}/g, '</w:t><w:br/><w:t>');
 
           if (useStreaming) {
             // Sử dụng streaming cho cleanup

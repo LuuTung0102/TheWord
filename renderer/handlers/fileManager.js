@@ -279,7 +279,9 @@
             });
 
             if (finalFileName) {
-              alert(`✅ Đã thêm file: ${finalFileName}`);
+              // Show config wizard
+              await this.showConfigWizard(finalFileName);
+              
               // Reload files
               this.files = await this.loadFilesInFolder(this.selectedFolder.path);
               this.renderFileList();
@@ -315,9 +317,10 @@
     }
 
     /**
-     * Handle delete file
+     * Show config wizard để cấu hình template mới
      */
-    async handleDeleteFile(fileName) {
+    async showConfigWizard(fileName) {
+      return new Prom
       if (!this.selectedFolder) return;
 
       const confirmed = confirm(`⚠️ Bạn có chắc muốn xóa file "${fileName}"?\n\nFile sẽ bị xóa vĩnh viễn và không thể khôi phục.`);

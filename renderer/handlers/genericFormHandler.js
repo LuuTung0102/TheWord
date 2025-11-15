@@ -15,8 +15,10 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
   const requiredClass = isRequired ? ' class="required"' : '';
   
   const hiddenStyle = isHidden ? 'style="display: none;"' : '';
+  const isFullWidth = type === 'land_type_detail';
+  const fullWidthClass = isFullWidth ? ' full-width' : '';
   
-  const wrapperStart = `<div class="field-wrapper" ${hiddenStyle}>`;
+  const wrapperStart = `<div class="field-wrapper${fullWidthClass}" ${hiddenStyle}>`;
   const wrapperEnd = `</div>`;
 
   if (type === "select") {
@@ -62,10 +64,13 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
     `;
   }  else if (type === "number") {
     const maxLength = fieldDef.maxLength || '';
+    const isCCCD = fieldDef.name === 'CCCD';
+    const inputClass = isCCCD ? 'input-field cccd-input' : 'input-field';
+    const inputMaxLength = isCCCD ? '12' : maxLength;
     inputHtml = `
       ${wrapperStart}
       <label for="${safeId}"${requiredClass}><b>${label}</b></label>
-      <input type="text" id="${safeId}" data-ph="${ph}" class="input-field" placeholder="${placeholder}" ${maxLength ? `maxlength="${maxLength}"` : ''} />
+      <input type="text" id="${safeId}" data-ph="${ph}" class="${inputClass}" placeholder="${placeholder}" ${inputMaxLength ? `maxlength="${inputMaxLength}"` : ''} />
       ${wrapperEnd}
     `;
   } else if (type === "land-type" || type === "land_type") {
@@ -94,6 +99,29 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
       </div>
       ${wrapperEnd}
     `;
+  } else if (type === "land_type_detail") {
+    inputHtml = `
+      ${wrapperStart}
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
+      <input type="hidden" id="${safeId}" data-ph="${ph}" class="tag-input" />
+      <div class="land-type-size-container" id="${safeId}_container" data-ph="${ph}">
+        <div class="tags-wrapper" id="${safeId}_tags"></div>
+        <div class="tag-input-wrapper show" id="${safeId}_input_wrapper">
+          <input type="text" id="${safeId}_type" class="tag-input" placeholder="Chọn loại đất..." autocomplete="off">
+          <div id="${safeId}_dropdown" class="land-type-dropdown"></div>
+        </div>
+        <div class="tag-input-wrapper" id="${safeId}_location_wrapper" style="display: none;">
+          <input type="text" id="${safeId}_location" class="tag-input" placeholder="Vị trí..." autocomplete="off">
+        </div>
+        <div class="tag-input-wrapper" id="${safeId}_area_wrapper" style="display: none;">
+          <input type="text" id="${safeId}_area" class="tag-input" placeholder="Diện tích (m²)..." autocomplete="off">
+        </div>
+        <button type="button" class="tag-add-btn" id="${safeId}_addBtn" title="Thêm" style="display: none;">
+          <span>+</span>
+        </button>
+      </div>
+      ${wrapperEnd}
+    `;
   } else if (type === "money" || type === "currency") {
     inputHtml = `
       ${wrapperStart}
@@ -113,7 +141,7 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
     inputHtml = `
       ${wrapperStart}
       <label for="${safeId}"${requiredClass}><b>${label}</b></label>
-      <input type="tel" id="${safeId}" data-ph="${ph}" class="input-field" placeholder="${placeholder}" />
+      <input type="tel" id="${safeId}" data-ph="${ph}" class="input-field phone-input" placeholder="${placeholder}" maxlength="10" />
       ${wrapperEnd}
     `;
   } else if (type === "email") {
@@ -161,7 +189,10 @@ async function renderGenericForm(placeholders, config, folderPath) {
     grouped[groupKey][subKey].push({ ph, def });
   });
   
-  window.__renderDataStructures = { phMapping, grouped, groupLabels, subgroupLabels };
+  // Determine which land fields to skip based on priority
+  const skipLandFields = getLandFieldsToSkip(placeholders);
+  
+  window.__renderDataStructures = { phMapping, grouped, groupLabels, subgroupLabels, skipLandFields };
   window.__formDataReused = false;
   window.__reusedGroups = new Set(); 
   window.__reusedGroupSources = new Map();
@@ -438,12 +469,16 @@ async function renderGenericForm(placeholders, config, folderPath) {
 
         const items = (grouped[groupKey] && grouped[groupKey][subKey]) ? grouped[groupKey][subKey] : [];
         const sortedItems = sortGenericFields(items);
-      for (let i = 0; i < sortedItems.length; i += 3) {
+        
+        // Filter out fields that should be skipped based on land type priority
+        const filteredItems = sortedItems.filter(({ ph }) => !skipLandFields.has(ph));
+        
+      for (let i = 0; i < filteredItems.length; i += 3) {
         const rowDiv = document.createElement("div");
         rowDiv.className = "form-row";
         
-        for (let j = i; j < i + 3 && j < sortedItems.length; j++) {
-          const { ph, def } = sortedItems[j];
+        for (let j = i; j < i + 3 && j < filteredItems.length; j++) {
+          const { ph, def } = filteredItems[j];
           const { inputHtml } = renderGenericInputField(ph, def, groupKey, subKey);
           const cellDiv = document.createElement("div");
           cellDiv.className = "form-cell form-field";
@@ -571,11 +606,137 @@ async function renderGenericForm(placeholders, config, folderPath) {
       if (typeof window.reSetupAllInputs === 'function') {
         window.reSetupAllInputs();
       }
+      
+      // Setup sync from Loai_Dat_D to Loai_Dat_F (if both exist in template)
+      setupLandTypeSync();
+      
       setupPersonSelectionListeners(groupSources, grouped);
       setupReuseDataListeners();
     }, 100); 
   });
   
+}
+
+/**
+ * Determine which land type fields should be rendered based on priority
+ * Priority: land_type_detail (Loai_Dat_D) > land_type_size (Loai_Dat_F) > land_type (Loai_Dat)
+ * Returns an object with which fields to skip
+ */
+function getLandFieldsToSkip(allPlaceholders) {
+  const hasLoaiDatD = allPlaceholders.some(ph => ph === 'Loai_Dat_D');
+  const hasLoaiDatF = allPlaceholders.some(ph => ph === 'Loai_Dat_F');
+  const hasLoaiDat = allPlaceholders.some(ph => ph === 'Loai_Dat');
+  
+  const skipFields = new Set();
+  
+  if (hasLoaiDatD) {
+    // If Loai_Dat_D exists, skip both Loai_Dat_F and Loai_Dat
+    if (hasLoaiDatF) skipFields.add('Loai_Dat_F');
+    if (hasLoaiDat) skipFields.add('Loai_Dat');
+  } else if (hasLoaiDatF) {
+    // If only Loai_Dat_F exists (no Loai_Dat_D), skip Loai_Dat
+    if (hasLoaiDat) skipFields.add('Loai_Dat');
+  }
+  
+  console.log('Land fields decision:', { 
+    hasLoaiDatD, 
+    hasLoaiDatF, 
+    hasLoaiDat,
+    skipFields: Array.from(skipFields)
+  });
+  
+  return skipFields;
+}
+
+/**
+ * Sync data between land type fields
+ * Loai_Dat_D -> Loai_Dat_F -> Loai_Dat
+ * Creates hidden inputs for skipped fields to maintain data sync
+ */
+function setupLandTypeSync() {
+  const loaiDatDInput = document.querySelector('input[data-ph="Loai_Dat_D"]');
+  let loaiDatFInput = document.querySelector('input[data-ph="Loai_Dat_F"]');
+  let loaiDatInput = document.querySelector('input[data-ph="Loai_Dat"]');
+  
+  const skipLandFields = window.__renderDataStructures?.skipLandFields || new Set();
+  
+  // Create hidden input for Loai_Dat_F if it was skipped but Loai_Dat_D exists
+  if (loaiDatDInput && !loaiDatFInput && skipLandFields.has('Loai_Dat_F')) {
+    loaiDatFInput = document.createElement('input');
+    loaiDatFInput.type = 'hidden';
+    loaiDatFInput.setAttribute('data-ph', 'Loai_Dat_F');
+    loaiDatFInput.id = 'hidden-Loai_Dat_F';
+    document.body.appendChild(loaiDatFInput);
+    console.log('✅ Created hidden input for Loai_Dat_F');
+  }
+  
+  // Create hidden input for Loai_Dat if it was skipped
+  if ((loaiDatDInput || loaiDatFInput) && !loaiDatInput && skipLandFields.has('Loai_Dat')) {
+    loaiDatInput = document.createElement('input');
+    loaiDatInput.type = 'hidden';
+    loaiDatInput.setAttribute('data-ph', 'Loai_Dat');
+    loaiDatInput.id = 'hidden-Loai_Dat';
+    document.body.appendChild(loaiDatInput);
+    console.log('✅ Created hidden input for Loai_Dat');
+  }
+  
+  // Sync Loai_Dat_D -> Loai_Dat_F
+  if (loaiDatDInput && loaiDatFInput) {
+    const syncDtoF = () => {
+      const value = loaiDatDInput.value;
+      if (!value) {
+        loaiDatFInput.value = '';
+        loaiDatFInput.dispatchEvent(new Event('change', { bubbles: true }));
+        return;
+      }
+      
+      // Convert from Loai_Dat_D format (CODE|LOCATION|AREA) to Loai_Dat_F format (CODE AREA)
+      const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+      const converted = entries.map(entry => {
+        const parts = entry.split('|');
+        const code = parts[0] ? parts[0].trim() : '';
+        const area = parts[2] ? parts[2].trim() : '';
+        return code && area ? `${code} ${area}` : code;
+      }).filter(Boolean);
+      
+      loaiDatFInput.value = converted.join('; ');
+      loaiDatFInput.dispatchEvent(new Event('change', { bubbles: true }));
+      loaiDatFInput.dispatchEvent(new Event('input', { bubbles: true }));
+      console.log('🔄 Synced Loai_Dat_D -> Loai_Dat_F:', loaiDatFInput.value);
+    };
+    
+    loaiDatDInput.addEventListener('input', syncDtoF);
+    loaiDatDInput.addEventListener('change', syncDtoF);
+    console.log('✅ Setup sync: Loai_Dat_D -> Loai_Dat_F');
+  }
+  
+  // Sync Loai_Dat_F -> Loai_Dat
+  if (loaiDatFInput && loaiDatInput) {
+    const syncFtoD = () => {
+      const value = loaiDatFInput.value;
+      if (!value) {
+        loaiDatInput.value = '';
+        loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
+        return;
+      }
+      
+      // Convert from Loai_Dat_F format (CODE AREA) to Loai_Dat format (CODE+CODE+CODE)
+      const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+      const codes = entries.map(entry => {
+        // Extract code (first part before space or number)
+        const match = entry.match(/^([A-Z]+)/);
+        return match ? match[1] : '';
+      }).filter(Boolean);
+      
+      loaiDatInput.value = codes.join('+');
+      loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
+      console.log('🔄 Synced Loai_Dat_F -> Loai_Dat:', loaiDatInput.value);
+    };
+    
+    loaiDatFInput.addEventListener('input', syncFtoD);
+    loaiDatFInput.addEventListener('change', syncFtoD);
+    console.log('✅ Setup sync: Loai_Dat_F -> Loai_Dat');
+  }
 }
 
 /**
@@ -643,12 +804,17 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
 
   const items = (grouped[groupKey] && grouped[groupKey][subKey]) ? grouped[groupKey][subKey] : [];
   const sortedItems = sortGenericFields(items);
-  for (let i = 0; i < sortedItems.length; i += 3) {
+  
+  // Get skip fields from window if available
+  const skipLandFields = window.__renderDataStructures?.skipLandFields || new Set();
+  const filteredItems = sortedItems.filter(({ ph }) => !skipLandFields.has(ph));
+  
+  for (let i = 0; i < filteredItems.length; i += 3) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "form-row";
     
-    for (let j = i; j < i + 3 && j < sortedItems.length; j++) {
-      const { ph, def } = sortedItems[j];
+    for (let j = i; j < i + 3 && j < filteredItems.length; j++) {
+      const { ph, def } = filteredItems[j];
       const { inputHtml } = renderGenericInputField(ph, def, groupKey, subKey);
       const cellDiv = document.createElement("div");
       cellDiv.className = "form-cell form-field";
@@ -971,24 +1137,99 @@ function fillFormWithMenData(groupData, targetSuffix) {
       return;
     }
     
-    if (fieldName === 'Loai_Dat_F' && value && typeof value === 'string') {
-      fillLandTypeSizeField(placeholder, value);
-      return;
-    }
-    
-
-    if (fieldName === 'Loai_Dat' && value && typeof value === 'string' && !hasLoaiDatF) {
-      const loaiDatFPlaceholder = targetSuffix ? `Loai_Dat_F${targetSuffix}` : 'Loai_Dat_F';
-      const loaiDatFContainer = document.querySelector(`.land-type-size-container[data-ph="${loaiDatFPlaceholder}"]`);
+    // Handle land type fields - convert between formats as needed
+    if (fieldName === 'Loai_Dat_D' || fieldName === 'Loai_Dat_F' || fieldName === 'Loai_Dat') {
+      if (!value || typeof value !== 'string') return;
       
-      if (loaiDatFContainer) {
-        const codes = value.split('+').map(c => c.trim().toUpperCase()).filter(Boolean);
-        if (codes.length > 0) {
-          const convertedValue = codes.join('; ');
-          fillLandTypeSizeField(loaiDatFPlaceholder, convertedValue);
-          return;
-        }
+      // Skip if a higher priority field exists in groupData
+      if (fieldName === 'Loai_Dat' && (groupData.Loai_Dat_D || groupData.Loai_Dat_F)) {
+        return; // Skip Loai_Dat if D or F exists
       }
+      if (fieldName === 'Loai_Dat_F' && groupData.Loai_Dat_D) {
+        return; // Skip Loai_Dat_F if D exists
+      }
+      
+      const loaiDatDPlaceholder = targetSuffix ? `Loai_Dat_D${targetSuffix}` : 'Loai_Dat_D';
+      const loaiDatFPlaceholder = targetSuffix ? `Loai_Dat_F${targetSuffix}` : 'Loai_Dat_F';
+      const loaiDatPlaceholder = targetSuffix ? `Loai_Dat${targetSuffix}` : 'Loai_Dat';
+      
+      const loaiDatDInput = document.querySelector(`input[data-ph="${loaiDatDPlaceholder}"]`);
+      const loaiDatFContainer = document.querySelector(`.land-type-size-container[data-ph="${loaiDatFPlaceholder}"]`);
+      const loaiDatInput = document.querySelector(`input[data-ph="${loaiDatPlaceholder}"]`);
+      
+      // Priority: fill the highest priority field that exists
+      if (loaiDatDInput) {
+        // Convert to Loai_Dat_D format (CODE|LOCATION|AREA)
+        let convertedValue = value;
+        
+        if (fieldName === 'Loai_Dat_F') {
+          // From "BCS 1235; CGT 1535" to "BCS||1235;CGT||1535"
+          const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+          convertedValue = entries.map(entry => {
+            const match = entry.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/i);
+            if (match) {
+              return `${match[1]}||${match[2]}`;
+            }
+            return `${entry}||`;
+          }).join(';');
+        } else if (fieldName === 'Loai_Dat') {
+          // From "BCS+CGT" to "BCS||;CGT||"
+          const codes = value.split('+').map(c => c.trim()).filter(Boolean);
+          convertedValue = codes.map(code => `${code}||`).join(';');
+        }
+        
+        fillLandTypeDetailField(loaiDatDPlaceholder, convertedValue);
+        return;
+      } else if (loaiDatFContainer) {
+        // Convert to Loai_Dat_F format (CODE AREA)
+        let convertedValue = value;
+        
+        if (fieldName === 'Loai_Dat_D') {
+          // From "BCS|Vị trí|1235;CGT|Vị trí|1535" to "BCS 1235; CGT 1535"
+          const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+          convertedValue = entries.map(entry => {
+            const parts = entry.split('|');
+            const code = parts[0] ? parts[0].trim() : '';
+            const area = parts[2] ? parts[2].trim() : '';
+            return area ? `${code} ${area}` : code;
+          }).filter(Boolean).join('; ');
+        } else if (fieldName === 'Loai_Dat') {
+          // From "BCS+CGT" to "BCS; CGT"
+          const codes = value.split('+').map(c => c.trim()).filter(Boolean);
+          convertedValue = codes.join('; ');
+        }
+        
+        fillLandTypeSizeField(loaiDatFPlaceholder, convertedValue);
+        return;
+      } else if (loaiDatInput) {
+        // Convert to Loai_Dat format (CODE+CODE)
+        let convertedValue = value;
+        
+        if (fieldName === 'Loai_Dat_D') {
+          // From "BCS|Vị trí|1235;CGT|Vị trí|1535" to "BCS+CGT"
+          const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+          const codes = entries.map(entry => {
+            const parts = entry.split('|');
+            return parts[0] ? parts[0].trim() : '';
+          }).filter(Boolean);
+          convertedValue = codes.join('+');
+        } else if (fieldName === 'Loai_Dat_F') {
+          // From "BCS 1235; CGT 1535" to "BCS+CGT"
+          const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+          const codes = entries.map(entry => {
+            const match = entry.match(/^([A-Z]+)/i);
+            return match ? match[1] : '';
+          }).filter(Boolean);
+          convertedValue = codes.join('+');
+        }
+        
+        loaiDatInput.value = convertedValue;
+        loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
+        console.log('✅ Filled Loai_Dat:', convertedValue);
+        return;
+      }
+      
+      return;
     }
     
     const element = document.querySelector(`[data-ph="${placeholder}"]`);
@@ -1081,6 +1322,60 @@ function fillLandTypeSizeField(placeholder, valueString) {
 }
 
 /**
+ * Fill land_type_detail field (Loai_Dat_D) với tags
+ * @param {string} placeholder - "Loai_Dat_D"
+ * @param {string} valueString - Format: "BCS|Vị trí 1|1235;CGT|Vị trí 2|1535"
+ */
+function fillLandTypeDetailField(placeholder, valueString) {
+  if (!valueString || !valueString.trim()) return;
+  
+  console.log('🔄 fillLandTypeDetailField:', { placeholder, valueString });
+  
+  const hiddenInput = document.querySelector(`input[data-ph="${placeholder}"]`);
+  if (!hiddenInput) {
+    console.warn('⚠️ Hidden input not found for:', placeholder);
+    return;
+  }
+  
+  const container = document.querySelector(`.land-type-size-container[data-ph="${placeholder}"]`);
+  if (!container) {
+    console.warn('⚠️ Container not found for:', placeholder);
+    return;
+  }
+  
+  // Check if already setup
+  const isSetup = container.dataset.landTypeDetailSetup === 'true';
+  
+  if (!isSetup) {
+    // First time - set value and let setup read it
+    hiddenInput.value = valueString;
+    
+    if (window.setupLandTypeDetailInput && typeof window.setupLandTypeDetailInput === 'function') {
+      const containerId = hiddenInput.id;
+      if (containerId) {
+        window.setupLandTypeDetailInput(container, containerId);
+        container.dataset.landTypeDetailSetup = 'true';
+        console.log('✅ Setup Loai_Dat_D with initial value');
+      }
+    }
+  } else {
+    // Already setup - just trigger reload by setting value and dispatching event
+    hiddenInput.value = valueString;
+    
+    // Trigger the container's reload function if available
+    if (container.reloadLandTypeDetailValue && typeof container.reloadLandTypeDetailValue === 'function') {
+      container.reloadLandTypeDetailValue();
+      console.log('✅ Reloaded Loai_Dat_D value');
+    } else {
+      // Fallback: dispatch events
+      hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+      hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+      console.log('✅ Updated Loai_Dat_D value via events');
+    }
+  }
+}
+
+/**
  * Fill address field (4 dropdowns: province, district, ward, village)
  * @param {string} placeholder - "Address1", "Address7", "AddressD"
  * @param {string} addressString - "Xã Ea Bông, H. Krông A Na, T. Đắk Lắk"
@@ -1156,6 +1451,16 @@ function collectGenericFormData() {
         Object.keys(person.data).forEach(key => {
           const placeholder = suffix ? `${key}${suffix}` : key;
           data[placeholder] = person.data[key];
+          
+          // Tự động tạo Sex từ Gender khi load từ localStorage
+          if (key === 'Gender' && person.data[key]) {
+            const sexPh = suffix ? `Sex${suffix}` : 'Sex';
+            if (person.data[key] === 'Ông') {
+              data[sexPh] = 'Nam';
+            } else if (person.data[key] === 'Bà') {
+              data[sexPh] = 'Nữ';
+            }
+          }
         });
       }
     }
@@ -1269,6 +1574,40 @@ function collectGenericFormData() {
     
     if (el.classList.contains('date-picker') && window.formatInputValue) {
       value = window.formatInputValue(value, ph, { type: 'date' });
+    }
+    
+    // Format CCCD trước khi lưu vào data
+    if (ph.includes('CCCD') && value) {
+      const digits = value.replace(/\D/g, '');
+      if (/^\d{9}$|^\d{12}$/.test(digits)) {
+        value = window.formatCCCD ? window.formatCCCD(digits) : digits;
+      }
+    }
+    
+    // Format số điện thoại trước khi lưu vào data
+    if (ph.includes('SDT') && value) {
+      const digits = value.replace(/\D/g, '');
+      if (/^\d{10}$/.test(digits)) {
+        value = window.formatPhoneNumber ? window.formatPhoneNumber(digits) : digits;
+      }
+    }
+    
+    // Format MST trước khi lưu vào data
+    if (ph.includes('MST') && value) {
+      const digits = value.replace(/\D/g, '');
+      if (/^\d{10}$|^\d{13}$/.test(digits)) {
+        value = window.formatMST ? window.formatMST(digits) : digits;
+      }
+    }
+    
+    // Tự động tạo Sex từ Gender
+    if (ph.includes('Gender') && value) {
+      const sexPh = ph.replace('Gender', 'Sex');
+      if (value === 'Ông') {
+        data[sexPh] = 'Nam';
+      } else if (value === 'Bà') {
+        data[sexPh] = 'Nữ';
+      }
     }
     
     data[ph] = value;

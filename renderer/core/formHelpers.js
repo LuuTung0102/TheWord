@@ -21,6 +21,15 @@ function setupCCCDInput(el) {
   el.addEventListener("input", (e) => {
     let value = e.target.value.replace(/\D/g, "").slice(0, 12);
     e.target.value = value;
+    
+    // Validate real-time: phải là 9 hoặc 12 số
+    if (value.length > 0 && value.length !== 9 && value.length !== 12) {
+      e.target.style.borderColor = '#ffa500';
+      e.target.title = 'CCCD phải là 9 hoặc 12 số';
+    } else {
+      e.target.style.borderColor = '';
+      e.target.title = '';
+    }
   });
   
   el.addEventListener("focus", (e) => {
@@ -31,11 +40,24 @@ function setupCCCDInput(el) {
     let value = e.target.value.replace(/\D/g, "").slice(0, 12);
     if (value.length === 0) return;
     
-    if (value.length === 12 && window.formatCCCD) {
+    // Validate: phải là 9 hoặc 12 số
+    if (value.length !== 9 && value.length !== 12) {
+      e.target.style.borderColor = '#dc3545';
+      e.target.style.borderWidth = '2px';
+      e.target.title = 'CCCD phải là 9 hoặc 12 số';
+      return;
+    }
+    
+    // Format cho cả 9 số và 12 số
+    if ((value.length === 9 || value.length === 12) && window.formatCCCD) {
       e.target.value = window.formatCCCD(value) || value;
     } else {
       e.target.value = value;
     }
+    
+    e.target.style.borderColor = '';
+    e.target.style.borderWidth = '';
+    e.target.title = '';
   });
   
   el.addEventListener("paste", (e) => {
@@ -49,11 +71,67 @@ function setupCCCDInput(el) {
 }
 
 function setupPhoneInput(el) {
-  setupNumericInput(el, 10);
+  el.addEventListener("input", (e) => {
+    let value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    e.target.value = value;
+  });
+  
+  el.addEventListener("focus", (e) => {
+    e.target.value = e.target.value.replace(/\D/g, "");
+  });
+  
+  el.addEventListener("blur", (e) => {
+    let value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    if (value.length === 0) return;
+    
+    // Format số điện thoại: xxx.xxx.xxxx
+    if (value.length === 10 && window.formatPhoneNumber) {
+      e.target.value = window.formatPhoneNumber(value) || value;
+    } else {
+      e.target.value = value;
+    }
+  });
+  
+  el.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData)
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 10);
+    document.execCommand("insertText", false, text);
+  });
 }
 
 function setupMSTInput(el) {
-  setupNumericInput(el, 10);
+  el.addEventListener("input", (e) => {
+    let value = e.target.value.replace(/\D/g, "").slice(0, 13);
+    e.target.value = value;
+  });
+  
+  el.addEventListener("focus", (e) => {
+    e.target.value = e.target.value.replace(/\D/g, "");
+  });
+  
+  el.addEventListener("blur", (e) => {
+    let value = e.target.value.replace(/\D/g, "").slice(0, 13);
+    if (value.length === 0) return;
+    
+    // Format MST: xxx.xxx.xxx.x (10 số) hoặc xxx.xxx.xxx.xxxx (13 số)
+    if ((value.length === 10 || value.length === 13) && window.formatMST) {
+      e.target.value = window.formatMST(value) || value;
+    } else {
+      e.target.value = value;
+    }
+  });
+  
+  el.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData)
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 13);
+    document.execCommand("insertText", false, text);
+  });
 }
 
 function setupEmailInput(el) {
@@ -476,6 +554,7 @@ function setupAddressSelects() {
 function reSetupAllInputs() {
   setupDatePickers();
   setupAddressSelects();
+  
   const cccdInputs = document.querySelectorAll('input[data-ph*="CCCD"]');
   cccdInputs.forEach(input => {
     input.removeAttribute('maxlength');
@@ -489,6 +568,7 @@ function reSetupAllInputs() {
   
   const mstInputs = document.querySelectorAll('input[data-ph*="MST"]');
   mstInputs.forEach(input => {
+    input.removeAttribute('maxlength');
     setupMSTInput(input);
   });
   
@@ -520,10 +600,26 @@ function reSetupAllInputs() {
   });
   
   document.querySelectorAll('.land-type-size-container').forEach(container => {
-    const inputId = container.querySelector('.tag-input')?.id;
-    if (inputId && !container.dataset.landTypeSizeSetup) {
-      setupLandTypeSizeInput(container, inputId);
-      container.dataset.landTypeSizeSetup = 'true';
+    const ph = container.dataset.ph;
+    console.log('Found land-type-size-container:', { ph, containerId: container.id });
+    
+    // Check if it's land_type_detail (Loai_Dat_D) or land_type_size (Loai_Dat_F)
+    if (ph && ph.includes('Loai_Dat_D')) {
+      // This is land_type_detail
+      const containerId = container.id.replace('_container', '');
+      if (!container.dataset.landTypeDetailSetup) {
+        console.log('Setting up land type detail:', containerId, ph);
+        setupLandTypeDetailInput(container, containerId);
+        container.dataset.landTypeDetailSetup = 'true';
+      }
+    } else {
+      // This is land_type_size
+      const inputId = container.querySelector('.tag-input')?.id;
+      if (inputId && !container.dataset.landTypeSizeSetup) {
+        console.log('Setting up land type size:', inputId, ph);
+        setupLandTypeSizeInput(container, inputId);
+        container.dataset.landTypeSizeSetup = 'true';
+      }
     }
   });
 }
@@ -571,7 +667,7 @@ function formatInputValue(value, ph, map) {
   } else if (map.type === "number") {
     if (ph.includes('CCCD') && value) {
       const digits = value.replace(/\D/g, "");
-      if (/^\d{12}$/.test(digits)) {
+      if (/^\d{9}$|^\d{12}$/.test(digits)) {
         formatted = window.formatCCCD ? window.formatCCCD(digits) : digits;
       } else {
         formatted = digits;
@@ -582,6 +678,362 @@ function formatInputValue(value, ph, map) {
   return formatted;
 }
 
+
+function setupLandTypeDetailInput(container, inputId) {
+  const typeInput = document.getElementById(`${inputId}_type`);
+  const locationInput = document.getElementById(`${inputId}_location`);
+  const areaInput = document.getElementById(`${inputId}_area`);
+  const dropdown = document.getElementById(`${inputId}_dropdown`);
+  const addBtn = document.getElementById(`${inputId}_addBtn`);
+  const tagsWrapper = document.getElementById(`${inputId}_tags`);
+  const ph = container.dataset.ph;
+  
+  if (!typeInput || !locationInput || !areaInput || !dropdown || !addBtn || !tagsWrapper) {
+    console.warn('Land type detail: Missing elements', {
+      typeInput: !!typeInput,
+      locationInput: !!locationInput,
+      areaInput: !!areaInput,
+      dropdown: !!dropdown,
+      addBtn: !!addBtn,
+      tagsWrapper: !!tagsWrapper
+    });
+    return;
+  }
+  
+  // Function to get land keys (will always get latest from window.landTypeMap)
+  const getLandKeys = () => {
+    return window.landTypeMap ? Object.keys(window.landTypeMap).sort() : [];
+  };
+  
+  console.log('Land type detail setup:', { 
+    inputId, 
+    landKeysCount: getLandKeys().length, 
+    ph,
+    typeInput: !!typeInput,
+    locationInput: !!locationInput,
+    areaInput: !!areaInput,
+    dropdown: !!dropdown,
+    addBtn: !!addBtn,
+    tagsWrapper: !!tagsWrapper
+  });
+  
+  let tags = [];
+  let selectedIndex = -1;
+  let currentTagIndex = -1;
+  
+  function showAllInputs() {
+    const inputWrapper = document.getElementById(`${inputId}_input_wrapper`);
+    const locationWrapper = document.getElementById(`${inputId}_location_wrapper`);
+    const areaWrapper = document.getElementById(`${inputId}_area_wrapper`);
+    
+    if (inputWrapper) inputWrapper.classList.add('show');
+    if (locationWrapper) locationWrapper.style.display = 'block';
+    if (areaWrapper) areaWrapper.style.display = 'block';
+    addBtn.style.display = 'inline-flex';
+  }
+  
+  function hideExtraInputs() {
+    const inputWrapper = document.getElementById(`${inputId}_input_wrapper`);
+    const locationWrapper = document.getElementById(`${inputId}_location_wrapper`);
+    const areaWrapper = document.getElementById(`${inputId}_area_wrapper`);
+    
+    if (inputWrapper) inputWrapper.classList.add('show');
+    if (locationWrapper) locationWrapper.style.display = 'none';
+    if (areaWrapper) areaWrapper.style.display = 'none';
+    addBtn.style.display = 'none';
+    locationInput.value = '';
+    areaInput.value = '';
+    typeInput.value = '';
+    currentTagIndex = -1;
+    document.querySelectorAll('.land-type-tag').forEach(t => t.classList.remove('editing'));
+  }
+  
+  function renderTags() {
+    tagsWrapper.innerHTML = '';
+    
+    tags.forEach((tag, idx) => {
+      const tagEl = document.createElement('div');
+      tagEl.className = 'land-type-tag';
+      tagEl.dataset.tagIndex = idx;
+      
+      const codeSpan = document.createElement('span');
+      codeSpan.className = 'tag-code';
+      codeSpan.textContent = tag.code;
+      
+      const locationSpan = document.createElement('span');
+      locationSpan.className = 'tag-location';
+      locationSpan.textContent = tag.location ? ` - ${tag.location}` : '';
+      locationSpan.dataset.tagIndex = idx;
+      
+      const areaSpan = document.createElement('span');
+      areaSpan.className = 'tag-area';
+      areaSpan.textContent = tag.area ? ` - ${tag.area}m²` : '';
+      areaSpan.dataset.tagIndex = idx;
+      
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'tag-delete';
+      deleteBtn.innerHTML = '×';
+      deleteBtn.title = 'Xóa';
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        tags.splice(idx, 1);
+        renderTags();
+        updateHiddenValue();
+      };
+      
+      tagEl.appendChild(codeSpan);
+      tagEl.appendChild(locationSpan);
+      tagEl.appendChild(areaSpan);
+      tagEl.appendChild(deleteBtn);
+      
+      tagEl.onclick = (e) => {
+        if (e.target === deleteBtn || e.target.parentElement === deleteBtn) return;
+        
+        currentTagIndex = idx;
+        showAllInputs();
+        typeInput.value = tag.code;
+        locationInput.value = tag.location || '';
+        areaInput.value = tag.area || '';
+        typeInput.focus();
+        updateDropdown(tag.code);
+        document.querySelectorAll('.land-detail-tag').forEach(t => t.classList.remove('editing'));
+        tagEl.classList.add('editing');
+      };
+      
+      tagsWrapper.appendChild(tagEl);
+    });
+    
+    updateHiddenValue();
+  }
+  
+  function updateHiddenValue() {
+    const hiddenInput = document.getElementById(inputId);
+    if (!hiddenInput) {
+      console.warn('Hidden input not found:', inputId);
+      return;
+    }
+    
+    if (tags.length === 0) {
+      hiddenInput.value = '';
+    } else {
+      const value = tags.map(t => `${t.code}|${t.location || ''}|${t.area || ''}`).join(';');
+      hiddenInput.value = value;
+    }
+    hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+    hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  
+  function updateDropdown(query) {
+    if (!dropdown) return;
+    selectedIndex = -1;
+    
+    const landKeys = getLandKeys();
+    const selectedCodes = tags.map(t => t.code);
+    const filtered = landKeys.filter(key => 
+      !selectedCodes.includes(key) && 
+      (!query || key.toUpperCase().includes(query.toUpperCase()))
+    );
+    
+    console.log('Update dropdown:', { query, filteredCount: filtered.length, landKeysTotal: landKeys.length });
+    
+    dropdown.innerHTML = filtered
+      .map(key => {
+        const desc = window.landTypeMap ? window.landTypeMap[key] : key;
+        return `<div class="suggestion-item" data-key="${key}">${key}: ${desc}</div>`;
+      })
+      .join("");
+    
+    dropdown.style.display = filtered.length ? "block" : "none";
+    console.log('Dropdown display:', dropdown.style.display, 'Items:', filtered.slice(0, 3));
+  }
+  
+  typeInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim().toUpperCase();
+    console.log('Type input changed:', query);
+    updateDropdown(query);
+    // Don't auto-show inputs on typing, only after selection
+  });
+  
+  typeInput.addEventListener('focus', () => {
+    console.log('Type input focused');
+    const query = typeInput.value.trim().toUpperCase();
+    updateDropdown(query);
+  });
+  
+  typeInput.addEventListener('keydown', (e) => {
+    const items = dropdown.querySelectorAll('.suggestion-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (items.length > 0) {
+        selectedIndex = (selectedIndex + 1) % items.length;
+        items.forEach((item, i) => {
+          item.classList.toggle('selected', i === selectedIndex);
+          if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+        });
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (items.length > 0) {
+        selectedIndex = selectedIndex <= 0 ? items.length - 1 : selectedIndex - 1;
+        items.forEach((item, i) => {
+          item.classList.toggle('selected', i === selectedIndex);
+          if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+        });
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && items[selectedIndex]) {
+        const key = items[selectedIndex].dataset.key;
+        typeInput.value = key;
+        dropdown.style.display = 'none';
+        selectedIndex = -1;
+        showAllInputs();
+        setTimeout(() => {
+          locationInput.focus();
+        }, 50);
+      } else if (items.length === 1) {
+        const key = items[0].dataset.key;
+        typeInput.value = key;
+        dropdown.style.display = 'none';
+        selectedIndex = -1;
+        showAllInputs();
+        setTimeout(() => {
+          locationInput.focus();
+        }, 50);
+      }
+    } else if (e.key === 'Escape') {
+      dropdown.style.display = 'none';
+      selectedIndex = -1;
+    } else if (e.key === 'Tab') {
+      if (items.length === 1) {
+        e.preventDefault();
+        const key = items[0].dataset.key;
+        typeInput.value = key;
+        dropdown.style.display = 'none';
+        selectedIndex = -1;
+        showAllInputs();
+        setTimeout(() => {
+          locationInput.focus();
+        }, 50);
+      }
+    }
+  });
+  
+  dropdown.addEventListener('click', (e) => {
+    console.log('Dropdown clicked:', e.target, e.target.classList);
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (e.target.classList.contains('suggestion-item')) {
+      const key = e.target.dataset.key;
+      console.log('Selected land type:', key);
+      typeInput.value = key;
+      dropdown.style.display = 'none';
+      selectedIndex = -1;
+      showAllInputs();
+      setTimeout(() => {
+        locationInput.focus();
+      }, 50);
+    }
+  });
+  
+  locationInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      areaInput.focus();
+    }
+  });
+  
+  areaInput.addEventListener('input', (e) => {
+    let value = e.target.value.replace(/[^\d.]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    e.target.value = value;
+  });
+  
+  areaInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addBtn.click();
+    }
+  });
+  
+  addBtn.addEventListener('click', () => {
+    const code = typeInput.value.trim().toUpperCase();
+    const location = locationInput.value.trim();
+    const area = areaInput.value.trim();
+    
+    if (!code) {
+      typeInput.focus();
+      return;
+    }
+    
+    if (currentTagIndex >= 0) {
+      tags[currentTagIndex] = { code, location, area };
+      currentTagIndex = -1;
+    } else {
+      tags.push({ code, location, area });
+    }
+    
+    renderTags();
+    hideExtraInputs();
+    dropdown.style.display = 'none';
+  });
+  
+  const handleClickOutside = (e) => {
+    if (!container.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  };
+  document.addEventListener('click', handleClickOutside);
+  
+  const hiddenInput = document.getElementById(inputId);
+  if (hiddenInput && hiddenInput.value) {
+    const existingValue = hiddenInput.value.trim();
+    if (existingValue) {
+      const parts = existingValue.split(';').map(p => p.trim()).filter(Boolean);
+      parts.forEach(part => {
+        const [code, location, area] = part.split('|');
+        if (code) {
+          tags.push({
+            code: code.trim(),
+            location: location ? location.trim() : '',
+            area: area ? area.trim() : ''
+          });
+        }
+      });
+      renderTags();
+    }
+  }
+  
+  // Expose reload function for external use (e.g., session data loading)
+  container.reloadLandTypeDetailValue = function() {
+    tags.length = 0; // Clear existing tags
+    const currentValue = hiddenInput.value.trim();
+    if (currentValue) {
+      const parts = currentValue.split(';').map(p => p.trim()).filter(Boolean);
+      parts.forEach(part => {
+        const [code, location, area] = part.split('|');
+        if (code) {
+          tags.push({
+            code: code.trim(),
+            location: location ? location.trim() : '',
+            area: area ? area.trim() : ''
+          });
+        }
+      });
+    }
+    renderTags();
+    
+    // Clear input fields
+    locationInput.value = '';
+    areaInput.value = '';
+    typeInput.value = '';
+    currentTagIndex = -1;
+  };
+}
 
 window.setupNumericInput = setupNumericInput;
 window.setupCCCDInput = setupCCCDInput;
@@ -596,6 +1048,7 @@ window.setupAreaInput = setupAreaInput;
 window.setupNoteTextarea = setupNoteTextarea;
 window.setupDatePickers = setupDatePickers;
 window.setupAddressSelects = setupAddressSelects;
+window.setupLandTypeDetailInput = setupLandTypeDetailInput;
 function setupLandTypeSizeInput(container, inputId) {
   const input = document.getElementById(inputId);
   const tagsWrapper = container.querySelector('.tags-wrapper');
@@ -740,7 +1193,7 @@ function setupLandTypeSizeInput(container, inputId) {
         showInput();
         input.value = tag.code;
         updateDropdown(input.value);
-        document.querySelectorAll('.land-type-tag').forEach(t => t.classList.remove('editing'));
+        document.querySelectorAll('.land-type-tag[data-tag-index]').forEach(t => t.classList.remove('editing'));
         tagEl.classList.add('editing');
       };
       

@@ -23,16 +23,35 @@ function expandLandType(raw) {
 }
 
 function formatCCCD(number) {
-  if (!number || number.length !== 12 || !/^\d{12}$/.test(number)) return "";
-  return `${number.slice(0, 3)}.${number.slice(3, 6)}.${number.slice(
-    6,
-    9
-  )}.${number.slice(9, 12)}`;
+  if (!number) return "";
+  
+  // Format cho CMND 9 số: xxx.xxx.xxx
+  if (number.length === 9 && /^\d{9}$/.test(number)) {
+    return `${number.slice(0, 3)}.${number.slice(3, 6)}.${number.slice(6, 9)}`;
+  }
+  
+  // Format cho CCCD 12 số: xxx.xxx.xxx.xxx
+  if (number.length === 12 && /^\d{12}$/.test(number)) {
+    return `${number.slice(0, 3)}.${number.slice(3, 6)}.${number.slice(6, 9)}.${number.slice(9, 12)}`;
+  }
+  
+  return "";
 }
 
 function formatPhoneNumber(phoneNumber) {
   if (!phoneNumber || phoneNumber.length !== 10 || !/^\d{10}$/.test(phoneNumber)) return "";
-  return `${phoneNumber.slice(0, 4)}.${phoneNumber.slice(4, 7)}.${phoneNumber.slice(7, 10)}`;
+  return `${phoneNumber.slice(0, 3)}.${phoneNumber.slice(3, 6)}.${phoneNumber.slice(6, 10)}`;
+}
+
+function formatMST(mst) {
+  if (!mst || (mst.length !== 10 && mst.length !== 13) || !/^\d{10}$|^\d{13}$/.test(mst)) return "";
+  if (mst.length === 10) {
+    // Format 10 số: xxx.xxx.xxx.x
+    return `${mst.slice(0, 3)}.${mst.slice(3, 6)}.${mst.slice(6, 9)}.${mst.slice(9, 10)}`;
+  } else {
+    // Format 13 số: xxx.xxx.xxx.xxxx
+    return `${mst.slice(0, 3)}.${mst.slice(3, 6)}.${mst.slice(6, 9)}.${mst.slice(9, 13)}`;
+  }
 }
 
 function formatDate(isoDate) {
@@ -236,6 +255,7 @@ function toTitleCase(str) {
 window.expandLandType = expandLandType;
 window.formatCCCD = formatCCCD;
 window.formatPhoneNumber = formatPhoneNumber;
+window.formatMST = formatMST;
 window.formatDate = formatDate;
 window.formatWithCommas = formatWithCommas;
 window.numberToVietnameseWords = numberToVietnameseWords;

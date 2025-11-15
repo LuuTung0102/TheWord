@@ -728,6 +728,11 @@ label.required::after {
   flex: 1;
 }
 
+.field-wrapper.full-width {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
 .form-field {
   display: flex;
   flex-direction: column;
@@ -1750,3 +1755,5 @@ label.required::after {
 .file-delete-btn:hover {
   background: #f44336;
 }
+
+/* Land Type Detail uses same styles as Land Type Size */

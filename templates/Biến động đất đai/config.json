@@ -1,9 +1,7 @@
 {
     "folder": {
       "id": "uy-quyen",
-      "name": "Giấy tờ khác",
-      "description": "",
-      "icon": ""
+      "name": "Biến động đất đai"
     },
   
     "templates": [
@@ -11,10 +9,21 @@
         "id": "hd-bd",
         "filename": "Biến động.docx",
         "name": "Biến động",
-        "description": "Biến động",
+        "description": "Giấy biến động đất đai",
         "groups": ["BD"],
         "placeholders": {
           "BD": ["MEN1"]
+        }
+      },
+      {
+        "id": "don-dang-ky-bd",
+        "filename": "Đơn đăng ký biến động đất.docx",
+        "name": "Đơn đăng ký biến động đất",
+        "description": "Đơn đăng ký biến động đất đai",
+        "groups": ["BD", "LAND"],
+        "placeholders": {
+          "BD": ["MEN1", "MEN2"],
+          "LAND": ["INFO"]
         }
       }
     ],
@@ -22,14 +31,20 @@
     "groups": [
       {
         "id": "BD",
-        "label": "Người sử hữu",
+        "label": "Người sử dụng đất",
         "order": 1,
-        "description": "Người sử hữu"
+        "description": "Thông tin người sử dụng đất"
+      },
+      {
+        "id": "LAND",
+        "label": "Thông tin thửa đất",
+        "order": 2,
+        "description": "Thông tin đất đai"
       }
     ],
   
     "fieldSchemas": {
-      "BDInfo": {
+      "PersonalInfo": {
         "description": "Thông tin biến động đất đai",
         "applicableTo": ["BD"],
         "fields": [
@@ -62,7 +77,7 @@
           {
             "name": "CCCD",
             "label": "CCCD",
-            "type": "text",
+            "type": "number",
             "required": true
           },
           {
@@ -201,12 +216,13 @@
     "fieldMappings": [
       {
         "group": "BD",
-        "schema": "BDInfo",
+        "schema": "PersonalInfo",
         "subgroups": [
-          {"id": "MEN1", "label": "Người sử dụng","visible": true}
+          {"id": "MEN1", "label": "Thông tin cá nhân", "visible": true},
+          {"id": "MEN2", "label": "Thông tin cá nhân", "visible": false}
         ],
-        "suffixes": ["1"],
-        "defaultGenders": ["Ông"]
+        "suffixes": ["1","2"],
+        "defaultGenders": ["Ông", "Bà"]
       },
       {
       "group": "LAND",
