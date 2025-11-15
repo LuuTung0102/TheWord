@@ -229,7 +229,7 @@
         "schema": "PersonalInfo",
         "subgroups": [
           {"id": "MEN1", "label": "Người ủy quyền","visible": true},
-          {"id": "MEN2", "label": "Người ủy quyền","visible": true}
+          {"id": "MEN2", "label": "Người ủy quyền","visible": false}
         ],
         "suffixes": ["1","2"],
         "defaultGenders": ["Ông","Bà"]
