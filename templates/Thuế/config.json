@@ -130,6 +130,7 @@
         { "name": "Loai_Dat_D", "label": "Loại đất chi tiết", "type": "land_type_detail", "required": true },
         { "name": "VTTD", "label": "Vị trí thửa đất", "type": "text", "required": true },
         { "name": "TDCSPL", "label": "Thay đổi cơ sở pháp lý", "type": "date", "required": true },
+        { "name": "AddressQS", "label": "Địa chỉ giao QSDĐ", "type":"address-select", "required": true},
         { "name": "HTSD", "label": "Hình thức sử dụng", "type": "select", "options": ["Sử dụng chung", "Sử dụng riêng"], "required": true },
         { "name": "THSD", "label": "Thời hạn sử dụng", "type": "textarea", "required": true },
         { "name": "AddressD", "label": "Địa chỉ thửa đất", "type": "address-select", "required": true },

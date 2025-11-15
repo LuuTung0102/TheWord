@@ -12,9 +12,9 @@
         "filename": "Giấy ủy quyền.docx",
         "name": "Giấy ủy quyền",
         "description": "Giấy ủy quyền",
-        "groups": ["BCN", "BNUQ", "LAND"],
+        "groups": ["BUQ", "BNUQ", "LAND"],
         "placeholders": {
-          "BCN": ["MEN1"],
+          "BUQ": ["MEN1","MEN2"],
           "BNUQ": ["MEN7"],
           "LAND": ["INFO"]
         }
@@ -228,10 +228,11 @@
         "group": "BUQ",
         "schema": "PersonalInfo",
         "subgroups": [
-          {"id": "MEN1", "label": "Người ủy quyền","visible": true}
+          {"id": "MEN1", "label": "Người ủy quyền","visible": true},
+          {"id": "MEN2", "label": "Người ủy quyền","visible": true}
         ],
-        "suffixes": ["1"],
-        "defaultGenders": ["Ông"]
+        "suffixes": ["1","2"],
+        "defaultGenders": ["Ông","Bà"]
       },
       {
         "group": "BCN",
