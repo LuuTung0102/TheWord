@@ -1,30 +1,33 @@
 (function() {
-  class FileManager {
+  // Extend BaseModal
+  const BaseModal = window.BaseModal;
+  
+  if (!BaseModal) {
+    console.error('❌ BaseModal not found. FileManager requires BaseModal.');
+    return;
+  }
+
+  class FileManager extends BaseModal {
     constructor() {
-      this.modal = null;
-      this.isInitialized = false;
+      super({
+        modalId: 'fileManagerModal',
+        modalClass: 'file-manager-modal',
+        title: '📄 Quản lý File Word'
+      });
       this.folders = [];
       this.selectedFolder = null;
       this.files = [];
     }
 
     /**
-     * Initialize và show modal
+     * Override: On init hook
      */
-    async init() {
-      if (!this.isInitialized) {
-        this.createModal();
-        this.isInitialized = true;
-      }
-
+    async onInit() {
       // Load folders
       await this.loadFolders();
 
       // Render
       this.renderFolderList();
-
-      // Show modal
-      this.show();
     }
 
     /**
@@ -60,67 +63,83 @@
     }
 
     /**
-     * Tạo modal HTML structure
+     * Override: Get modal body HTML
      */
-    createModal() {
-      const modalHtml = `
-        <div id="fileManagerModal" class="file-manager-modal" style="display: none;">
-          <div class="file-manager-overlay"></div>
-          <div class="file-manager-container">
-            <div class="file-manager-header">
-              <h2>📄 Quản lý File Word</h2>
-              <button class="file-manager-close" onclick="window.fileManager.hide()">✕</button>
+    getModalBodyHTML() {
+      return `
+        <div class="file-manager-content">
+          <div class="file-manager-sidebar">
+            <div class="file-manager-sidebar-header">
+              <h3>Folders</h3>
             </div>
-            <div class="file-manager-body">
-              <div class="file-manager-content">
-                <div class="file-manager-sidebar">
-                  <div class="file-manager-sidebar-header">
-                    <h3>Folders</h3>
-                  </div>
-                  <div id="folderListContainer" class="folder-list-container">
-                    <!-- Folder list will be rendered here -->
-                  </div>
-                </div>
-                <div class="file-manager-main">
-                  <div class="file-manager-main-header">
-                    <h3 id="currentFolderName">Chọn folder</h3>
-                    <button id="addFileBtn" class="file-add-btn" onclick="window.fileManager.handleAddFile()" disabled>
-                      ➕ Thêm file
-                    </button>
-                  </div>
-                  <div id="fileListContainer" class="file-list-container">
-                    <div class="file-empty-state">
-                      <div class="file-empty-state-icon">📁</div>
-                      <p>Chọn folder từ danh sách bên trái</p>
-                    </div>
-                  </div>
-                </div>
+            <div id="folderListContainer" class="folder-list-container">
+              <!-- Folder list will be rendered here -->
+            </div>
+          </div>
+          <div class="file-manager-main">
+            <div class="file-manager-main-header">
+              <h3 id="currentFolderName">Chọn folder</h3>
+              <button id="addFileBtn" class="file-add-btn" disabled>
+                ➕ Thêm file
+              </button>
+            </div>
+            <div id="fileListContainer" class="file-list-container">
+              <div class="file-empty-state">
+                <div class="file-empty-state-icon">📁</div>
+                <p>Chọn folder từ danh sách bên trái</p>
               </div>
             </div>
           </div>
         </div>
       `;
-
-      document.body.insertAdjacentHTML('beforeend', modalHtml);
-      this.modal = document.getElementById('fileManagerModal');
     }
 
     /**
-     * Show modal
+     * Override: Setup custom event listeners
      */
-    show() {
-      if (this.modal) {
-        this.modal.style.display = 'block';
+    setupCustomEventListeners() {
+      // Add file button
+      const addFileBtn = this.querySelector('#addFileBtn');
+      if (addFileBtn) {
+        this.addEventListener(addFileBtn, 'click', () => this.handleAddFile());
+      }
+
+      // Use event delegation for folder list
+      const folderContainer = this.querySelector('#folderListContainer');
+      if (folderContainer) {
+        this.addDelegatedListener(folderContainer, '.folder-list-item', 'click', function(e) {
+          const folderName = this.getAttribute('data-folder-name');
+          if (folderName) {
+            window.fileManager.selectFolder(folderName);
+          }
+        });
+      }
+
+      // Use event delegation for file list
+      const fileContainer = this.querySelector('#fileListContainer');
+      if (fileContainer) {
+        // Open file buttons
+        this.addDelegatedListener(fileContainer, '.file-open-btn', 'click', function(e) {
+          const fileName = this.getAttribute('data-file-name');
+          if (fileName) {
+            window.fileManager.handleOpenFile(fileName);
+          }
+        });
+
+        // Delete file buttons
+        this.addDelegatedListener(fileContainer, '.file-delete-btn', 'click', function(e) {
+          const fileName = this.getAttribute('data-file-name');
+          if (fileName) {
+            window.fileManager.handleDeleteFile(fileName);
+          }
+        });
       }
     }
 
     /**
-     * Hide modal
+     * Override: Cleanup hook
      */
-    hide() {
-      if (this.modal) {
-        this.modal.style.display = 'none';
-      }
+    onCleanup() {
       this.selectedFolder = null;
       this.files = [];
     }
@@ -144,7 +163,7 @@
       const html = this.folders.map(folder => {
         const isSelected = this.selectedFolder && this.selectedFolder.name === folder.name;
         return `
-          <div class="folder-list-item ${isSelected ? 'selected' : ''}" onclick="window.fileManager.selectFolder('${folder.name}')">
+          <div class="folder-list-item ${isSelected ? 'selected' : ''}" data-folder-name="${folder.name}">
             <div class="folder-list-icon">${folder.icon || '📁'}</div>
             <div class="folder-list-info">
               <div class="folder-list-name">${folder.name}</div>
@@ -216,10 +235,10 @@
               <div class="file-item-name">${fileName}</div>
             </div>
             <div class="file-item-actions">
-              <button class="file-item-btn file-open-btn" onclick="window.fileManager.handleOpenFile('${fileName}')" title="Mở file">
+              <button class="file-item-btn file-open-btn" data-file-name="${fileName}" title="Mở file">
                 👁️
               </button>
-              <button class="file-item-btn file-delete-btn" onclick="window.fileManager.handleDeleteFile('${fileName}')" title="Xóa file">
+              <button class="file-item-btn file-delete-btn" data-file-name="${fileName}" title="Xóa file">
                 🗑️
               </button>
             </div>
@@ -320,7 +339,15 @@
      * Show config wizard để cấu hình template mới
      */
     async showConfigWizard(fileName) {
-      return new Prom
+      // TODO: Implement config wizard
+      alert(`✅ File "${fileName}" đã được thêm thành công!\n\nBạn có thể cấu hình template này sau.`);
+      return Promise.resolve();
+    }
+
+    /**
+     * Handle delete file
+     */
+    async handleDeleteFile(fileName) {
       if (!this.selectedFolder) return;
 
       const confirmed = confirm(`⚠️ Bạn có chắc muốn xóa file "${fileName}"?\n\nFile sẽ bị xóa vĩnh viễn và không thể khôi phục.`);

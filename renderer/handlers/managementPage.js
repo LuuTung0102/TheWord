@@ -1,73 +1,57 @@
 (function() {
-  class ManagementPage {
+  // Extend BaseModal
+  const BaseModal = window.BaseModal;
+  
+  if (!BaseModal) {
+    console.error('❌ BaseModal not found. ManagementPage requires BaseModal.');
+    return;
+  }
+
+  class ManagementPage extends BaseModal {
     constructor() {
-      this.modal = null;
-      this.isInitialized = false;
+      super({
+        modalId: 'managementPageModal',
+        modalClass: 'management-page-modal',
+        title: '⚙️ Quản lý'
+      });
     }
 
     /**
-     * Initialize và show modal
+     * Override: Get modal body HTML
      */
-    async init() {
-      if (!this.isInitialized) {
-        this.createModal();
-        this.isInitialized = true;
-      }
-
-      // Show modal
-      this.show();
-    }
-
-    /**
-     * Tạo modal HTML structure
-     */
-    createModal() {
-      const modalHtml = `
-        <div id="managementPageModal" class="management-page-modal" style="display: none;">
-          <div class="management-page-overlay"></div>
-          <div class="management-page-container">
-            <div class="management-page-header">
-              <h2>⚙️ Quản lý</h2>
-              <button class="management-page-close" onclick="window.managementPage.hide()">✕</button>
-            </div>
-            <div class="management-page-body">
-              <div class="management-cards">
-                <div class="management-card" onclick="window.managementPage.openFileManagement()">
-                  <div class="management-card-icon">📄</div>
-                  <h3 class="management-card-title">Quản lý File Word</h3>
-                  <p class="management-card-description">Xem, thêm, xóa và chỉnh sửa các file Word template</p>
-                </div>
-                
-                <div class="management-card" onclick="window.managementPage.openDataManagement()">
-                  <div class="management-card-icon">👥</div>
-                  <h3 class="management-card-title">Quản lý Dữ liệu</h3>
-                  <p class="management-card-description">Quản lý dữ liệu PERSON đã lưu</p>
-                </div>
-              </div>
-            </div>
+    getModalBodyHTML() {
+      return `
+        <div class="management-cards">
+          <div class="management-card" data-action="file-management">
+            <div class="management-card-icon">📄</div>
+            <h3 class="management-card-title">Quản lý File Word</h3>
+            <p class="management-card-description">Xem, thêm, xóa và chỉnh sửa các file Word template</p>
+          </div>
+          
+          <div class="management-card" data-action="data-management">
+            <div class="management-card-icon">👥</div>
+            <h3 class="management-card-title">Quản lý Dữ liệu</h3>
+            <p class="management-card-description">Quản lý dữ liệu PERSON đã lưu</p>
           </div>
         </div>
       `;
-
-      document.body.insertAdjacentHTML('beforeend', modalHtml);
-      this.modal = document.getElementById('managementPageModal');
     }
 
     /**
-     * Show modal
+     * Override: Setup custom event listeners
      */
-    show() {
-      if (this.modal) {
-        this.modal.style.display = 'block';
-      }
-    }
-
-    /**
-     * Hide modal
-     */
-    hide() {
-      if (this.modal) {
-        this.modal.style.display = 'none';
+    setupCustomEventListeners() {
+      const cardsContainer = this.querySelector('.management-cards');
+      if (cardsContainer) {
+        // Use event delegation for cards
+        this.addDelegatedListener(cardsContainer, '.management-card', 'click', function(e) {
+          const action = this.getAttribute('data-action');
+          if (action === 'file-management') {
+            window.managementPage.openFileManagement();
+          } else if (action === 'data-management') {
+            window.managementPage.openDataManagement();
+          }
+        });
       }
     }
 

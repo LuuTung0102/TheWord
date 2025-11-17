@@ -39,11 +39,11 @@
       "id": "PERSON3",
       "name": "Người 3",
       "data": {
-        "Gender": "Bà",
+        "Gender": "Ông",
         "Name": "",
         "Date": "",
         "CCCD": "",
-        "Noi_Cap": "Cục Cảnh sát QLHC về TTXH",
+        "Noi_Cap": "",
         "Ngay_Cap": "",
         "Address": ""
       }

@@ -1,84 +1,95 @@
 (function() {
-  class PersonManager {
+  // Extend BaseModal
+  const BaseModal = window.BaseModal;
+  
+  if (!BaseModal) {
+    console.error('❌ BaseModal not found. PersonManager requires BaseModal.');
+    return;
+  }
+
+  class PersonManager extends BaseModal {
     constructor() {
-      this.modal = null;
-      this.isInitialized = false;
+      super({
+        modalId: 'personManagerModal',
+        modalClass: 'person-manager-modal',
+        title: '⚙️ Quản lý dữ liệu PERSON'
+      });
       this.currentEditId = null;
-      this.onCloseCallback = null;
     }
 
     /**
-     * Initialize và show modal
+     * Override: Get modal body HTML
      */
-    async init(onCloseCallback) {
-      this.onCloseCallback = onCloseCallback;
-      
-      if (!this.isInitialized) {
-        this.createModal();
-        this.isInitialized = true;
-      }
-
-      // Load data (labels sẽ được load cùng với people)
-      await window.personDataService.loadPeople();
-
-      // Render list
-      this.renderPersonList();
-
-      // Show modal
-      this.show();
-    }
-
-    /**
-     * Tạo modal HTML structure
-     */
-    createModal() {
-      const modalHtml = `
-        <div id="personManagerModal" class="person-manager-modal" style="display: none;">
-          <div class="person-manager-overlay"></div>
-          <div class="person-manager-container">
-            <div class="person-manager-header">
-              <h2>⚙️ Quản lý dữ liệu PERSON</h2>
-              <button class="person-manager-close" onclick="window.personManager.hide()">✕</button>
-            </div>
-            <div class="person-manager-body">
-              <div class="person-manager-actions">
-                <button class="person-add-btn" onclick="window.personManager.handleAddPerson()">
-                  ➕ Thêm PERSON mới
-                </button>
-              </div>
-              <div id="personListContainer" class="person-list-container">
-                <!-- Person list will be rendered here -->
-              </div>
-            </div>
-          </div>
+    getModalBodyHTML() {
+      return `
+        <div class="person-manager-actions">
+          <button class="person-add-btn">
+            ➕ Thêm PERSON mới
+          </button>
+        </div>
+        <div id="personListContainer" class="person-list-container">
+          <!-- Person list will be rendered here -->
         </div>
       `;
-
-      // CSS đã được chuyển vào style.css
-      document.body.insertAdjacentHTML('beforeend', modalHtml);
-      this.modal = document.getElementById('personManagerModal');
     }
 
     /**
-     * Show modal
+     * Override: On init hook
      */
-    show() {
-      if (this.modal) {
-        this.modal.style.display = 'block';
-      }
-    }
-
-    /**
-     * Hide modal
-     */
-    hide() {
-      if (this.modal) {
-        this.modal.style.display = 'none';
-      }
+    async onInit() {
+      // Load data (labels sẽ được load cùng với people)
+      await window.personDataService.loadPeople();
       
-      // Call callback để refresh person-buttons
-      if (this.onCloseCallback && typeof this.onCloseCallback === 'function') {
-        this.onCloseCallback();
+      // Render list
+      this.renderPersonList();
+    }
+
+    /**
+     * Override: Setup custom event listeners
+     */
+    setupCustomEventListeners() {
+      // Add person button
+      const addBtn = this.querySelector('.person-add-btn');
+      if (addBtn) {
+        this.addEventListener(addBtn, 'click', () => this.handleAddPerson());
+      }
+
+      // Use event delegation for dynamic person list items
+      const listContainer = this.querySelector('#personListContainer');
+      if (listContainer) {
+        // Edit buttons
+        this.addDelegatedListener(listContainer, '.person-edit-btn', 'click', function(e) {
+          const personId = this.getAttribute('data-person-id');
+          if (personId) {
+            window.personManager.handleEditPerson(personId);
+          }
+        });
+
+        // Delete buttons
+        this.addDelegatedListener(listContainer, '.person-delete-btn', 'click', function(e) {
+          const personId = this.getAttribute('data-person-id');
+          if (personId) {
+            window.personManager.handleDeletePerson(personId);
+          }
+        });
+
+        // Form cancel buttons
+        this.addDelegatedListener(listContainer, '.person-form-cancel', 'click', () => {
+          if (this.currentEditId) {
+            this.cancelEdit();
+          } else {
+            this.cancelAdd();
+          }
+        });
+
+        // Form save buttons
+        this.addDelegatedListener(listContainer, '.person-form-save', 'click', () => {
+          if (this.currentEditId) {
+            this.saveEdit();
+          } else {
+            this.saveAdd();
+          }
+        });
       }
     }
 
@@ -86,7 +97,7 @@
      * Render danh sách PERSON
      */
     renderPersonList() {
-      const container = document.getElementById('personListContainer');
+      const container = this.querySelector('#personListContainer');
       if (!container) return;
 
       const people = window.personDataService.people;
@@ -111,10 +122,10 @@
             <div class="person-item-header">
               <div class="person-item-title">${person.id} - ${person.name}</div>
               <div class="person-item-actions">
-                <button class="person-edit-btn" onclick="window.personManager.handleEditPerson('${person.id}')">
+                <button class="person-edit-btn" data-person-id="${person.id}">
                   ✏️ Sửa
                 </button>
-                <button class="person-delete-btn" onclick="window.personManager.handleDeletePerson('${person.id}')">
+                <button class="person-delete-btn" data-person-id="${person.id}">
                   🗑️ Xóa
                 </button>
               </div>
@@ -154,63 +165,11 @@
      * Show edit form
      */
     showEditForm(person) {
-      const container = document.getElementById('personListContainer');
+      const container = this.querySelector('#personListContainer');
       if (!container) return;
 
-      const genderLabel = window.personDataService.getLabel('Gender');
-      const nameLabel = window.personDataService.getLabel('Name');
-      const dateLabel = window.personDataService.getLabel('Date');
-      const cccdLabel = window.personDataService.getLabel('CCCD');
-      const noiCapLabel = window.personDataService.getLabel('Noi_Cap');
-      const ngayCapLabel = window.personDataService.getLabel('Ngay_Cap');
-      const addressLabel = window.personDataService.getLabel('Address');
-
-      const formHtml = `
-        <div class="person-form-container">
-          <div class="person-form-title">✏️ Sửa ${person.id} - ${person.name}</div>
-          <div id="personFormError" class="person-error-message" style="display: none;"></div>
-          <div class="person-form-grid">
-            <div class="person-form-field">
-              <label class="person-form-label">${genderLabel} *</label>
-              <select id="editGender" class="person-form-select">
-                <option value="Ông" ${person.data.Gender === 'Ông' ? 'selected' : ''}>Ông</option>
-                <option value="Bà" ${person.data.Gender === 'Bà' ? 'selected' : ''}>Bà</option>
-              </select>
-            </div>
-            <div class="person-form-field">
-              <label class="person-form-label">${nameLabel} *</label>
-              <input type="text" id="editName" class="person-form-input" value="${person.data.Name || ''}" placeholder="Nhập họ và tên">
-            </div>
-            <div class="person-form-field">
-              <label class="person-form-label">${dateLabel} *</label>
-              <input type="text" id="editDate" class="person-form-input" value="${person.data.Date || ''}" placeholder="dd/mm/yyyy">
-            </div>
-            <div class="person-form-field">
-              <label class="person-form-label">${cccdLabel} *</label>
-              <input type="text" id="editCCCD" class="person-form-input" value="${person.data.CCCD || ''}" placeholder="Nhập số CCCD">
-            </div>
-            <div class="person-form-field">
-              <label class="person-form-label">${noiCapLabel} *</label>
-              <select id="editNoiCap" class="person-form-select">
-                <option value="Cục Cảnh sát QLHC về TTXH" ${person.data.Noi_Cap === 'Cục Cảnh sát QLHC về TTXH' ? 'selected' : ''}>Cục Cảnh sát QLHC về TTXH</option>
-                <option value="Công an T. Đắk Lắk" ${person.data.Noi_Cap === 'Công an T. Đắk Lắk' ? 'selected' : ''}>Công an T. Đắk Lắk</option>
-              </select>
-            </div>
-            <div class="person-form-field">
-              <label class="person-form-label">${ngayCapLabel} *</label>
-              <input type="text" id="editNgayCap" class="person-form-input" value="${person.data.Ngay_Cap || ''}" placeholder="dd/mm/yyyy">
-            </div>
-            <div class="person-form-field full-width">
-              <label class="person-form-label">${addressLabel} *</label>
-              <input type="text" id="editAddress" class="person-form-input" value="${person.data.Address || ''}" placeholder="Nhập địa chỉ thường trú">
-            </div>
-          </div>
-          <div class="person-form-actions">
-            <button class="person-form-cancel" onclick="window.personManager.cancelEdit()">Hủy</button>
-            <button class="person-form-save" onclick="window.personManager.saveEdit()">💾 Lưu</button>
-          </div>
-        </div>
-      `;
+      // Use FormBuilder to generate form
+      const formHtml = window.FormBuilder.buildPersonForm('edit', person.data, person.id);
 
       // Insert form at top
       container.insertAdjacentHTML('afterbegin', formHtml);
@@ -236,21 +195,13 @@
     saveEdit() {
       if (!this.currentEditId) return;
 
-      // Collect form data
-      const newData = {
-        Gender: document.getElementById('editGender').value,
-        Name: document.getElementById('editName').value.trim(),
-        Date: document.getElementById('editDate').value.trim(),
-        CCCD: document.getElementById('editCCCD').value.trim(),
-        Noi_Cap: document.getElementById('editNoiCap').value,
-        Ngay_Cap: document.getElementById('editNgayCap').value.trim(),
-        Address: document.getElementById('editAddress').value.trim()
-      };
+      // Collect form data using FormBuilder
+      const newData = window.FormBuilder.collectPersonFormData('edit');
 
       // Validate
       const validation = window.personDataService.validatePersonData(newData);
       if (!validation.isValid) {
-        this.showFormError(validation.errors.join('<br>'));
+        window.FormBuilder.showFormError(validation.errors.join('<br>'));
         return;
       }
 
@@ -262,18 +213,7 @@
         this.currentEditId = null;
         this.renderPersonList();
       } else {
-        this.showFormError('Không thể lưu dữ liệu. Vui lòng thử lại.');
-      }
-    }
-
-    /**
-     * Show form error
-     */
-    showFormError(message) {
-      const errorDiv = document.getElementById('personFormError');
-      if (errorDiv) {
-        errorDiv.innerHTML = message;
-        errorDiv.style.display = 'block';
+        window.FormBuilder.showFormError('Không thể lưu dữ liệu. Vui lòng thử lại.');
       }
     }
 
@@ -317,63 +257,11 @@
      * Show add form
      */
     showAddForm() {
-      const container = document.getElementById('personListContainer');
+      const container = this.querySelector('#personListContainer');
       if (!container) return;
 
-      const genderLabel = window.personDataService.getLabel('Gender');
-      const nameLabel = window.personDataService.getLabel('Name');
-      const dateLabel = window.personDataService.getLabel('Date');
-      const cccdLabel = window.personDataService.getLabel('CCCD');
-      const noiCapLabel = window.personDataService.getLabel('Noi_Cap');
-      const ngayCapLabel = window.personDataService.getLabel('Ngay_Cap');
-      const addressLabel = window.personDataService.getLabel('Address');
-
-      const formHtml = `
-        <div class="person-form-container">
-          <div class="person-form-title">➕ Thêm PERSON mới</div>
-          <div id="personFormError" class="person-error-message" style="display: none;"></div>
-          <div class="person-form-grid">
-            <div class="person-form-field">
-              <label class="person-form-label">${genderLabel} *</label>
-              <select id="addGender" class="person-form-select">
-                <option value="Ông" selected>Ông</option>
-                <option value="Bà">Bà</option>
-              </select>
-            </div>
-            <div class="person-form-field">
-              <label class="person-form-label">${nameLabel} *</label>
-              <input type="text" id="addName" class="person-form-input" placeholder="Nhập họ và tên">
-            </div>
-            <div class="person-form-field">
-              <label class="person-form-label">${dateLabel} *</label>
-              <input type="text" id="addDate" class="person-form-input" placeholder="dd/mm/yyyy">
-            </div>
-            <div class="person-form-field">
-              <label class="person-form-label">${cccdLabel} *</label>
-              <input type="text" id="addCCCD" class="person-form-input" placeholder="Nhập số CCCD">
-            </div>
-            <div class="person-form-field">
-              <label class="person-form-label">${noiCapLabel} *</label>
-              <select id="addNoiCap" class="person-form-select">
-                <option value="Cục Cảnh sát QLHC về TTXH" selected>Cục Cảnh sát QLHC về TTXH</option>
-                <option value="Công an T. Đắk Lắk">Công an T. Đắk Lắk</option>
-              </select>
-            </div>
-            <div class="person-form-field">
-              <label class="person-form-label">${ngayCapLabel} *</label>
-              <input type="text" id="addNgayCap" class="person-form-input" placeholder="dd/mm/yyyy">
-            </div>
-            <div class="person-form-field full-width">
-              <label class="person-form-label">${addressLabel} *</label>
-              <input type="text" id="addAddress" class="person-form-input" placeholder="Nhập địa chỉ thường trú">
-            </div>
-          </div>
-          <div class="person-form-actions">
-            <button class="person-form-cancel" onclick="window.personManager.cancelAdd()">Hủy</button>
-            <button class="person-form-save" onclick="window.personManager.saveAdd()">💾 Lưu</button>
-          </div>
-        </div>
-      `;
+      // Use FormBuilder to generate form
+      const formHtml = window.FormBuilder.buildPersonForm('add');
 
       // Insert form at top
       container.insertAdjacentHTML('afterbegin', formHtml);
@@ -396,21 +284,13 @@
      * Save add
      */
     saveAdd() {
-      // Collect form data
-      const newData = {
-        Gender: document.getElementById('addGender').value,
-        Name: document.getElementById('addName').value.trim(),
-        Date: document.getElementById('addDate').value.trim(),
-        CCCD: document.getElementById('addCCCD').value.trim(),
-        Noi_Cap: document.getElementById('addNoiCap').value,
-        Ngay_Cap: document.getElementById('addNgayCap').value.trim(),
-        Address: document.getElementById('addAddress').value.trim()
-      };
+      // Collect form data using FormBuilder
+      const newData = window.FormBuilder.collectPersonFormData('add');
 
       // Validate
       const validation = window.personDataService.validatePersonData(newData);
       if (!validation.isValid) {
-        this.showFormError(validation.errors.join('<br>'));
+        window.FormBuilder.showFormError(validation.errors.join('<br>'));
         return;
       }
 
@@ -421,7 +301,7 @@
         alert(`✅ Đã thêm thành công: ${newPerson.id} - ${newPerson.name}`);
         this.renderPersonList();
       } else {
-        this.showFormError('Không thể lưu dữ liệu. Vui lòng thử lại.');
+        window.FormBuilder.showFormError('Không thể lưu dữ liệu. Vui lòng thử lại.');
       }
     }
   }
