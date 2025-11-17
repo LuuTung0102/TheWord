@@ -18,6 +18,16 @@
           "CG": ["MEN2"],
           "LAND": ["INFO"]
         }
+      },
+       {
+        "id": "hd-thue",
+        "filename": "Phù lục khai thuế cá nhân.docx",
+        "name": "Phù lục khai thuế cá nhân",
+        "description": "Phù lục khai thuế cá nhân",
+        "groups": ["LAND"],
+        "placeholders": {
+          "LAND": ["INFO"]
+        }
       }
     ],
   
@@ -117,6 +127,8 @@
       "fields": [
         { "name": "QSH", "label": "Quyền sử dụng đất", "type": "text", "required": true },
         { "name": "So_so", "label": "Số sổ", "type": "text", "required": true },
+        { "name": "Plant", "label": "Cây trồng", "type": "text", "required": true },
+        { "name": "Mat_do", "label": "Mật độ cây trồng", "type": "number", "required": true },
         { "name": "Ngay_CapD", "label": "Ngày cấp", "type": "date", "required": true },
         { "name": "Thua_dat_so", "label": "Thửa đất số", "type": "text", "required": true },
         { "name": "Ban_do_so", "label": "Bản đồ số", "type": "text", "required": true },
@@ -124,6 +136,7 @@
         { "name": "S_Text", "label": "Diện tích (chữ)", "type": "text", "hidden": true, "required": false },
         { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "required": false, "hidden": true },
         { "name": "Noi_CapD", "label": "Nơi cấp", "type": "textarea", "required": true },
+        { "name": "SV", "label": "Diện tích đất trồng", "type": "options", "required": true},
         { "name": "NG", "label": "Nguồn gốc", "type": "textarea", "required": true },
         { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "required": true },
         { "name": "Loai_Dat_F", "label": "Loại đất (có diện tích)", "type": "land_type_size", "required": true},

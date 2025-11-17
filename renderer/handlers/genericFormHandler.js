@@ -99,6 +99,18 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
       </div>
       ${wrapperEnd}
     `;
+  } else if (type === "options") {
+    // Dynamic options field - will be populated based on context
+    const options = fieldDef.options || [];
+    inputHtml = `
+      ${wrapperStart}
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
+      <select id="${safeId}" data-ph="${ph}" class="input-field dynamic-options-field">
+        <option value="">-- Chọn --</option>
+        ${options.map((opt) => `<option value="${opt}">${opt}</option>`).join("")}
+      </select>
+      ${wrapperEnd}
+    `;
   } else if (type === "land_type_detail") {
     inputHtml = `
       ${wrapperStart}
@@ -473,21 +485,41 @@ async function renderGenericForm(placeholders, config, folderPath) {
         // Filter out fields that should be skipped based on land type priority
         const filteredItems = sortedItems.filter(({ ph }) => !skipLandFields.has(ph));
         
-      for (let i = 0; i < filteredItems.length; i += 3) {
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "form-row";
-        
-        for (let j = i; j < i + 3 && j < filteredItems.length; j++) {
-          const { ph, def } = filteredItems[j];
-          const { inputHtml } = renderGenericInputField(ph, def, groupKey, subKey);
-          const cellDiv = document.createElement("div");
-          cellDiv.className = "form-cell form-field";
-          cellDiv.innerHTML = inputHtml;
-          rowDiv.appendChild(cellDiv);
+        // Render fields with smart row handling for full-width fields
+        let i = 0;
+        while (i < filteredItems.length) {
+          const rowDiv = document.createElement("div");
+          rowDiv.className = "form-row";
+          
+          const { ph, def } = filteredItems[i];
+          const isFullWidth = def.type === 'land_type_detail';
+          
+          if (isFullWidth) {
+            // Full-width field takes entire row
+            const { inputHtml } = renderGenericInputField(ph, def, groupKey, subKey);
+            const cellDiv = document.createElement("div");
+            cellDiv.className = "form-cell form-field";
+            cellDiv.innerHTML = inputHtml;
+            rowDiv.appendChild(cellDiv);
+            i++;
+          } else {
+            // Regular fields - up to 3 per row
+            for (let j = 0; j < 3 && i < filteredItems.length; j++, i++) {
+              const { ph: currentPh, def: currentDef } = filteredItems[i];
+              // Stop if we hit a full-width field
+              if (currentDef.type === 'land_type_detail') {
+                break;
+              }
+              const { inputHtml } = renderGenericInputField(currentPh, currentDef, groupKey, subKey);
+              const cellDiv = document.createElement("div");
+              cellDiv.className = "form-cell form-field";
+              cellDiv.innerHTML = inputHtml;
+              rowDiv.appendChild(cellDiv);
+            }
+          }
+          
+          subgroupDiv.appendChild(rowDiv);
         }
-        
-        subgroupDiv.appendChild(rowDiv);
-      }
 
         groupDiv.appendChild(subgroupDiv);
       });
@@ -809,17 +841,37 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
   const skipLandFields = window.__renderDataStructures?.skipLandFields || new Set();
   const filteredItems = sortedItems.filter(({ ph }) => !skipLandFields.has(ph));
   
-  for (let i = 0; i < filteredItems.length; i += 3) {
+  // Render fields with smart row handling for full-width fields
+  let i = 0;
+  while (i < filteredItems.length) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "form-row";
     
-    for (let j = i; j < i + 3 && j < filteredItems.length; j++) {
-      const { ph, def } = filteredItems[j];
+    const { ph, def } = filteredItems[i];
+    const isFullWidth = def.type === 'land_type_detail';
+    
+    if (isFullWidth) {
+      // Full-width field takes entire row
       const { inputHtml } = renderGenericInputField(ph, def, groupKey, subKey);
       const cellDiv = document.createElement("div");
       cellDiv.className = "form-cell form-field";
       cellDiv.innerHTML = inputHtml;
       rowDiv.appendChild(cellDiv);
+      i++;
+    } else {
+      // Regular fields - up to 3 per row
+      for (let j = 0; j < 3 && i < filteredItems.length; j++, i++) {
+        const { ph: currentPh, def: currentDef } = filteredItems[i];
+        // Stop if we hit a full-width field
+        if (currentDef.type === 'land_type_detail') {
+          break;
+        }
+        const { inputHtml } = renderGenericInputField(currentPh, currentDef, groupKey, subKey);
+        const cellDiv = document.createElement("div");
+        cellDiv.className = "form-cell form-field";
+        cellDiv.innerHTML = inputHtml;
+        rowDiv.appendChild(cellDiv);
+      }
     }
     
     subgroupDiv.appendChild(rowDiv);
@@ -1121,12 +1173,84 @@ function setupReuseDataListeners() {
 }
 
 /**
+ * Populate dynamic options fields based on land data
+ * @param {object} groupData - Group data containing land information
+ * @param {string} targetSuffix - Suffix for field names
+ */
+function populateDynamicOptions(groupData, targetSuffix) {
+  // Extract areas from Loai_Dat_D or Loai_Dat_F
+  const areas = [];
+  
+  // Try Loai_Dat_D first (format: CODE|LOCATION|AREA)
+  if (groupData.Loai_Dat_D) {
+    const entries = groupData.Loai_Dat_D.split(';').map(e => e.trim()).filter(Boolean);
+    entries.forEach(entry => {
+      const parts = entry.split('|');
+      if (parts[2] && parts[2].trim()) {
+        const area = parts[2].trim();
+        if (!areas.includes(area)) {
+          areas.push(area);
+        }
+      }
+    });
+  }
+  
+  // Try Loai_Dat_F if no areas found (format: CODE AREA or AREAm2 CODE)
+  if (areas.length === 0 && groupData.Loai_Dat_F) {
+    const entries = groupData.Loai_Dat_F.split(';').map(e => e.trim()).filter(Boolean);
+    entries.forEach(entry => {
+      // Try format: "CODE AREA" (e.g., "BCS 1235")
+      let match = entry.match(/^[A-Z]+\s+(\d+(?:\.\d+)?)/i);
+      if (match) {
+        const area = match[1];
+        if (!areas.includes(area)) {
+          areas.push(area);
+        }
+        return;
+      }
+      // Try format: "AREAm2 CODE" (e.g., "1235m2 BCS")
+      match = entry.match(/^(\d+(?:\.\d+)?)\s*m2?\s+[A-Z]+/i);
+      if (match) {
+        const area = match[1];
+        if (!areas.includes(area)) {
+          areas.push(area);
+        }
+      }
+    });
+  }
+  
+  // Populate SV field with area options
+  if (areas.length > 0) {
+    const svPlaceholder = targetSuffix ? `SV${targetSuffix}` : 'SV';
+    const svSelect = document.querySelector(`select[data-ph="${svPlaceholder}"]`);
+    
+    if (svSelect && svSelect.classList.contains('dynamic-options-field')) {
+      // Clear existing options except the first one
+      svSelect.innerHTML = '<option value="">-- Chọn --</option>';
+      
+      // Add area options
+      areas.forEach(area => {
+        const option = document.createElement('option');
+        option.value = area;
+        option.textContent = `${area}m²`;
+        svSelect.appendChild(option);
+      });
+      
+      console.log('✅ Populated SV options:', areas);
+    }
+  }
+}
+
+/**
  * Fill form với dữ liệu group (MEN hoặc LAND/INFO...)
  * @param {object} groupData - {Name: "A", CCCD: "123", Address: "Xã ABC, H. XYZ, T. DEF"}
  * @param {string} targetSuffix - "1", "2", "7"... (hoặc "" cho LAND/INFO)
  */
 function fillFormWithMenData(groupData, targetSuffix) {
   const hasLoaiDatF = Object.keys(groupData).some(key => key === 'Loai_Dat_F');
+  
+  // Populate dynamic options first
+  populateDynamicOptions(groupData, targetSuffix);
   
   Object.keys(groupData).forEach(fieldName => {
     const value = groupData[fieldName];
