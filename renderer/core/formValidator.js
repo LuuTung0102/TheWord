@@ -28,14 +28,6 @@ function validateForm() {
   return true;
 }
 
-/**
- * Validate form data against schema
- * @param {Object} formData - Collected form data
- * @param {Array} fieldMappings - Field mappings from config
- * @param {Object} fieldSchemas - Field schemas from config
- * @param {Array} templateGroups - Groups used in current template
- * @returns {Array} - Array of error objects
- */
 function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups) {
   const errors = [];
   const visibleSubgroups = window.visibleSubgroups || new Set();
@@ -108,19 +100,12 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
   return errors;
 }
 
-/**
- * Display validation errors to user
- * @param {Array} errors - Array of error objects
- */
 function displayValidationErrors(errors) {
   if (errors.length === 0) return;
   scrollToFirstError(errors);
 }
 
-/**
- * Scroll to the first error field
- * @param {Array} errors - Array of error objects
- */
+
 function scrollToFirstError(errors) {
   if (errors.length === 0) return;
 
@@ -158,12 +143,6 @@ function scrollToFirstError(errors) {
   }
 }
 
-/**
- * Validate a single field (for real-time validation)
- * @param {string} fieldName - Field name/placeholder
- * @param {*} value - Field value
- * @returns {boolean} - true if valid
- */
 function validateField(fieldName, value) {
   const currentTemplate = window.currentTemplate;
   if (!currentTemplate || !currentTemplate.config) return true;

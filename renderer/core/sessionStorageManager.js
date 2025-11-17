@@ -226,17 +226,14 @@
         return false;
       }
 
-      // Merge with existing data for the same file to preserve fields not in current template
       if (existingData[fileName] && existingData[fileName].dataGroups) {
         Object.keys(existingData[fileName].dataGroups).forEach(groupKey => {
           if (dataGroups[groupKey]) {
-            // Merge existing group data with new data to preserve fields
             dataGroups[groupKey] = {
               ...existingData[fileName].dataGroups[groupKey],
               ...dataGroups[groupKey]
             };
           } else {
-            // Keep existing group if not in new data
             dataGroups[groupKey] = existingData[fileName].dataGroups[groupKey];
           }
         });

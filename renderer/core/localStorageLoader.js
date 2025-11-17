@@ -1,10 +1,5 @@
 (function() {
   let savedPeopleCache = null;
-
-  /**
-   * Load saved people from local_storage.json using fetch
-   * @returns {Promise<Array>} Array of saved people
-   */
   async function loadSavedPeople() {
     if (savedPeopleCache) {
       return savedPeopleCache;
@@ -27,11 +22,6 @@
     }
   }
 
-  /**
-   * Get a person's data by ID
-   * @param {string} personId - Person ID (e.g., "PERSON1")
-   * @returns {Object|null} Person data or null
-   */
   function getPersonById(personId) {
     if (!savedPeopleCache) {
       return null;
@@ -45,9 +35,6 @@
     return null;
   }
 
-  /**
-   * Clear saved people cache
-   */
   function clearSavedPeopleCache() {
     savedPeopleCache = null;
     console.log('✅ Cleared saved people cache');

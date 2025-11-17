@@ -196,7 +196,6 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
             subgroup: 'INFO'
           };
           
-          // Ensure required is preserved from schemaField
           if (schemaField.hasOwnProperty('required')) {
             mapping[placeholder].required = schemaField.required;
           } else {

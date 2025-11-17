@@ -1,7 +1,5 @@
 (function() {
-  // Extend BaseModal
   const BaseModal = window.BaseModal;
-  
   if (!BaseModal) {
     console.error('❌ BaseModal not found. FileManager requires BaseModal.');
     return;
@@ -19,20 +17,11 @@
       this.files = [];
     }
 
-    /**
-     * Override: On init hook
-     */
     async onInit() {
-      // Load folders
       await this.loadFolders();
-
-      // Render
       this.renderFolderList();
     }
 
-    /**
-     * Load folders từ config
-     */
     async loadFolders() {
       try {
         const config = await window.ipcRenderer.invoke("load-main-config");
@@ -47,9 +36,6 @@
       }
     }
 
-    /**
-     * Load files trong folder
-     */
     async loadFilesInFolder(folderPath) {
       try {
         const templatesRoot = await window.ipcRenderer.invoke("get-templates-root");
@@ -62,9 +48,6 @@
       }
     }
 
-    /**
-     * Override: Get modal body HTML
-     */
     getModalBodyHTML() {
       return `
         <div class="file-manager-content">
@@ -94,17 +77,12 @@
       `;
     }
 
-    /**
-     * Override: Setup custom event listeners
-     */
     setupCustomEventListeners() {
-      // Add file button
       const addFileBtn = this.querySelector('#addFileBtn');
       if (addFileBtn) {
         this.addEventListener(addFileBtn, 'click', () => this.handleAddFile());
       }
 
-      // Use event delegation for folder list
       const folderContainer = this.querySelector('#folderListContainer');
       if (folderContainer) {
         this.addDelegatedListener(folderContainer, '.folder-list-item', 'click', function(e) {
@@ -115,10 +93,8 @@
         });
       }
 
-      // Use event delegation for file list
       const fileContainer = this.querySelector('#fileListContainer');
       if (fileContainer) {
-        // Open file buttons
         this.addDelegatedListener(fileContainer, '.file-open-btn', 'click', function(e) {
           const fileName = this.getAttribute('data-file-name');
           if (fileName) {
@@ -126,7 +102,6 @@
           }
         });
 
-        // Delete file buttons
         this.addDelegatedListener(fileContainer, '.file-delete-btn', 'click', function(e) {
           const fileName = this.getAttribute('data-file-name');
           if (fileName) {
@@ -136,17 +111,11 @@
       }
     }
 
-    /**
-     * Override: Cleanup hook
-     */
     onCleanup() {
       this.selectedFolder = null;
       this.files = [];
     }
 
-    /**
-     * Render folder list
-     */
     renderFolderList() {
       const container = document.getElementById('folderListContainer');
       if (!container) return;
@@ -176,9 +145,6 @@
       container.innerHTML = html;
     }
 
-    /**
-     * Select folder
-     */
     async selectFolder(folderName) {
       const folder = this.folders.find(f => f.name === folderName);
       if (!folder) return;
@@ -186,22 +152,16 @@
       this.selectedFolder = folder;
       this.files = await this.loadFilesInFolder(folder.path);
 
-      // Update UI
       this.renderFolderList();
       this.renderFileList();
       
-      // Enable add button
       const addBtn = document.getElementById('addFileBtn');
       if (addBtn) addBtn.disabled = false;
 
-      // Update header
       const headerName = document.getElementById('currentFolderName');
       if (headerName) headerName.textContent = folder.name;
     }
 
-    /**
-     * Render file list
-     */
     renderFileList() {
       const container = document.getElementById('fileListContainer');
       if (!container) return;
@@ -249,9 +209,6 @@
       container.innerHTML = html;
     }
 
-    /**
-     * Handle add file
-     */
     async handleAddFile() {
       if (!this.selectedFolder) {
         alert('❌ Vui lòng chọn folder trước');
@@ -259,7 +216,6 @@
       }
 
       try {
-        // Tạo input file element
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.docx';
@@ -269,28 +225,23 @@
           const file = e.target.files[0];
           if (!file) return;
 
-          // Validate file type
           if (!file.name.endsWith('.docx')) {
             alert('❌ Chỉ chấp nhận file .docx');
             return;
           }
 
           try {
-            // Read file as buffer
             const arrayBuffer = await file.arrayBuffer();
             const buffer = Array.from(new Uint8Array(arrayBuffer));
 
-            // Save to temp
             const tempPath = await window.ipcRenderer.invoke('save-temp-file', {
               buffer: buffer,
               fileName: file.name
             });
 
-            // Upload to templates folder
             const templatesRoot = await window.ipcRenderer.invoke("get-templates-root");
             const targetFolder = `${templatesRoot}\\${this.selectedFolder.path.replace(/\//g, '\\')}`;
             
-            // Copy file
             const finalFileName = await window.ipcRenderer.invoke('copy-file-to-folder', {
               sourcePath: tempPath,
               targetFolder: targetFolder,
@@ -298,10 +249,8 @@
             });
 
             if (finalFileName) {
-              // Show config wizard
               await this.showConfigWizard(finalFileName);
               
-              // Reload files
               this.files = await this.loadFilesInFolder(this.selectedFolder.path);
               this.renderFileList();
             }
@@ -318,9 +267,6 @@
       }
     }
 
-    /**
-     * Handle open file
-     */
     async handleOpenFile(fileName) {
       if (!this.selectedFolder) return;
 
@@ -335,18 +281,11 @@
       }
     }
 
-    /**
-     * Show config wizard để cấu hình template mới
-     */
     async showConfigWizard(fileName) {
-      // TODO: Implement config wizard
       alert(`✅ File "${fileName}" đã được thêm thành công!\n\nBạn có thể cấu hình template này sau.`);
       return Promise.resolve();
     }
 
-    /**
-     * Handle delete file
-     */
     async handleDeleteFile(fileName) {
       if (!this.selectedFolder) return;
 
@@ -362,7 +301,6 @@
         
         if (result.success) {
           alert('✅ Đã xóa file thành công');
-          // Reload files
           this.files = await this.loadFilesInFolder(this.selectedFolder.path);
           this.renderFileList();
         } else {
@@ -375,7 +313,6 @@
     }
   }
 
-  // Initialize và attach vào window
   if (typeof window !== 'undefined') {
     window.fileManager = new FileManager();
     console.log('✅ FileManager initialized');

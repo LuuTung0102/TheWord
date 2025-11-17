@@ -87,7 +87,6 @@ class MainApp {
   }
 
   setupEventListeners() {
-    // Export button
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) {
       exportBtn.addEventListener('click', () => this.handleExport());
@@ -219,7 +218,6 @@ class MainApp {
   }
 
   findMatchingTemplate(placeholders, templates, fileName) {
-    // Chỉ match theo filename
     for (const template of templates) {
       if (template.filename === fileName) {
         return template;
@@ -355,8 +353,6 @@ class MainApp {
       if (window.collectGenericFormData) {
         const data = window.collectGenericFormData();
         console.log('📊 Collected form data (generic):', data);
-        
-        // Check if Loai_Dat_D exists
         if (data.Loai_Dat_D) {
           console.log('✅ Loai_Dat_D found:', data.Loai_Dat_D);
         } else {

@@ -279,7 +279,6 @@
           const hasPlaceholderTag = paragraphAttrs.includes('data-has-placeholder');
           
           if (hasPlaceholderTag && (/,\s*,\s*(,\s*)+/.test(fullText) || fullText.includes(', ,'))) {
-            // Cleanup commas
             const cleanedContent = paragraphBuffer.join('').replace(/<w:t([^>]*)>([^<>&]*)<\/w:t>/g, (textMatch, attrs, content) => {
               if (!content || content.trim().length === 0) {
                 return textMatch;
@@ -343,19 +342,15 @@
           } else {
             xml = zip.files['word/document.xml'].asText();
             
-            // Aggressive placeholder merging - run multiple times
             for (let i = 0; i < 10; i++) {
-              // Merge across text runs
               xml = xml.replace(/\{\{([^}]*)<\/w:t><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
               xml = xml.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
               
-              // Merge broken single braces
               xml = xml.replace(/\{<\/w:t><w:t[^>]*>\{/g, '{{');
               xml = xml.replace(/\}<\/w:t><w:t[^>]*>\}/g, '}}');
               xml = xml.replace(/\{<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>\{/g, '{{');
               xml = xml.replace(/\}<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>\}/g, '}}');
               
-              // Merge content between braces
               xml = xml.replace(/\{([^{}<]*)<\/w:t><w:t[^>]*>([^{}<]*)\}/g, '{$1$2}');
               xml = xml.replace(/\{([^{}<]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^{}<]*)\}/g, '{$1$2}');
             }
@@ -533,7 +528,6 @@
         }
       }
       
-      // Process Loai_Dat_D (land_type_detail)
       if (data.Loai_Dat_D && typeof data.Loai_Dat_D === 'string' && data.Loai_Dat_D.trim()) {
         try {
           const landTypesPath = path.join(__dirname, '..', 'renderer', 'config', 'land_types.json');
@@ -560,7 +554,6 @@
             }).filter(Boolean);
             
             if (formattedEntries.length > 0) {
-              // Join with line break (each entry on new line)
               data.Loai_Dat_D = formattedEntries.join('\n');
             } else {
               data.Loai_Dat_D = '';
@@ -591,7 +584,6 @@
           .split(' ')
           .map(word => {
             if (word.length === 0) return word;
-            // Handle Vietnamese characters properly
             return word.charAt(0).toUpperCase() + word.slice(1);
           })
           .join(' ');
@@ -613,7 +605,6 @@
           if (data[key].includes('m2')) {
             data[key] = data[key].replace(/m2/g, 'm²');
           }
-          // Check for problematic characters
           if (data[key].includes('{') || data[key].includes('}')) {
             console.warn(`Warning: Field ${key} contains curly braces:`, data[key]);
             data[key] = data[key].replace(/[{}]/g, '');
@@ -625,7 +616,6 @@
           if (fullData[key].includes('m2')) {
             fullData[key] = fullData[key].replace(/m2/g, 'm²');
           }
-          // Check for problematic characters
           if (fullData[key].includes('{') || fullData[key].includes('}')) {
             console.warn(`Warning: Field ${key} contains curly braces:`, fullData[key]);
             fullData[key] = fullData[key].replace(/[{}]/g, '');
@@ -651,15 +641,10 @@
         const renderedZip = doc.getZip();
         if (renderedZip.files['word/document.xml']) {
           let xml = renderedZip.files['word/document.xml'].asText();
-          
-          // Replace {{LINEBREAK}} with Word line break (disabled for now)
-          // xml = xml.replace(/\{\{LINEBREAK\}\}/g, '</w:t><w:br/><w:t>');
 
           if (useStreaming) {
-            // Sử dụng streaming cho cleanup
             xml = await cleanupXmlWithStreaming(xml);
           } else {
-            // Sử dụng cách cũ cho cleanup
           xml = xml.replace(/<w:p\b([^>]*)>([\s\S]*?)<\/w:p>/g, (match, paraAttrs, paraContent) => {
             if (!paraAttrs.includes('data-has-placeholder')) {
               return match; 

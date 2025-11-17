@@ -7,10 +7,6 @@
       this.labelsLoaded = false;
     }
 
-    /**
-     * Load tất cả PERSON từ local_storage.json
-     * @returns {Promise<Array>} Array of PERSON objects
-     */
     async loadPeople() {
       try {
         const response = await fetch('renderer/config/local_storage.json');
@@ -43,11 +39,6 @@
       }
     }
 
-    /**
-     * Lưu danh sách PERSON vào local_storage.json
-     * @param {Array} people - Array of PERSON objects
-     * @returns {Promise<boolean>} Success status
-     */
     async savePeople(people) {
       try {
         if (!window.ipcRenderer) {
@@ -82,11 +73,6 @@
       }
     }
 
-    /**
-     * Lấy một PERSON theo id
-     * @param {string} id - PERSON id (e.g., "PERSON1")
-     * @returns {Object|null} PERSON object or null
-     */
     getPerson(id) {
       if (!this.isLoaded) {
         console.warn('⚠️ Data not loaded yet');
@@ -97,11 +83,6 @@
       return person || null;
     }
 
-    /**
-     * Thêm PERSON mới
-     * @param {Object} data - PERSON data object
-     * @returns {Object} New PERSON object with generated id and name
-     */
     addPerson(data) {
       const newId = this.generatePersonId();
       const newName = this.generatePersonName();
@@ -119,12 +100,6 @@
       return newPerson;
     }
 
-    /**
-     * Cập nhật giá trị PERSON (chỉ values, không thay đổi keys)
-     * @param {string} id - PERSON id
-     * @param {Object} newData - New data values
-     * @returns {boolean} Success status
-     */
     updatePerson(id, newData) {
       const person = this.getPerson(id);
       
@@ -140,11 +115,6 @@
       return true;
     }
 
-    /**
-     * Xóa PERSON khỏi danh sách
-     * @param {string} id - PERSON id
-     * @returns {boolean} Success status
-     */
     deletePerson(id) {
       const index = this.people.findIndex(p => p.id === id);
       
@@ -161,10 +131,6 @@
       return true;
     }
 
-    /**
-     * Tạo id mới cho PERSON
-     * @returns {string} New PERSON id (e.g., "PERSON4")
-     */
     generatePersonId() {
       if (this.people.length === 0) {
         return 'PERSON1';
@@ -181,10 +147,6 @@
       return `PERSON${maxNumber + 1}`;
     }
 
-    /**
-     * Tạo name mới cho PERSON
-     * @returns {string} New PERSON name (e.g., "Người 4")
-     */
     generatePersonName() {
       if (this.people.length === 0) {
         return 'Người 1';
@@ -201,11 +163,6 @@
       return `Người ${maxNumber + 1}`;
     }
 
-    /**
-     * Validate dữ liệu PERSON
-     * @param {Object} data - PERSON data object
-     * @returns {Object} Validation result {isValid: boolean, errors: Array}
-     */
     validatePersonData(data) {
       const errors = [];
       const requiredFields = ['Name', 'Gender', 'Date', 'CCCD', 'Noi_Cap', 'Ngay_Cap', 'Address'];
@@ -231,11 +188,6 @@
       };
     }
 
-    /**
-     * Lấy label tiếng Việt cho property key
-     * @param {string} key - Property key (e.g., "Name", "CCCD")
-     * @returns {string} Vietnamese label or key as fallback
-     */
     getLabel(key) {
       return this.labels.get(key) || key;
     }

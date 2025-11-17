@@ -155,7 +155,6 @@
     }
   }
 
-  // Export
   if (typeof window !== 'undefined') {
     window.BaseModal = BaseModal;
     console.log('✅ BaseModal initialized');

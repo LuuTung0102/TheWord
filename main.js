@@ -460,8 +460,6 @@ ipcMain.handle("write-local-storage", async (event, data) => {
   try {
     const localStoragePath = path.join(__dirname, "renderer", "config", "local_storage.json");
     console.log("💾 write-local-storage: Writing to:", localStoragePath);
-    
-    // Write file với format đẹp
     fs.writeFileSync(localStoragePath, JSON.stringify(data, null, 2), 'utf8');
     
     console.log("✅ write-local-storage: Successfully saved");
@@ -515,7 +513,6 @@ ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, 
     let finalFileName = fileName;
     let counter = 1;
     
-    // Check if file exists, add counter if needed
     while (fs.existsSync(targetPath)) {
       const ext = path.extname(fileName);
       const name = path.basename(fileName, ext);
@@ -527,7 +524,6 @@ ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, 
     fs.copyFileSync(sourcePath, targetPath);
     console.log(`✅ copy-file-to-folder: Copied to: ${targetPath}`);
     
-    // Clean up temp file
     try {
       fs.unlinkSync(sourcePath);
     } catch (cleanupError) {

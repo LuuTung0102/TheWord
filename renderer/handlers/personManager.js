@@ -1,5 +1,4 @@
 (function() {
-  // Extend BaseModal
   const BaseModal = window.BaseModal;
   
   if (!BaseModal) {
@@ -17,9 +16,6 @@
       this.currentEditId = null;
     }
 
-    /**
-     * Override: Get modal body HTML
-     */
     getModalBodyHTML() {
       return `
         <div class="person-manager-actions">
@@ -33,31 +29,19 @@
       `;
     }
 
-    /**
-     * Override: On init hook
-     */
     async onInit() {
-      // Load data (labels sẽ được load cùng với people)
       await window.personDataService.loadPeople();
-      
-      // Render list
       this.renderPersonList();
     }
 
-    /**
-     * Override: Setup custom event listeners
-     */
     setupCustomEventListeners() {
-      // Add person button
       const addBtn = this.querySelector('.person-add-btn');
       if (addBtn) {
         this.addEventListener(addBtn, 'click', () => this.handleAddPerson());
       }
 
-      // Use event delegation for dynamic person list items
       const listContainer = this.querySelector('#personListContainer');
       if (listContainer) {
-        // Edit buttons
         this.addDelegatedListener(listContainer, '.person-edit-btn', 'click', function(e) {
           const personId = this.getAttribute('data-person-id');
           if (personId) {
@@ -65,7 +49,6 @@
           }
         });
 
-        // Delete buttons
         this.addDelegatedListener(listContainer, '.person-delete-btn', 'click', function(e) {
           const personId = this.getAttribute('data-person-id');
           if (personId) {
@@ -73,7 +56,6 @@
           }
         });
 
-        // Form cancel buttons
         this.addDelegatedListener(listContainer, '.person-form-cancel', 'click', () => {
           if (this.currentEditId) {
             this.cancelEdit();
@@ -82,7 +64,6 @@
           }
         });
 
-        // Form save buttons
         this.addDelegatedListener(listContainer, '.person-form-save', 'click', () => {
           if (this.currentEditId) {
             this.saveEdit();
@@ -93,9 +74,6 @@
       }
     }
 
-    /**
-     * Render danh sách PERSON
-     */
     renderPersonList() {
       const container = this.querySelector('#personListContainer');
       if (!container) return;
@@ -147,9 +125,6 @@
       container.innerHTML = html;
     }
 
-    /**
-     * Handle edit PERSON
-     */
     handleEditPerson(id) {
       const person = window.personDataService.getPerson(id);
       if (!person) {
@@ -161,26 +136,14 @@
       this.showEditForm(person);
     }
 
-    /**
-     * Show edit form
-     */
     showEditForm(person) {
       const container = this.querySelector('#personListContainer');
       if (!container) return;
-
-      // Use FormBuilder to generate form
       const formHtml = window.FormBuilder.buildPersonForm('edit', person.data, person.id);
-
-      // Insert form at top
       container.insertAdjacentHTML('afterbegin', formHtml);
-
-      // Scroll to form
       container.scrollTop = 0;
     }
 
-    /**
-     * Cancel edit
-     */
     cancelEdit() {
       this.currentEditId = null;
       const formContainer = document.querySelector('.person-form-container');
@@ -189,23 +152,15 @@
       }
     }
 
-    /**
-     * Save edit
-     */
     saveEdit() {
       if (!this.currentEditId) return;
-
-      // Collect form data using FormBuilder
       const newData = window.FormBuilder.collectPersonFormData('edit');
-
-      // Validate
       const validation = window.personDataService.validatePersonData(newData);
       if (!validation.isValid) {
         window.FormBuilder.showFormError(validation.errors.join('<br>'));
         return;
       }
 
-      // Update
       const success = window.personDataService.updatePerson(this.currentEditId, newData);
       
       if (success) {
@@ -217,24 +172,18 @@
       }
     }
 
-    /**
-     * Handle delete PERSON
-     */
     handleDeletePerson(id) {
       const person = window.personDataService.getPerson(id);
       if (!person) {
         alert('❌ Không tìm thấy PERSON này');
         return;
       }
-
-      // Confirmation dialog
       const confirmed = confirm(`⚠️ Bạn có chắc muốn xóa "${person.name}"?\n\nDữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục.`);
       
       if (!confirmed) {
         return;
       }
 
-      // Delete
       const success = window.personDataService.deletePerson(id);
       
       if (success) {
@@ -245,34 +194,19 @@
       }
     }
 
-    /**
-     * Handle add PERSON
-     */
     handleAddPerson() {
-      this.currentEditId = null; // Reset edit mode
+      this.currentEditId = null; 
       this.showAddForm();
     }
 
-    /**
-     * Show add form
-     */
     showAddForm() {
       const container = this.querySelector('#personListContainer');
       if (!container) return;
-
-      // Use FormBuilder to generate form
       const formHtml = window.FormBuilder.buildPersonForm('add');
-
-      // Insert form at top
       container.insertAdjacentHTML('afterbegin', formHtml);
-
-      // Scroll to form
       container.scrollTop = 0;
     }
 
-    /**
-     * Cancel add
-     */
     cancelAdd() {
       const formContainer = document.querySelector('.person-form-container');
       if (formContainer) {
@@ -280,21 +214,15 @@
       }
     }
 
-    /**
-     * Save add
-     */
     saveAdd() {
-      // Collect form data using FormBuilder
       const newData = window.FormBuilder.collectPersonFormData('add');
 
-      // Validate
       const validation = window.personDataService.validatePersonData(newData);
       if (!validation.isValid) {
         window.FormBuilder.showFormError(validation.errors.join('<br>'));
         return;
       }
 
-      // Add
       const newPerson = window.personDataService.addPerson(newData);
       
       if (newPerson) {
@@ -306,7 +234,6 @@
     }
   }
 
-  // Initialize và attach vào window
   if (typeof window !== 'undefined') {
     window.personManager = new PersonManager();
     console.log('✅ PersonManager initialized');

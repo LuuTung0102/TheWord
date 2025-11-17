@@ -192,7 +192,6 @@ const BASE_PLACEHOLDERS = {
   },
 };
 
-// Export
 if (typeof window !== 'undefined') {
   window.BASE_PLACEHOLDERS = BASE_PLACEHOLDERS;
 }

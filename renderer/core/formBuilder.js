@@ -1,13 +1,6 @@
-/**
- * FormBuilder - Utility để generate form HTML
- * Giảm code duplication trong form generation
- */
-
 (function() {
   class FormBuilder {
-    /**
-     * Build form field HTML
-     */
+
     static buildField(config) {
       const {
         type = 'text',
@@ -40,7 +33,6 @@
         `;
       }
 
-      // Default: text input
       return `
         <div class="${className}-field${widthClass}">
           <label class="${className}-label">${label}${requiredMark}</label>
@@ -50,9 +42,6 @@
       `;
     }
 
-    /**
-     * Build person form fields
-     */
     static buildPersonFormFields(mode = 'add', personData = {}) {
       const prefix = mode === 'edit' ? 'edit' : 'add';
       const data = personData || {};
@@ -134,9 +123,6 @@
       return fields.map(field => this.buildField(field)).join('');
     }
 
-    /**
-     * Build complete person form
-     */
     static buildPersonForm(mode = 'add', personData = {}, personId = null) {
       const title = mode === 'edit' 
         ? `✏️ Sửa ${personId} - ${personData.Name || ''}` 
@@ -157,9 +143,6 @@
       `;
     }
 
-    /**
-     * Collect form data from person form
-     */
     static collectPersonFormData(mode = 'add') {
       const prefix = mode === 'edit' ? 'edit' : 'add';
 
@@ -174,9 +157,6 @@
       };
     }
 
-    /**
-     * Show form error
-     */
     static showFormError(message) {
       const errorDiv = document.getElementById('personFormError');
       if (errorDiv) {
@@ -185,9 +165,6 @@
       }
     }
 
-    /**
-     * Hide form error
-     */
     static hideFormError() {
       const errorDiv = document.getElementById('personFormError');
       if (errorDiv) {
@@ -196,7 +173,6 @@
     }
   }
 
-  // Export
   if (typeof window !== 'undefined') {
     window.FormBuilder = FormBuilder;
     console.log('✅ FormBuilder initialized');

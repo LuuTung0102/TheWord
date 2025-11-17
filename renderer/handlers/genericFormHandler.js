@@ -100,7 +100,6 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
       ${wrapperEnd}
     `;
   } else if (type === "options") {
-    // Dynamic options field - will be populated based on context
     const options = fieldDef.options || [];
     inputHtml = `
       ${wrapperStart}
@@ -176,7 +175,6 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
 }
 
 async function renderGenericForm(placeholders, config, folderPath) {
-  // Load labels từ local_storage.json nếu chưa load
   if (window.personDataService && !window.personDataService.labelsLoaded) {
     await window.personDataService.loadPeople();
   }
@@ -201,7 +199,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
     grouped[groupKey][subKey].push({ ph, def });
   });
   
-  // Determine which land fields to skip based on priority
   const skipLandFields = getLandFieldsToSkip(placeholders);
   
   window.__renderDataStructures = { phMapping, grouped, groupLabels, subgroupLabels, skipLandFields };
@@ -482,10 +479,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
         const items = (grouped[groupKey] && grouped[groupKey][subKey]) ? grouped[groupKey][subKey] : [];
         const sortedItems = sortGenericFields(items);
         
-        // Filter out fields that should be skipped based on land type priority
         const filteredItems = sortedItems.filter(({ ph }) => !skipLandFields.has(ph));
         
-        // Render fields with smart row handling for full-width fields
         let i = 0;
         while (i < filteredItems.length) {
           const rowDiv = document.createElement("div");
@@ -495,7 +490,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
           const isFullWidth = def.type === 'land_type_detail';
           
           if (isFullWidth) {
-            // Full-width field takes entire row
             const { inputHtml } = renderGenericInputField(ph, def, groupKey, subKey);
             const cellDiv = document.createElement("div");
             cellDiv.className = "form-cell form-field";
@@ -503,10 +497,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
             rowDiv.appendChild(cellDiv);
             i++;
           } else {
-            // Regular fields - up to 3 per row
             for (let j = 0; j < 3 && i < filteredItems.length; j++, i++) {
               const { ph: currentPh, def: currentDef } = filteredItems[i];
-              // Stop if we hit a full-width field
               if (currentDef.type === 'land_type_detail') {
                 break;
               }
@@ -639,7 +631,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
         window.reSetupAllInputs();
       }
       
-      // Setup sync from Loai_Dat_D to Loai_Dat_F (if both exist in template)
       setupLandTypeSync();
       
       setupPersonSelectionListeners(groupSources, grouped);
@@ -649,11 +640,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
   
 }
 
-/**
- * Determine which land type fields should be rendered based on priority
- * Priority: land_type_detail (Loai_Dat_D) > land_type_size (Loai_Dat_F) > land_type (Loai_Dat)
- * Returns an object with which fields to skip
- */
 function getLandFieldsToSkip(allPlaceholders) {
   const hasLoaiDatD = allPlaceholders.some(ph => ph === 'Loai_Dat_D');
   const hasLoaiDatF = allPlaceholders.some(ph => ph === 'Loai_Dat_F');
@@ -662,11 +648,9 @@ function getLandFieldsToSkip(allPlaceholders) {
   const skipFields = new Set();
   
   if (hasLoaiDatD) {
-    // If Loai_Dat_D exists, skip both Loai_Dat_F and Loai_Dat
     if (hasLoaiDatF) skipFields.add('Loai_Dat_F');
     if (hasLoaiDat) skipFields.add('Loai_Dat');
   } else if (hasLoaiDatF) {
-    // If only Loai_Dat_F exists (no Loai_Dat_D), skip Loai_Dat
     if (hasLoaiDat) skipFields.add('Loai_Dat');
   }
   
@@ -680,11 +664,6 @@ function getLandFieldsToSkip(allPlaceholders) {
   return skipFields;
 }
 
-/**
- * Sync data between land type fields
- * Loai_Dat_D -> Loai_Dat_F -> Loai_Dat
- * Creates hidden inputs for skipped fields to maintain data sync
- */
 function setupLandTypeSync() {
   const loaiDatDInput = document.querySelector('input[data-ph="Loai_Dat_D"]');
   let loaiDatFInput = document.querySelector('input[data-ph="Loai_Dat_F"]');
@@ -692,7 +671,6 @@ function setupLandTypeSync() {
   
   const skipLandFields = window.__renderDataStructures?.skipLandFields || new Set();
   
-  // Create hidden input for Loai_Dat_F if it was skipped but Loai_Dat_D exists
   if (loaiDatDInput && !loaiDatFInput && skipLandFields.has('Loai_Dat_F')) {
     loaiDatFInput = document.createElement('input');
     loaiDatFInput.type = 'hidden';
@@ -702,7 +680,6 @@ function setupLandTypeSync() {
     console.log('✅ Created hidden input for Loai_Dat_F');
   }
   
-  // Create hidden input for Loai_Dat if it was skipped
   if ((loaiDatDInput || loaiDatFInput) && !loaiDatInput && skipLandFields.has('Loai_Dat')) {
     loaiDatInput = document.createElement('input');
     loaiDatInput.type = 'hidden';
@@ -712,7 +689,6 @@ function setupLandTypeSync() {
     console.log('✅ Created hidden input for Loai_Dat');
   }
   
-  // Sync Loai_Dat_D -> Loai_Dat_F
   if (loaiDatDInput && loaiDatFInput) {
     const syncDtoF = () => {
       const value = loaiDatDInput.value;
@@ -722,7 +698,6 @@ function setupLandTypeSync() {
         return;
       }
       
-      // Convert from Loai_Dat_D format (CODE|LOCATION|AREA) to Loai_Dat_F format (CODE AREA)
       const entries = value.split(';').map(e => e.trim()).filter(Boolean);
       const converted = entries.map(entry => {
         const parts = entry.split('|');
@@ -742,7 +717,6 @@ function setupLandTypeSync() {
     console.log('✅ Setup sync: Loai_Dat_D -> Loai_Dat_F');
   }
   
-  // Sync Loai_Dat_F -> Loai_Dat
   if (loaiDatFInput && loaiDatInput) {
     const syncFtoD = () => {
       const value = loaiDatFInput.value;
@@ -752,10 +726,8 @@ function setupLandTypeSync() {
         return;
       }
       
-      // Convert from Loai_Dat_F format (CODE AREA) to Loai_Dat format (CODE+CODE+CODE)
       const entries = value.split(';').map(e => e.trim()).filter(Boolean);
       const codes = entries.map(entry => {
-        // Extract code (first part before space or number)
         const match = entry.match(/^([A-Z]+)/);
         return match ? match[1] : '';
       }).filter(Boolean);
@@ -771,17 +743,6 @@ function setupLandTypeSync() {
   }
 }
 
-/**
- * Render một subgroup đơn lẻ (dùng để add/remove động)
- * @param {string} groupKey - BCN, NCN, LAND...
- * @param {string} subKey - MEN1, MEN2, INFO...
- * @param {object} config - Config object
- * @param {object} phMapping - Placeholder mapping
- * @param {object} grouped - Grouped placeholders
- * @param {object} groupLabels - Group labels
- * @param {object} subgroupLabels - Subgroup labels
- * @returns {HTMLElement} - subgroupDiv element
- */
 function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, groupLabels, subgroupLabels) {
   const subgroupDiv = document.createElement("div");
   subgroupDiv.className = "form-subgroup";
@@ -837,11 +798,9 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
   const items = (grouped[groupKey] && grouped[groupKey][subKey]) ? grouped[groupKey][subKey] : [];
   const sortedItems = sortGenericFields(items);
   
-  // Get skip fields from window if available
   const skipLandFields = window.__renderDataStructures?.skipLandFields || new Set();
   const filteredItems = sortedItems.filter(({ ph }) => !skipLandFields.has(ph));
   
-  // Render fields with smart row handling for full-width fields
   let i = 0;
   while (i < filteredItems.length) {
     const rowDiv = document.createElement("div");
@@ -851,7 +810,6 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
     const isFullWidth = def.type === 'land_type_detail';
     
     if (isFullWidth) {
-      // Full-width field takes entire row
       const { inputHtml } = renderGenericInputField(ph, def, groupKey, subKey);
       const cellDiv = document.createElement("div");
       cellDiv.className = "form-cell form-field";
@@ -859,10 +817,8 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
       rowDiv.appendChild(cellDiv);
       i++;
     } else {
-      // Regular fields - up to 3 per row
       for (let j = 0; j < 3 && i < filteredItems.length; j++, i++) {
         const { ph: currentPh, def: currentDef } = filteredItems[i];
-        // Stop if we hit a full-width field
         if (currentDef.type === 'land_type_detail') {
           break;
         }
@@ -880,12 +836,6 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
   return subgroupDiv;
 }
 
-/**
- * Render dropdown để tái sử dụng dữ liệu đã điền
- * @param {string} groupKey - BCN, NCN, LAND...
- * @param {string} subKey - MEN1, MEN2, INFO...
- * @param {object} config - Config object
- */
 function renderReuseDataDropdown(groupKey, subKey, config) {
   let targetSuffix = '';
   if (config.fieldMappings) {
@@ -971,23 +921,16 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
   `;
 }
 
-/**
- * Refresh person-buttons sau khi thay đổi trong PersonManager
- */
+
 async function refreshPersonButtons(groupKey) {
-  // Clear cache
   if (typeof window.savedPeopleCache !== 'undefined') {
     window.savedPeopleCache = null;
   }
   
-  // Reload saved people
   const savedPeople = window.loadSavedPeople ? await window.loadSavedPeople() : [];
-  
-  // Find và update person-buttons container
   const buttonsContainer = document.getElementById(`person-buttons-${groupKey}`);
   if (!buttonsContainer) return;
   
-  // Re-render buttons
   buttonsContainer.innerHTML = savedPeople.map(person => `
     <button type="button" 
       class="person-btn" 
@@ -1013,7 +956,6 @@ async function refreshPersonButtons(groupKey) {
     </button>
   `).join('');
   
-  // Re-setup event listeners
   const buttons = buttonsContainer.querySelectorAll('.person-btn');
   buttons.forEach(button => {
     button.addEventListener('click', (e) => {
@@ -1066,7 +1008,6 @@ async function refreshPersonButtons(groupKey) {
   console.log('✅ Person buttons refreshed');
 }
 
-// Expose refreshPersonButtons to window
 if (typeof window !== 'undefined') {
   window.refreshPersonButtons = refreshPersonButtons;
 }
@@ -1137,7 +1078,7 @@ function setupReuseDataListeners() {
     select.addEventListener('change', (e) => {
       const value = e.target.value;
       const targetGroup = e.target.getAttribute('data-target-group');
-      const targetSubgroup = e.target.getAttribute('data-target-subgroup'); // MEN1, MEN2, LAND...
+      const targetSubgroup = e.target.getAttribute('data-target-subgroup'); 
       const targetSuffix = e.target.getAttribute('data-target-suffix');
       
       if (!value) {
@@ -1172,16 +1113,9 @@ function setupReuseDataListeners() {
   });
 }
 
-/**
- * Populate dynamic options fields based on land data
- * @param {object} groupData - Group data containing land information
- * @param {string} targetSuffix - Suffix for field names
- */
 function populateDynamicOptions(groupData, targetSuffix) {
-  // Extract areas from Loai_Dat_D or Loai_Dat_F
   const areas = [];
   
-  // Try Loai_Dat_D first (format: CODE|LOCATION|AREA)
   if (groupData.Loai_Dat_D) {
     const entries = groupData.Loai_Dat_D.split(';').map(e => e.trim()).filter(Boolean);
     entries.forEach(entry => {
@@ -1195,11 +1129,9 @@ function populateDynamicOptions(groupData, targetSuffix) {
     });
   }
   
-  // Try Loai_Dat_F if no areas found (format: CODE AREA or AREAm2 CODE)
   if (areas.length === 0 && groupData.Loai_Dat_F) {
     const entries = groupData.Loai_Dat_F.split(';').map(e => e.trim()).filter(Boolean);
     entries.forEach(entry => {
-      // Try format: "CODE AREA" (e.g., "BCS 1235")
       let match = entry.match(/^[A-Z]+\s+(\d+(?:\.\d+)?)/i);
       if (match) {
         const area = match[1];
@@ -1208,7 +1140,6 @@ function populateDynamicOptions(groupData, targetSuffix) {
         }
         return;
       }
-      // Try format: "AREAm2 CODE" (e.g., "1235m2 BCS")
       match = entry.match(/^(\d+(?:\.\d+)?)\s*m2?\s+[A-Z]+/i);
       if (match) {
         const area = match[1];
@@ -1219,16 +1150,12 @@ function populateDynamicOptions(groupData, targetSuffix) {
     });
   }
   
-  // Populate SV field with area options
   if (areas.length > 0) {
     const svPlaceholder = targetSuffix ? `SV${targetSuffix}` : 'SV';
     const svSelect = document.querySelector(`select[data-ph="${svPlaceholder}"]`);
     
     if (svSelect && svSelect.classList.contains('dynamic-options-field')) {
-      // Clear existing options except the first one
       svSelect.innerHTML = '<option value="">-- Chọn --</option>';
-      
-      // Add area options
       areas.forEach(area => {
         const option = document.createElement('option');
         option.value = area;
@@ -1241,15 +1168,8 @@ function populateDynamicOptions(groupData, targetSuffix) {
   }
 }
 
-/**
- * Fill form với dữ liệu group (MEN hoặc LAND/INFO...)
- * @param {object} groupData - {Name: "A", CCCD: "123", Address: "Xã ABC, H. XYZ, T. DEF"}
- * @param {string} targetSuffix - "1", "2", "7"... (hoặc "" cho LAND/INFO)
- */
 function fillFormWithMenData(groupData, targetSuffix) {
   const hasLoaiDatF = Object.keys(groupData).some(key => key === 'Loai_Dat_F');
-  
-  // Populate dynamic options first
   populateDynamicOptions(groupData, targetSuffix);
   
   Object.keys(groupData).forEach(fieldName => {
@@ -1261,16 +1181,13 @@ function fillFormWithMenData(groupData, targetSuffix) {
       return;
     }
     
-    // Handle land type fields - convert between formats as needed
     if (fieldName === 'Loai_Dat_D' || fieldName === 'Loai_Dat_F' || fieldName === 'Loai_Dat') {
       if (!value || typeof value !== 'string') return;
-      
-      // Skip if a higher priority field exists in groupData
       if (fieldName === 'Loai_Dat' && (groupData.Loai_Dat_D || groupData.Loai_Dat_F)) {
-        return; // Skip Loai_Dat if D or F exists
+        return; 
       }
       if (fieldName === 'Loai_Dat_F' && groupData.Loai_Dat_D) {
-        return; // Skip Loai_Dat_F if D exists
+        return; 
       }
       
       const loaiDatDPlaceholder = targetSuffix ? `Loai_Dat_D${targetSuffix}` : 'Loai_Dat_D';
@@ -1281,26 +1198,19 @@ function fillFormWithMenData(groupData, targetSuffix) {
       const loaiDatFContainer = document.querySelector(`.land-type-size-container[data-ph="${loaiDatFPlaceholder}"]`);
       const loaiDatInput = document.querySelector(`input[data-ph="${loaiDatPlaceholder}"]`);
       
-      // Priority: fill the highest priority field that exists
       if (loaiDatDInput) {
-        // Convert to Loai_Dat_D format (CODE|LOCATION|AREA)
         let convertedValue = value;
-        
         if (fieldName === 'Loai_Dat_F') {
-          // From "BCS 1235; CGT 1535" or "454m2 BCS; 1111m2 CGT" to "BCS||1235;CGT||1111"
           const entries = value.split(';').map(e => e.trim()).filter(Boolean);
           convertedValue = entries.map(entry => {
-            // Try format: "CODE AREA" (e.g., "BCS 1235")
             let match = entry.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/i);
             if (match) {
               return `${match[1]}||${match[2]}`;
             }
-            // Try format: "AREA CODE" or "AREAm2 CODE" (e.g., "1235m2 BCS" or "1235 BCS")
             match = entry.match(/^(\d+(?:\.\d+)?)\s*m2?\s+([A-Z]+)/i);
             if (match) {
               return `${match[2]}||${match[1]}`;
             }
-            // Just code without area
             match = entry.match(/^([A-Z]+)$/i);
             if (match) {
               return `${match[1]}||`;
@@ -1308,7 +1218,6 @@ function fillFormWithMenData(groupData, targetSuffix) {
             return `${entry}||`;
           }).join(';');
         } else if (fieldName === 'Loai_Dat') {
-          // From "BCS+CGT" to "BCS||;CGT||"
           const codes = value.split('+').map(c => c.trim()).filter(Boolean);
           convertedValue = codes.map(code => `${code}||`).join(';');
         }
@@ -1316,11 +1225,9 @@ function fillFormWithMenData(groupData, targetSuffix) {
         fillLandTypeDetailField(loaiDatDPlaceholder, convertedValue);
         return;
       } else if (loaiDatFContainer) {
-        // Convert to Loai_Dat_F format (CODE AREA)
         let convertedValue = value;
         
         if (fieldName === 'Loai_Dat_D') {
-          // From "BCS|Vị trí|1235;CGT|Vị trí|1535" to "BCS 1235; CGT 1535"
           const entries = value.split(';').map(e => e.trim()).filter(Boolean);
           convertedValue = entries.map(entry => {
             const parts = entry.split('|');
@@ -1329,7 +1236,6 @@ function fillFormWithMenData(groupData, targetSuffix) {
             return area ? `${code} ${area}` : code;
           }).filter(Boolean).join('; ');
         } else if (fieldName === 'Loai_Dat') {
-          // From "BCS+CGT" to "BCS; CGT"
           const codes = value.split('+').map(c => c.trim()).filter(Boolean);
           convertedValue = codes.join('; ');
         }
@@ -1337,11 +1243,8 @@ function fillFormWithMenData(groupData, targetSuffix) {
         fillLandTypeSizeField(loaiDatFPlaceholder, convertedValue);
         return;
       } else if (loaiDatInput) {
-        // Convert to Loai_Dat format (CODE+CODE)
         let convertedValue = value;
-        
         if (fieldName === 'Loai_Dat_D') {
-          // From "BCS|Vị trí|1235;CGT|Vị trí|1535" to "BCS+CGT"
           const entries = value.split(';').map(e => e.trim()).filter(Boolean);
           const codes = entries.map(entry => {
             const parts = entry.split('|');
@@ -1349,7 +1252,6 @@ function fillFormWithMenData(groupData, targetSuffix) {
           }).filter(Boolean);
           convertedValue = codes.join('+');
         } else if (fieldName === 'Loai_Dat_F') {
-          // From "BCS 1235; CGT 1535" to "BCS+CGT"
           const entries = value.split(';').map(e => e.trim()).filter(Boolean);
           const codes = entries.map(entry => {
             const match = entry.match(/^([A-Z]+)/i);
@@ -1370,7 +1272,6 @@ function fillFormWithMenData(groupData, targetSuffix) {
     const element = document.querySelector(`[data-ph="${placeholder}"]`);
     
     if (element) {
-      // Strip dots from MST and SDT before setting value
       let cleanValue = value;
       if (fieldName.includes('MST') && typeof value === 'string') {
         cleanValue = value.replace(/\./g, '');
@@ -1385,11 +1286,6 @@ function fillFormWithMenData(groupData, targetSuffix) {
   });
 }
 
-/**
- * Fill land_type_size field (Loai_Dat_F) với tags
- * @param {string} placeholder - "Loai_Dat_F"
- * @param {string} valueString - Format export: "454m2 BCS; 1111m2 CCC"
- */
 function fillLandTypeSizeField(placeholder, valueString) {
   if (!valueString || !valueString.trim()) return;
   
@@ -1464,11 +1360,6 @@ function fillLandTypeSizeField(placeholder, valueString) {
   }
 }
 
-/**
- * Fill land_type_detail field (Loai_Dat_D) với tags
- * @param {string} placeholder - "Loai_Dat_D"
- * @param {string} valueString - Format: "BCS|Vị trí 1|1235;CGT|Vị trí 2|1535"
- */
 function fillLandTypeDetailField(placeholder, valueString) {
   if (!valueString || !valueString.trim()) return;
   
@@ -1485,12 +1376,9 @@ function fillLandTypeDetailField(placeholder, valueString) {
     console.warn('⚠️ Container not found for:', placeholder);
     return;
   }
-  
-  // Check if already setup
   const isSetup = container.dataset.landTypeDetailSetup === 'true';
   
   if (!isSetup) {
-    // First time - set value and let setup read it
     hiddenInput.value = valueString;
     
     if (window.setupLandTypeDetailInput && typeof window.setupLandTypeDetailInput === 'function') {
@@ -1502,15 +1390,11 @@ function fillLandTypeDetailField(placeholder, valueString) {
       }
     }
   } else {
-    // Already setup - just trigger reload by setting value and dispatching event
     hiddenInput.value = valueString;
-    
-    // Trigger the container's reload function if available
     if (container.reloadLandTypeDetailValue && typeof container.reloadLandTypeDetailValue === 'function') {
       container.reloadLandTypeDetailValue();
       console.log('✅ Reloaded Loai_Dat_D value');
     } else {
-      // Fallback: dispatch events
       hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
       hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
       console.log('✅ Updated Loai_Dat_D value via events');
@@ -1518,11 +1402,6 @@ function fillLandTypeDetailField(placeholder, valueString) {
   }
 }
 
-/**
- * Fill address field (4 dropdowns: province, district, ward, village)
- * @param {string} placeholder - "Address1", "Address7", "AddressD"
- * @param {string} addressString - "Xã Ea Bông, H. Krông A Na, T. Đắk Lắk"
- */
 function fillAddressField(placeholder, addressString) {
   const provinceSelect = document.querySelector(`select[data-main*="${placeholder}"][data-level="province"]`);
   if (!provinceSelect) return;
@@ -1557,8 +1436,6 @@ function fillAddressField(placeholder, addressString) {
     }
     
     setTimeout(() => {
-      // If 4 parts: [village, ward, district, province]
-      // If 3 parts: [ward, district, province]
       const wardIndex = parts.length === 4 ? 1 : 0;
       const villageIndex = 0;
       
@@ -1571,13 +1448,11 @@ function fillAddressField(placeholder, addressString) {
         wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
       }
       
-      // Fill village if exists (4 parts)
       if (parts.length === 4 && villageElement) {
         setTimeout(() => {
           const villageName = parts[villageIndex];
           
           if (villageElement.tagName === 'SELECT') {
-            // It's a select dropdown
             const villageOption = Array.from(villageElement.options).find(opt => 
               opt.text.includes(villageName.replace('Thôn ', '').replace('Buôn ', ''))
             );
@@ -1587,7 +1462,6 @@ function fillAddressField(placeholder, addressString) {
               console.log('✅ Filled village select:', villageName);
             }
           } else {
-            // It's an input field
             villageElement.value = villageName;
             villageElement.dispatchEvent(new Event('input', { bubbles: true }));
             console.log('✅ Filled village input:', villageName);
@@ -1620,8 +1494,6 @@ function collectGenericFormData() {
         Object.keys(person.data).forEach(key => {
           const placeholder = suffix ? `${key}${suffix}` : key;
           data[placeholder] = person.data[key];
-          
-          // Tự động tạo Sex từ Gender khi load từ localStorage
           if (key === 'Gender' && person.data[key]) {
             const sexPh = suffix ? `Sex${suffix}` : 'Sex';
             if (person.data[key] === 'Ông') {
@@ -1666,12 +1538,9 @@ function collectGenericFormData() {
     }
     
     if (ph === 'S' && value) {
-      // Keep value as is (with decimal point if exists), remove only commas
       const rawArea = value.replace(/,/g, '');
       if (rawArea) {
-        // Keep the value with decimal point for saving
         data[ph] = rawArea;
-        // Convert to text with decimal support
         const sText = window.numberToAreaWords ? window.numberToAreaWords(rawArea) : "";
         if (sText) data['S_Text'] = sText;
         value = rawArea;
@@ -1745,7 +1614,6 @@ function collectGenericFormData() {
       value = window.formatInputValue(value, ph, { type: 'date' });
     }
     
-    // Format CCCD trước khi lưu vào data
     if (ph.includes('CCCD') && value) {
       const digits = value.replace(/\D/g, '');
       if (/^\d{9}$|^\d{12}$/.test(digits)) {
@@ -1753,7 +1621,6 @@ function collectGenericFormData() {
       }
     }
     
-    // Format số điện thoại trước khi lưu vào data
     if (ph.includes('SDT') && value) {
       const digits = value.replace(/\D/g, '');
       if (/^\d{10}$/.test(digits)) {
@@ -1761,14 +1628,11 @@ function collectGenericFormData() {
       }
     }
     
-    // Strip dots from MST before saving (keep raw numbers only)
     if (ph.includes('MST') && value) {
       const digits = value.replace(/\D/g, '');
-      // Always save raw numbers, regardless of length
       value = digits;
     }
     
-    // Tự động tạo Sex từ Gender
     if (ph.includes('Gender') && value) {
       const sexPh = ph.replace('Gender', 'Sex');
       if (value === 'Ông') {
