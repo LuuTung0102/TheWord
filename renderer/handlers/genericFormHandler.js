@@ -1370,7 +1370,15 @@ function fillFormWithMenData(groupData, targetSuffix) {
     const element = document.querySelector(`[data-ph="${placeholder}"]`);
     
     if (element) {
-      element.value = value;
+      // Strip dots from MST and SDT before setting value
+      let cleanValue = value;
+      if (fieldName.includes('MST') && typeof value === 'string') {
+        cleanValue = value.replace(/\./g, '');
+      } else if (fieldName.includes('SDT') && typeof value === 'string') {
+        cleanValue = value.replace(/\./g, '');
+      }
+      
+      element.value = cleanValue;
       element.dispatchEvent(new Event('change', { bubbles: true }));
       element.dispatchEvent(new Event('blur', { bubbles: true }));
     }
@@ -1753,12 +1761,11 @@ function collectGenericFormData() {
       }
     }
     
-    // Format MST trước khi lưu vào data
+    // Strip dots from MST before saving (keep raw numbers only)
     if (ph.includes('MST') && value) {
       const digits = value.replace(/\D/g, '');
-      if (/^\d{10}$|^\d{13}$/.test(digits)) {
-        value = window.formatMST ? window.formatMST(digits) : digits;
-      }
+      // Always save raw numbers, regardless of length
+      value = digits;
     }
     
     // Tự động tạo Sex từ Gender

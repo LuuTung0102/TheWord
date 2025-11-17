@@ -1,7 +1,3 @@
-/**
- * PersonDataService - Service quản lý CRUD operations cho PERSON data
- * Đọc/ghi từ renderer/config/local_storage.json
- */
 (function() {
   class PersonDataService {
     constructor() {
@@ -28,7 +24,6 @@
         const data = await response.json();
         this.people = data.saved_people || [];
         
-        // Load labels từ label_config
         if (data.label_config) {
           Object.entries(data.label_config).forEach(([key, label]) => {
             this.labels.set(key, label);
@@ -60,7 +55,6 @@
           return false;
         }
 
-        // Convert labels Map to object
         const labelConfig = {};
         this.labels.forEach((value, key) => {
           labelConfig[key] = value;
@@ -71,7 +65,6 @@
           saved_people: people
         };
 
-        // Gọi IPC handler để ghi file
         const result = await window.ipcRenderer.invoke('write-local-storage', data);
         
         if (result.success) {
@@ -140,7 +133,6 @@
         return false;
       }
       
-      // Chỉ update values, giữ nguyên keys
       person.data = { ...person.data, ...newData };
       
       this.savePeople(this.people);
@@ -178,7 +170,6 @@
         return 'PERSON1';
       }
       
-      // Tìm số cao nhất trong các id hiện có
       const numbers = this.people
         .map(p => {
           const match = p.id.match(/PERSON(\d+)/);
@@ -199,7 +190,6 @@
         return 'Người 1';
       }
       
-      // Tìm số cao nhất trong các name hiện có
       const numbers = this.people
         .map(p => {
           const match = p.name.match(/Người (\d+)/);
@@ -227,7 +217,6 @@
         }
       });
       
-      // Validate CCCD format: phải là 9 hoặc 12 số
       if (data.CCCD && data.CCCD.trim() !== '') {
         const cccdValue = data.CCCD.trim().replace(/\D/g, '');
         if (!/^\d{9}$|^\d{12}$/.test(cccdValue)) {
@@ -242,8 +231,6 @@
       };
     }
 
-
-
     /**
      * Lấy label tiếng Việt cho property key
      * @param {string} key - Property key (e.g., "Name", "CCCD")
@@ -253,18 +240,13 @@
       return this.labels.get(key) || key;
     }
 
-    /**
-     * Clear cache trong localStorageLoader
-     */
     clearCache() {
-      // Clear cache trong localStorageLoader.js
       if (window.clearSavedPeopleCache) {
         window.clearSavedPeopleCache();
       }
     }
   }
 
-  // Initialize và attach vào window
   if (typeof window !== 'undefined') {
     window.personDataService = new PersonDataService();
     console.log('✅ PersonDataService initialized');

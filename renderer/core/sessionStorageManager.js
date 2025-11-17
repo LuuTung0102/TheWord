@@ -78,10 +78,9 @@
   function getGroupType(groupKey) {
     if (groupKey.startsWith('MEN')) return 'MEN';
     if (groupKey === 'INFO') return 'INFO';
-    return groupKey; // For other groups, treat the key itself as the type
+    return groupKey; 
   }
 
-  // --- helper: merge duplicates into existingData ---
   function mergeDuplicateGroupsAcrossFiles(dataGroups, existingData, fileName) {
     if (!dataGroups || !existingData) return;
     const groupsToDelete = new Set();
@@ -90,12 +89,10 @@
       const normalizedCurrent = normalizeDataForComparison(groupData);
       const currentType = getGroupType(groupKey);
 
-      // compare with all saved files
       for (const [otherFile, otherFileData] of Object.entries(existingData)) {
         if (!otherFileData || !otherFileData.dataGroups) continue;
 
         for (const [otherGroupKey, otherGroupData] of Object.entries(otherFileData.dataGroups)) {
-          // skip if same file (we'll handle same-file logic elsewhere)
           if (otherFile === fileName) continue;
 
           const otherType = getGroupType(otherGroupKey);
@@ -104,7 +101,6 @@
           const normalizedOther = normalizeDataForComparison(otherGroupData);
           const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
 
-          // if identical or current only adds fields -> merge into other file
           if (changeAnalysis.type === "NO_CHANGE" || changeAnalysis.type === "ONLY_ADDITIONS") {
             existingData[otherFile].dataGroups[otherGroupKey] = {
               ...normalizedOther,
@@ -112,21 +108,18 @@
             };
             groupsToDelete.add(groupKey);
             console.log(`🔄 Merged ${groupKey} (from ${fileName}) --> ${otherGroupKey} (in ${otherFile})`);
-            // don't `return` here — continue checking other groups
-            break; // stop scanning other groups in this otherFile for this groupKey
+            break; 
           }
         }
-        if (groupsToDelete.has(groupKey)) break; // go next groupKey
+        if (groupsToDelete.has(groupKey)) break;
       }
     }
 
-    // perform deletions after scanning
     for (const g of groupsToDelete) {
       delete dataGroups[g];
     }
   }
 
-  // --- corrected saveFormData ---
   function saveFormData(fileName, formData, reusedGroups, reusedGroupSources, config) {
     try {
       console.log('💾 saveFormData called:', { fileName, formData });
@@ -135,7 +128,6 @@
       let dataGroups = parseFormDataToGroups(formData, config);
       console.log('📦 Parsed data groups:', dataGroups);
 
-      // First: remove groups that are supplied from localStorage via config
       if (config?.fieldMappings) {
         config.fieldMappings.forEach((mapping) => {
           if (mapping.source === "localStorage" && mapping.subgroups) {
@@ -147,10 +139,8 @@
         });
       }
 
-      // NEW: merge duplicates across existingData BEFORE creating a new session entry
       mergeDuplicateGroupsAcrossFiles(dataGroups, existingData, fileName);
 
-      // Process reusedGroups (existing logic) - keep but ensure it uses updated dataGroups & existingData
       const groupsToRemove = [];
       if (reusedGroups?.size > 0) {
         reusedGroups.forEach((reusedKey) => {
@@ -179,7 +169,6 @@
             groupsToRemove.push(groupKey);
           } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
             if (!isSameFile && existingData[sourceFileName]) {
-              // merge into source file and remove current
               existingData[sourceFileName].dataGroups = existingData[sourceFileName].dataGroups || {};
               existingData[sourceFileName].dataGroups[sourceGroupKey] = {
                 ...normalizedSource,
@@ -190,14 +179,10 @@
               dataGroups[groupKey] = { ...normalizedSource, ...normalizedCurrent };
             }
           }
-          // HAS_MODIFICATIONS => keep current (no automatic override)
         });
       }
 
-      // delete groups marked by reusedGroups
       groupsToRemove.forEach(g => delete dataGroups[g]);
-
-      // Deduplicate remaining groups against existingData (if any left)
       const processedReusedKeys = new Set(Array.from(reusedGroups || []).map(k =>
         k.startsWith("localStorage:") ? k.replace("localStorage:", "") : k
       ));
@@ -217,11 +202,9 @@
           const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
 
           if (changeAnalysis.type === "NO_CHANGE") {
-            // identical -> remove current group
             delete dataGroups[groupKey];
             break;
           } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-            // merge into existing other file and remove current
             existingData[otherFileName].dataGroups[groupKey] = {
               ...normalizedOther,
               ...normalizedCurrent
@@ -229,24 +212,36 @@
             delete dataGroups[groupKey];
             break;
           }
-          // HAS_MODIFICATIONS -> keep current
         }
       }
 
-      // cleanup: remove empty files in existingData
       Object.keys(existingData).forEach(f => {
         const fd = existingData[f];
         if (fd?.dataGroups && Object.keys(fd.dataGroups).length === 0) delete existingData[f];
       });
 
-      // If nothing to save for current file, still persist existingData (because merges may have happened)
       if (Object.keys(dataGroups).length === 0) {
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
         console.log('⚠️ No data groups to save for current file after merging/deduplication.');
         return false;
       }
 
-      // Save resulting state (new or updated file)
+      // Merge with existing data for the same file to preserve fields not in current template
+      if (existingData[fileName] && existingData[fileName].dataGroups) {
+        Object.keys(existingData[fileName].dataGroups).forEach(groupKey => {
+          if (dataGroups[groupKey]) {
+            // Merge existing group data with new data to preserve fields
+            dataGroups[groupKey] = {
+              ...existingData[fileName].dataGroups[groupKey],
+              ...dataGroups[groupKey]
+            };
+          } else {
+            // Keep existing group if not in new data
+            dataGroups[groupKey] = existingData[fileName].dataGroups[groupKey];
+          }
+        });
+      }
+
       existingData[fileName] = {
         fileName,
         dataGroups,

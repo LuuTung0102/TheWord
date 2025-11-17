@@ -22,7 +22,6 @@ function setupCCCDInput(el) {
     let value = e.target.value.replace(/\D/g, "").slice(0, 12);
     e.target.value = value;
     
-    // Validate real-time: phải là 9 hoặc 12 số
     if (value.length > 0 && value.length !== 9 && value.length !== 12) {
       e.target.style.borderColor = '#ffa500';
       e.target.title = 'CCCD phải là 9 hoặc 12 số';
@@ -40,7 +39,6 @@ function setupCCCDInput(el) {
     let value = e.target.value.replace(/\D/g, "").slice(0, 12);
     if (value.length === 0) return;
     
-    // Validate: phải là 9 hoặc 12 số
     if (value.length !== 9 && value.length !== 12) {
       e.target.style.borderColor = '#dc3545';
       e.target.style.borderWidth = '2px';
@@ -48,7 +46,6 @@ function setupCCCDInput(el) {
       return;
     }
     
-    // Format cho cả 9 số và 12 số
     if ((value.length === 9 || value.length === 12) && window.formatCCCD) {
       e.target.value = window.formatCCCD(value) || value;
     } else {
@@ -83,8 +80,6 @@ function setupPhoneInput(el) {
   el.addEventListener("blur", (e) => {
     let value = e.target.value.replace(/\D/g, "").slice(0, 10);
     if (value.length === 0) return;
-    
-    // Format số điện thoại: xxx.xxx.xxxx
     if (value.length === 10 && window.formatPhoneNumber) {
       e.target.value = window.formatPhoneNumber(value) || value;
     } else {
@@ -103,33 +98,53 @@ function setupPhoneInput(el) {
 }
 
 function setupMSTInput(el) {
+  const getRawValue = (value) => {
+    return value.replace(/\D/g, "").slice(0, 13);
+  };
+  
   el.addEventListener("input", (e) => {
-    let value = e.target.value.replace(/\D/g, "").slice(0, 13);
-    e.target.value = value;
+    let rawValue = getRawValue(e.target.value);
+    e.target.value = rawValue;
+    if (rawValue.length > 0 && rawValue.length !== 10 && rawValue.length !== 13) {
+      e.target.style.borderColor = '#ffa500';
+      e.target.title = 'MST phải là 10 hoặc 13 số';
+    } else {
+      e.target.style.borderColor = '';
+      e.target.title = '';
+    }
   });
   
   el.addEventListener("focus", (e) => {
-    e.target.value = e.target.value.replace(/\D/g, "");
+    e.target.value = getRawValue(e.target.value);
   });
   
   el.addEventListener("blur", (e) => {
-    let value = e.target.value.replace(/\D/g, "").slice(0, 13);
-    if (value.length === 0) return;
+    let rawValue = getRawValue(e.target.value);
     
-    // Format MST: xxx.xxx.xxx.x (10 số) hoặc xxx.xxx.xxx.xxxx (13 số)
-    if ((value.length === 10 || value.length === 13) && window.formatMST) {
-      e.target.value = window.formatMST(value) || value;
-    } else {
-      e.target.value = value;
+    if (rawValue.length === 0) return;
+    if (rawValue.length !== 10 && rawValue.length !== 13) {
+      e.target.style.borderColor = '#dc3545';
+      e.target.style.borderWidth = '2px';
+      e.target.title = 'MST phải là 10 hoặc 13 số';
+      e.target.value = rawValue;
+      return;
     }
+    if ((rawValue.length === 10 || rawValue.length === 13) && window.formatMST) {
+      e.target.value = window.formatMST(rawValue) || rawValue;
+    } else {
+      e.target.value = rawValue;
+    }
+    
+    e.target.style.borderColor = '';
+    e.target.style.borderWidth = '';
+    e.target.title = '';
   });
   
   el.addEventListener("paste", (e) => {
     e.preventDefault();
-    const text = (e.clipboardData || window.clipboardData)
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, 13);
+    const text = getRawValue(
+      (e.clipboardData || window.clipboardData).getData("text")
+    );
     document.execCommand("insertText", false, text);
   });
 }
@@ -603,9 +618,7 @@ function reSetupAllInputs() {
     const ph = container.dataset.ph;
     console.log('Found land-type-size-container:', { ph, containerId: container.id });
     
-    // Check if it's land_type_detail (Loai_Dat_D) or land_type_size (Loai_Dat_F)
     if (ph && ph.includes('Loai_Dat_D')) {
-      // This is land_type_detail
       const containerId = container.id.replace('_container', '');
       if (!container.dataset.landTypeDetailSetup) {
         console.log('Setting up land type detail:', containerId, ph);
@@ -613,7 +626,6 @@ function reSetupAllInputs() {
         container.dataset.landTypeDetailSetup = 'true';
       }
     } else {
-      // This is land_type_size
       const inputId = container.querySelector('.tag-input')?.id;
       if (inputId && !container.dataset.landTypeSizeSetup) {
         console.log('Setting up land type size:', inputId, ph);
@@ -700,7 +712,6 @@ function setupLandTypeDetailInput(container, inputId) {
     return;
   }
   
-  // Function to get land keys (will always get latest from window.landTypeMap)
   const getLandKeys = () => {
     return window.landTypeMap ? Object.keys(window.landTypeMap).sort() : [];
   };
@@ -851,7 +862,6 @@ function setupLandTypeDetailInput(container, inputId) {
     const query = e.target.value.trim().toUpperCase();
     console.log('Type input changed:', query);
     updateDropdown(query);
-    // Don't auto-show inputs on typing, only after selection
   });
   
   typeInput.addEventListener('focus', () => {
@@ -1008,9 +1018,8 @@ function setupLandTypeDetailInput(container, inputId) {
     }
   }
   
-  // Expose reload function for external use (e.g., session data loading)
   container.reloadLandTypeDetailValue = function() {
-    tags.length = 0; // Clear existing tags
+    tags.length = 0; 
     const currentValue = hiddenInput.value.trim();
     if (currentValue) {
       const parts = currentValue.split(';').map(p => p.trim()).filter(Boolean);
@@ -1026,8 +1035,7 @@ function setupLandTypeDetailInput(container, inputId) {
       });
     }
     renderTags();
-    
-    // Clear input fields
+  
     locationInput.value = '';
     areaInput.value = '';
     typeInput.value = '';

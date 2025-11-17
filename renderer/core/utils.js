@@ -24,13 +24,10 @@ function expandLandType(raw) {
 
 function formatCCCD(number) {
   if (!number) return "";
-  
-  // Format cho CMND 9 số: xxx.xxx.xxx
   if (number.length === 9 && /^\d{9}$/.test(number)) {
     return `${number.slice(0, 3)}.${number.slice(3, 6)}.${number.slice(6, 9)}`;
   }
   
-  // Format cho CCCD 12 số: xxx.xxx.xxx.xxx
   if (number.length === 12 && /^\d{12}$/.test(number)) {
     return `${number.slice(0, 3)}.${number.slice(3, 6)}.${number.slice(6, 9)}.${number.slice(9, 12)}`;
   }
@@ -46,10 +43,8 @@ function formatPhoneNumber(phoneNumber) {
 function formatMST(mst) {
   if (!mst || (mst.length !== 10 && mst.length !== 13) || !/^\d{10}$|^\d{13}$/.test(mst)) return "";
   if (mst.length === 10) {
-    // Format 10 số: xxx.xxx.xxx.x
     return `${mst.slice(0, 3)}.${mst.slice(3, 6)}.${mst.slice(6, 9)}.${mst.slice(9, 10)}`;
   } else {
-    // Format 13 số: xxx.xxx.xxx.xxxx
     return `${mst.slice(0, 3)}.${mst.slice(3, 6)}.${mst.slice(6, 9)}.${mst.slice(9, 13)}`;
   }
 }
@@ -137,7 +132,6 @@ function numberToVietnameseWords(number) {
 }
 
 function numberToAreaWords(number) {
-  // Handle both number and string (for decimal support)
   const numStr = typeof number === 'string' ? number : number.toString();
   const hasDecimal = numStr.includes('.');
   
@@ -150,15 +144,13 @@ function numberToAreaWords(number) {
     if (integerNum === 0 && decimalNum === 0) return "không mét vuông";
     
     let result = "";
-    
-    // Convert integer part
+
     if (integerNum > 0) {
       result = numberToAreaWordsInteger(integerNum);
     } else {
       result = "không";
     }
     
-    // Convert decimal part
     if (decimalNum > 0) {
       const decimalWords = numberToAreaWordsInteger(decimalNum);
       result += (result ? " phẩy " : "") + decimalWords;
@@ -166,7 +158,6 @@ function numberToAreaWords(number) {
     
     return result + " mét vuông";
   } else {
-    // Integer only
     const num = Number(number);
     if (!Number.isFinite(num) || isNaN(num)) return "";
     if (num === 0) return "không mét vuông";
@@ -200,7 +191,6 @@ function numberToAreaWordsInteger(number) {
     let unit = n % 10;
     let str = "";
     
-    // Explicitly handle hundreds place (including zero)
     if (hundred) str += words[hundred] + " trăm";
     else if (n >= 10 && !isHighestOrder) str += "không trăm";
     
@@ -246,7 +236,6 @@ function toTitleCase(str) {
     .split(' ')
     .map(word => {
       if (word.length === 0) return word;
-      // Handle Vietnamese characters properly
       return word.charAt(0).toUpperCase() + word.slice(1);
     })
     .join(' ');
