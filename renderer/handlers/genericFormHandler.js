@@ -1163,12 +1163,23 @@ function fillFormWithMenData(groupData, targetSuffix) {
         let convertedValue = value;
         
         if (fieldName === 'Loai_Dat_F') {
-          // From "BCS 1235; CGT 1535" to "BCS||1235;CGT||1535"
+          // From "BCS 1235; CGT 1535" or "454m2 BCS; 1111m2 CGT" to "BCS||1235;CGT||1111"
           const entries = value.split(';').map(e => e.trim()).filter(Boolean);
           convertedValue = entries.map(entry => {
-            const match = entry.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/i);
+            // Try format: "CODE AREA" (e.g., "BCS 1235")
+            let match = entry.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/i);
             if (match) {
               return `${match[1]}||${match[2]}`;
+            }
+            // Try format: "AREA CODE" or "AREAm2 CODE" (e.g., "1235m2 BCS" or "1235 BCS")
+            match = entry.match(/^(\d+(?:\.\d+)?)\s*m2?\s+([A-Z]+)/i);
+            if (match) {
+              return `${match[2]}||${match[1]}`;
+            }
+            // Just code without area
+            match = entry.match(/^([A-Z]+)$/i);
+            if (match) {
+              return `${match[1]}||`;
             }
             return `${entry}||`;
           }).join(';');
