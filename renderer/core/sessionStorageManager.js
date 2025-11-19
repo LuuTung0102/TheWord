@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   const STORAGE_KEY = "theword_session_data";
 
   function normalizeDataForComparison(data) {
@@ -24,39 +24,99 @@
 
   function analyzeChanges(sourceData, currentData) {
     const isEmpty = (val) => val === undefined || val === null || val === "";
-
     let hasModifications = false;
     let hasAdditions = false;
-    const currentKeys = Object.keys(currentData);
-    const differences = [];
     
-    for (const key of currentKeys) {
+    for (const key of Object.keys(currentData)) {
       const sourceValue = sourceData[key];
       const currentValue = currentData[key];
-
       const sourceEmpty = isEmpty(sourceValue);
       const currentEmpty = isEmpty(currentValue);
+      
       if (!sourceEmpty && !currentEmpty && sourceValue !== currentValue) {
         hasModifications = true;
-        differences.push({ key, type: 'MODIFICATION', source: sourceValue, current: currentValue });
-      }
-      else if (sourceEmpty && !currentEmpty) {
+      } else if (sourceEmpty && !currentEmpty) {
         hasAdditions = true;
-        differences.push({ key, type: 'ADDITION', source: sourceValue || '(undefined)', current: currentValue });
-      }
-      else if (!sourceEmpty && currentEmpty) {
+      } else if (!sourceEmpty && currentEmpty) {
         hasModifications = true;
-        differences.push({ key, type: 'DELETION', source: sourceValue, current: currentValue || '(empty)' });
       }
     }
-    
-    if (differences.length > 0) {}
 
-    if (!hasModifications && !hasAdditions)
-      return { type: "NO_CHANGE" };
-    if (!hasModifications && hasAdditions)
-      return { type: "ONLY_ADDITIONS" };
+    if (!hasModifications && !hasAdditions) return { type: "NO_CHANGE" };
+    if (!hasModifications && hasAdditions) return { type: "ONLY_ADDITIONS" };
     return { type: "HAS_MODIFICATIONS" };
+  }
+
+  function generateTimestamp(includeMilliseconds = false) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    
+    if (includeMilliseconds) {
+      const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+      return `${year}${month}${day}_${hours}${minutes}${seconds}${milliseconds}`;
+    }
+    
+    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+  }
+
+  function generateVersionedKey(baseKey, existingGroups) {
+    const MAX_KEY_LENGTH = 255;
+    const TIMESTAMP_WITH_MS_LENGTH = 18;
+    
+    let truncatedBaseKey = baseKey;
+    if (baseKey.length + TIMESTAMP_WITH_MS_LENGTH + 1 > MAX_KEY_LENGTH) {
+      const maxBaseLength = MAX_KEY_LENGTH - TIMESTAMP_WITH_MS_LENGTH - 1;
+      truncatedBaseKey = baseKey.substring(0, maxBaseLength);
+    }
+    
+    let timestamp = generateTimestamp(false);
+    let versionedKey = `${truncatedBaseKey}_${timestamp}`;
+    
+    if (existingGroups[versionedKey]) {
+      timestamp = generateTimestamp(true);
+      versionedKey = `${truncatedBaseKey}_${timestamp}`;
+    }
+    
+    return versionedKey;
+  }
+
+  function formatTimestampForDisplay(timestamp) {
+    const year = timestamp.substring(0, 4);
+    const month = timestamp.substring(4, 6);
+    const day = timestamp.substring(6, 8);
+    const hours = timestamp.substring(9, 11);
+    const minutes = timestamp.substring(11, 13);
+    
+    if (timestamp.length > 15) {
+      const seconds = timestamp.substring(13, 15);
+      const milliseconds = timestamp.substring(15);
+      return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+    }
+    
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
+
+  function extractBaseKey(groupKey) {
+    const timestampMatch = groupKey.match(/^(.+)_(\d{8}_\d{6,9})$/);
+    
+    if (timestampMatch) {
+      return {
+        baseKey: timestampMatch[1],
+        timestamp: timestampMatch[2],
+        isVersioned: true
+      };
+    }
+    
+    return {
+      baseKey: groupKey,
+      timestamp: null,
+      isVersioned: false
+    };
   }
 
   function isSubgroupInConfig(groupKey, config) {
@@ -107,7 +167,6 @@
               ...normalizedCurrent
             };
             groupsToDelete.add(groupKey);
-            console.log(`🔄 Merged ${groupKey} (from ${fileName}) --> ${otherGroupKey} (in ${otherFile})`);
             break; 
           }
         }
@@ -122,11 +181,8 @@
 
   function saveFormData(fileName, formData, reusedGroups, reusedGroupSources, config) {
     try {
-      console.log('💾 saveFormData called:', { fileName, formData });
-
       const existingData = getAllSessionData();
       let dataGroups = parseFormDataToGroups(formData, config);
-      console.log('📦 Parsed data groups:', dataGroups);
 
       if (config?.fieldMappings) {
         config.fieldMappings.forEach((mapping) => {
@@ -183,6 +239,7 @@
       }
 
       groupsToRemove.forEach(g => delete dataGroups[g]);
+      
       const processedReusedKeys = new Set(Array.from(reusedGroups || []).map(k =>
         k.startsWith("localStorage:") ? k.replace("localStorage:", "") : k
       ));
@@ -222,30 +279,54 @@
 
       if (Object.keys(dataGroups).length === 0) {
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
-        console.log('⚠️ No data groups to save for current file after merging/deduplication.');
         return false;
       }
-
-      if (existingData[fileName] && existingData[fileName].dataGroups) {
-        Object.keys(existingData[fileName].dataGroups).forEach(groupKey => {
-          if (dataGroups[groupKey]) {
-            dataGroups[groupKey] = {
-              ...existingData[fileName].dataGroups[groupKey],
-              ...dataGroups[groupKey]
-            };
-          } else {
-            dataGroups[groupKey] = existingData[fileName].dataGroups[groupKey];
+      
+      const oldDataGroups = existingData[fileName]?.dataGroups || {};
+      const mergedDataGroups = { ...oldDataGroups };
+      
+      Object.keys(dataGroups).forEach(groupKey => {
+        const newData = dataGroups[groupKey];
+        
+        if (!mergedDataGroups[groupKey]) {
+          mergedDataGroups[groupKey] = newData;
+        } else {
+          const oldData = mergedDataGroups[groupKey];
+          
+          try {
+            if (!oldData || typeof oldData !== 'object') {
+              const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
+              mergedDataGroups[versionedKey] = newData;
+              return;
+            }
+            
+            const normalizedOld = normalizeDataForComparison(oldData);
+            const normalizedNew = normalizeDataForComparison(newData);
+            const changeAnalysis = analyzeChanges(normalizedOld, normalizedNew);
+            
+            if (changeAnalysis.type === "NO_CHANGE") {
+            } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
+              mergedDataGroups[groupKey] = {
+                ...normalizedOld,
+                ...normalizedNew
+              };
+            } else {
+              const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
+              mergedDataGroups[versionedKey] = normalizedNew;
+            }
+          } catch (error) {
+            console.error(`Error analyzing changes for group ${groupKey}:`, error);
+            const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
+            mergedDataGroups[versionedKey] = newData;
           }
-        });
-      }
-
+        }
+      });
       existingData[fileName] = {
         fileName,
-        dataGroups,
+        dataGroups: mergedDataGroups,
         rawData: formData
       };
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
-      console.log('✅ Session storage saved successfully (with merges applied).');
 
       return true;
     } catch (err) {
@@ -295,20 +376,38 @@
   function getAvailableMenGroups() {
     const allData = getAllSessionData();
     const available = [];
+    
     Object.keys(allData).forEach(fileName => {
       const fileData = allData[fileName];
       const groups = fileData.dataGroups;
+      
       if (groups) {
         Object.keys(groups).forEach(groupKey => {
           const groupData = groups[groupKey];
           const shortFileName = fileName.replace('.docx', '');
+          const timestampMatch = groupKey.match(/^(.+)_(\d{8}_\d{6,9})$/);
           let displayName;
-          if (groupKey.startsWith('MEN')) {
-            displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName})`;
-          } else if (groupKey === 'INFO') {
-            displayName = `TT Đất (${shortFileName})`;
+          
+          if (timestampMatch) {
+            const baseKey = timestampMatch[1];
+            const timestamp = timestampMatch[2];
+            const formattedTime = formatTimestampForDisplay(timestamp);
+            
+            if (baseKey.startsWith('MEN')) {
+              displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName} - ${formattedTime})`;
+            } else if (baseKey === 'INFO') {
+              displayName = `TT Đất (${shortFileName} - ${formattedTime})`;
+            } else {
+              displayName = `${baseKey} (${shortFileName} - ${formattedTime})`;
+            }
           } else {
-            displayName = `${groupKey} (${shortFileName})`;
+            if (groupKey.startsWith('MEN')) {
+              displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName})`;
+            } else if (groupKey === 'INFO') {
+              displayName = `TT Đất (${shortFileName})`;
+            } else {
+              displayName = `${groupKey} (${shortFileName})`;
+            }
           }
 
           available.push({
@@ -316,10 +415,20 @@
             groupKey,
             menKey: groupKey,
             data: groupData,
-            displayName
+            displayName,
+            timestamp: timestampMatch ? timestampMatch[2] : null
           });
         });
       }
+    });
+    
+    available.sort((a, b) => {
+      if (a.timestamp && b.timestamp) {
+        return b.timestamp.localeCompare(a.timestamp);
+      }
+      if (a.timestamp) return -1;
+      if (b.timestamp) return 1;
+      return a.displayName.localeCompare(b.displayName);
     });
 
     return available;
