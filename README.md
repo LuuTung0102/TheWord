@@ -624,6 +624,5 @@ This project is licensed under the ISC License.
 - Flatpickr for the date picker component
 - All contributors and users
 
----
 
 **Made with ❤️ by LuuTung0102**
