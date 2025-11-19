@@ -6,3 +6,17 @@ node_modules/
 *.tmp
 node_modules/
 .claude/
+analyze-broken.js
+analyze-xml-structure.js
+create-clean-thue-template.js
+create-perfect-template.js
+debug-broken-tags.js
+debug-context.js
+find-extra-braces.js
+fix-all-braces.js
+fix-single-braces.js
+fix-thue-final.js
+fix-word-final.js
+fix-word-template-v2.js
+fix-word-template-v3.js
+fix-word-template.js
