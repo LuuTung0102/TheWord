@@ -1,11 +1,4 @@
 {
-  "folder": {
-    "id": "chuyen-nhuong",
-    "name": "HĐ chuyển nhượng",
-    "description": "Nhóm hợp đồng chuyển nhượng các loại tài sản",
-    "icon": "📜"
-  },
-
   "templates": [
     {
       "id": "hd-cn-dat",

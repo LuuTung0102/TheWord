@@ -1,11 +1,4 @@
 {
-    "folder": {
-      "id": "thue",
-      "name": "Thuế",
-      "description": "",
-      "icon": ""
-    },
-  
     "templates": [
       {
         "id": "hd-thue",
@@ -136,7 +129,7 @@
         { "name": "S_Text", "label": "Diện tích (chữ)", "type": "text", "hidden": true, "required": false },
         { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "required": false, "hidden": true },
         { "name": "Noi_CapD", "label": "Nơi cấp", "type": "textarea", "required": true },
-        { "name": "SV", "label": "Diện tích đất trồng", "type": "options", "required": true},
+        { "name": "SV", "label": "Diện tích đất trồng", "type": "editable-select", "options": [], "required": true},
         { "name": "NG", "label": "Nguồn gốc", "type": "textarea", "required": true },
         { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "required": true },
         { "name": "Loai_Dat_F", "label": "Loại đất (có diện tích)", "type": "land_type_size", "required": true},

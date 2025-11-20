@@ -110,6 +110,25 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
       </select>
       ${wrapperEnd}
     `;
+  } else if (type === "editable-select") {
+    const options = fieldDef.options || [];
+    inputHtml = `
+      ${wrapperStart}
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
+      <div class="editable-select-container">
+        <input 
+          type="text" 
+          id="${safeId}" 
+          data-ph="${ph}" 
+          class="input-field editable-select-input dynamic-options-field" 
+          placeholder="${placeholder}"
+          autocomplete="off"
+          data-options='${JSON.stringify(options)}'
+        />
+        <div class="editable-select-dropdown" id="dropdown-${safeId}"></div>
+      </div>
+      ${wrapperEnd}
+    `;
   } else if (type === "land_type_detail") {
     inputHtml = `
       ${wrapperStart}
@@ -173,6 +192,80 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
 
   return { inputHtml, inputId };
 }
+
+function renderDropdownOptions(dropdown, options, filterText) {
+  const filtered = options.filter(opt => 
+    opt.toLowerCase().includes(filterText.toLowerCase())
+  );
+  
+  if (filtered.length === 0) {
+    dropdown.innerHTML = '<div class="dropdown-empty">Không có kết quả</div>';
+    return;
+  }
+  
+  dropdown.innerHTML = filtered.map(opt => 
+    `<div class="dropdown-option" data-value="${opt}">${opt}</div>`
+  ).join('');
+  
+  // Add click handlers
+  dropdown.querySelectorAll('.dropdown-option').forEach(optEl => {
+    optEl.addEventListener('click', () => {
+      const input = document.getElementById(dropdown.id.replace('dropdown-', ''));
+      if (input) {
+        input.value = optEl.getAttribute('data-value');
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        dropdown.style.display = 'none';
+      }
+    });
+  });
+}
+
+function setupEditableSelectInput(input) {
+  const dropdown = document.getElementById(`dropdown-${input.id}`);
+  
+  if (!dropdown) {
+    console.warn(`Dropdown not found for input: ${input.id}`);
+    return;
+  }
+  
+  // Function to get current options (may be updated dynamically)
+  const getCurrentOptions = () => {
+    try {
+      return JSON.parse(input.getAttribute('data-options') || '[]');
+    } catch (e) {
+      console.error('Error parsing options:', e);
+      return [];
+    }
+  };
+  
+  // Show dropdown on focus
+  input.addEventListener('focus', () => {
+    const options = getCurrentOptions();
+    if (options.length > 0) {
+      renderDropdownOptions(dropdown, options, '');
+      dropdown.style.display = 'block';
+    }
+  });
+  
+  // Filter on input
+  input.addEventListener('input', (e) => {
+    const options = getCurrentOptions();
+    if (options.length > 0) {
+      const filterText = e.target.value.toLowerCase();
+      renderDropdownOptions(dropdown, options, filterText);
+      dropdown.style.display = 'block';
+    }
+  });
+  
+  // Hide dropdown on blur (with delay for click)
+  input.addEventListener('blur', () => {
+    setTimeout(() => {
+      dropdown.style.display = 'none';
+    }, 200);
+  });
+}
+
+
 
 async function renderGenericForm(placeholders, config, folderPath) {
   if (window.personDataService && !window.personDataService.labelsLoaded) {
@@ -568,6 +661,10 @@ async function renderGenericForm(placeholders, config, folderPath) {
                 if (typeof window.reSetupAllInputs === 'function') {
                   window.reSetupAllInputs();
                 }
+                // Setup editable-select inputs in new subgroup
+                newSubgroupDiv.querySelectorAll('.editable-select-input').forEach(input => {
+                  setupEditableSelectInput(input);
+                });
               }, 50);
               setTimeout(() => {
                 newSubgroupDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -630,6 +727,11 @@ async function renderGenericForm(placeholders, config, folderPath) {
       if (typeof window.reSetupAllInputs === 'function') {
         window.reSetupAllInputs();
       }
+      
+      // Setup editable-select inputs
+      document.querySelectorAll('.editable-select-input').forEach(input => {
+        setupEditableSelectInput(input);
+      });
       
       setupLandTypeSync();
       
@@ -710,6 +812,11 @@ function setupLandTypeSync() {
       loaiDatFInput.dispatchEvent(new Event('change', { bubbles: true }));
       loaiDatFInput.dispatchEvent(new Event('input', { bubbles: true }));
       console.log('🔄 Synced Loai_Dat_D -> Loai_Dat_F:', loaiDatFInput.value);
+      
+      // Populate SV field options
+      if (typeof populateDynamicOptions === 'function') {
+        populateDynamicOptions();
+      }
     };
     
     loaiDatDInput.addEventListener('input', syncDtoF);
@@ -735,6 +842,11 @@ function setupLandTypeSync() {
       loaiDatInput.value = codes.join('+');
       loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
       console.log('🔄 Synced Loai_Dat_F -> Loai_Dat:', loaiDatInput.value);
+      
+      // Populate SV field options
+      if (typeof populateDynamicOptions === 'function') {
+        populateDynamicOptions();
+      }
     };
     
     loaiDatFInput.addEventListener('input', syncFtoD);
@@ -1114,6 +1226,24 @@ function setupReuseDataListeners() {
 }
 
 function populateDynamicOptions(groupData, targetSuffix) {
+  // If called without parameters, extract data from current form fields
+  if (!groupData) {
+    const loaiDatDInput = document.querySelector('input[data-ph="Loai_Dat_D"]');
+    const loaiDatFInput = document.querySelector('input[data-ph="Loai_Dat_F"]');
+    
+    groupData = {};
+    if (loaiDatDInput && loaiDatDInput.value) {
+      groupData.Loai_Dat_D = loaiDatDInput.value;
+    } else if (loaiDatFInput && loaiDatFInput.value) {
+      groupData.Loai_Dat_F = loaiDatFInput.value;
+    }
+    
+    if (!groupData.Loai_Dat_D && !groupData.Loai_Dat_F) {
+      console.log('No land type data to populate SV options');
+      return;
+    }
+  }
+  
   const areas = [];
   
   if (groupData.Loai_Dat_D) {
@@ -1150,21 +1280,48 @@ function populateDynamicOptions(groupData, targetSuffix) {
     });
   }
   
-  if (areas.length > 0) {
-    const svPlaceholder = targetSuffix ? `SV${targetSuffix}` : 'SV';
-    const svSelect = document.querySelector(`select[data-ph="${svPlaceholder}"]`);
+  if (areas.length === 0) {
+    console.log('No areas found in land type data');
+    return;
+  }
+  
+  console.log('Extracted areas for SV field:', areas);
+  
+  const svPlaceholder = targetSuffix ? `SV${targetSuffix}` : 'SV';
+  
+  // Find SV field - could be select or editable-select
+  const svSelect = document.querySelector(`select[data-ph="${svPlaceholder}"]`);
+  const svInput = document.querySelector(`input[data-ph="${svPlaceholder}"]`);
+  
+  // Update select field (backward compatible)
+  if (svSelect && svSelect.classList.contains('dynamic-options-field')) {
+    const currentValue = svSelect.value;
+    svSelect.innerHTML = '<option value="">-- Chọn --</option>';
+    areas.forEach(area => {
+      const option = document.createElement('option');
+      option.value = area;
+      option.textContent = `${area}m²`;
+      if (area === currentValue) {
+        option.selected = true;
+      }
+      svSelect.appendChild(option);
+    });
     
-    if (svSelect && svSelect.classList.contains('dynamic-options-field')) {
-      svSelect.innerHTML = '<option value="">-- Chọn --</option>';
-      areas.forEach(area => {
-        const option = document.createElement('option');
-        option.value = area;
-        option.textContent = `${area}m²`;
-        svSelect.appendChild(option);
-      });
-      
-      console.log('✅ Populated SV options:', areas);
+    console.log('✅ Populated SV select options:', areas);
+  }
+  
+  // Update editable-select field
+  if (svInput && svInput.classList.contains('editable-select-input')) {
+    // Update data-options attribute
+    svInput.setAttribute('data-options', JSON.stringify(areas));
+    
+    // If dropdown is visible, re-render
+    const dropdown = document.getElementById(`dropdown-${svInput.id}`);
+    if (dropdown && dropdown.style.display === 'block') {
+      renderDropdownOptions(dropdown, areas, svInput.value);
     }
+    
+    console.log('✅ Populated SV editable-select options:', areas);
   }
 }
 
@@ -1672,6 +1829,8 @@ if (typeof window !== 'undefined') {
   window.renderGenericForm = renderGenericForm;
   window.collectGenericFormData = collectGenericFormData;
   window.idToPhGeneric = idToPhGeneric;
+  window.setupEditableSelectInput = setupEditableSelectInput;
+  window.renderDropdownOptions = renderDropdownOptions;
 }
 
 if (typeof module !== 'undefined' && module.exports) {

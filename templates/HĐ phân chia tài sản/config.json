@@ -1,11 +1,4 @@
 {
-  "folder": {
-    "id": "phan-chia-tai-san",
-    "name": "HĐ phân chia tài sản",
-    "description": "Nhóm hợp đồng phân chia tài sản",
-    "icon": "📜"
-  },
-
   "templates": [
     {
       "id": "hd-pc-test",

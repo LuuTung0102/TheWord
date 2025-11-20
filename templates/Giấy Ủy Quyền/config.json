@@ -1,11 +1,4 @@
 {
-    "folder": {
-      "id": "uy-quyen",
-      "name": "HĐ ủy quyền",
-      "description": "Nhóm hợp đồng ủy quyền",
-      "icon": "📜"
-    },
-  
     "templates": [
       {
         "id": "hd-uq",

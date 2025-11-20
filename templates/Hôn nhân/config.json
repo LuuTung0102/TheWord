@@ -1,11 +1,4 @@
 {
-  "folder": {
-    "id": "hon_nhan",
-    "name": "Giấy xác nhận hôn nhân",
-    "description": "",
-    "icon": "📜"
-  },
-
   "templates": [
     {
       "id": "hd-hn",
@@ -34,6 +27,7 @@
         { "name": "Gender", "label": "Giới tính", "type": "select", "options": ["Ông", "Bà"], "defaultValue": "Ông", "required": true },
         { "name": "Name", "label": "Họ và tên", "type": "text", "required": true },
         { "name": "Date", "label": "Ngày sinh", "type": "date", "required": true },
+        { "name": "Sex", "label": "Giới tính(Nam/Nữ)", "type": "text", "required": true },
         { "name": "CCCD", "label": "CCCD", "type": "number", "required": true },
         { "name": "Folk", "label": "Dân tộc", "type": "text", "required": true },
         { "name": "Noi_Cap", "label": "Nơi cấp", "type": "select", "options": ["Cục Cảnh sát QLHC về TTXH", "Công an T. Đắk Lắk"], "required": true },
@@ -45,8 +39,10 @@
       "description": "Thông tin giấy xác nhận",
       "applicableTo": ["PAGE"],
       "fields": [
-         { "name": "Ngay_Cap_LH", "label": "Ngày cấp giấy xác nhận", "type": "date", "required": true },
-         { "name": "Noi_Cap_LH", "label": "Nơi cấp giấy xác nhận", "type": "text", "required": true }
+        { "name": "QDLHS", "label": "Quyết định ly hôn số", "type": "textarea", "required": true },
+        { "name": "Noi_Cap_LH", "label": "Nơi cấp giấy xác nhận", "type": "textarea", "required": true },
+        { "name": "Ngay_Cap_LH", "label": "Ngày cấp giấy xác nhận", "type": "date", "required": true }
+         
       ]
     }
   },

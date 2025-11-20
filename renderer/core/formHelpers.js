@@ -570,6 +570,13 @@ function reSetupAllInputs() {
   setupDatePickers();
   setupAddressSelects();
   
+  // Setup editable-select inputs
+  if (typeof window.setupEditableSelectInput === 'function') {
+    document.querySelectorAll('.editable-select-input').forEach(input => {
+      window.setupEditableSelectInput(input);
+    });
+  }
+  
   const cccdInputs = document.querySelectorAll('input[data-ph*="CCCD"]');
   cccdInputs.forEach(input => {
     input.removeAttribute('maxlength');
