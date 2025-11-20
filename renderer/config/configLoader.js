@@ -34,6 +34,29 @@ async function loadFolderConfig(folderPath) {
 }
 
 /**
+ * Validate và normalize dotPlaceholder property
+ * @param {Object} fieldDef - Field definition object
+ * @param {string} placeholder - Placeholder name (for logging)
+ * @returns {string|undefined} Validated dotPlaceholder or undefined
+ */
+function validateDotPlaceholder(fieldDef, placeholder) {
+  if (fieldDef.type !== 'text-or-dots') {
+    return undefined;
+  }
+  
+  if (!fieldDef.hasOwnProperty('dotPlaceholder')) {
+    return undefined;
+  }
+  
+  if (typeof fieldDef.dotPlaceholder !== 'string') {
+    console.warn(`Invalid dotPlaceholder for ${placeholder}: must be string, using default "..........."`);
+    return "...........";
+  }
+  
+  return fieldDef.dotPlaceholder;
+}
+
+/**
  * Build placeholder mapping từ config JSON mới
  * @param {Object} config - Config object từ config.json
  * @param {Array} actualPlaceholders - Danh sách placeholders thực tế từ template Word file
@@ -114,6 +137,15 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
             }
           }
           
+          // Validate and preserve dotPlaceholder for text-or-dots fields
+          const validatedDotPlaceholder = validateDotPlaceholder(fieldDef, placeholder);
+          if (validatedDotPlaceholder !== undefined) {
+            fieldConfig.dotPlaceholder = validatedDotPlaceholder;
+          } else if (fieldConfig.type !== 'text-or-dots' && fieldConfig.dotPlaceholder) {
+            // Remove dotPlaceholder from non-text-or-dots fields
+            delete fieldConfig.dotPlaceholder;
+          }
+          
           mapping[placeholder] = fieldConfig;
         });
       });
@@ -177,6 +209,15 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
                   fieldConfig.type = "address-select";
                 }
                 
+                // Validate and preserve dotPlaceholder for text-or-dots fields
+                const validatedDotPlaceholder = validateDotPlaceholder(fieldDef, placeholder);
+                if (validatedDotPlaceholder !== undefined) {
+                  fieldConfig.dotPlaceholder = validatedDotPlaceholder;
+                } else if (fieldConfig.type !== 'text-or-dots' && fieldConfig.dotPlaceholder) {
+                  // Remove dotPlaceholder from non-text-or-dots fields
+                  delete fieldConfig.dotPlaceholder;
+                }
+                
                 mapping[placeholder] = fieldConfig;
                 foundMatch = true;
               }
@@ -204,6 +245,15 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
           
           if (placeholder.includes("Address")) {
             mapping[placeholder].type = "address-select";
+          }
+          
+          // Validate and preserve dotPlaceholder for text-or-dots fields
+          const validatedDotPlaceholder = validateDotPlaceholder(schemaField, placeholder);
+          if (validatedDotPlaceholder !== undefined) {
+            mapping[placeholder].dotPlaceholder = validatedDotPlaceholder;
+          } else if (mapping[placeholder].type !== 'text-or-dots' && mapping[placeholder].dotPlaceholder) {
+            // Remove dotPlaceholder from non-text-or-dots fields
+            delete mapping[placeholder].dotPlaceholder;
           }
         } else {
                 const baseField = basePlaceholders[fieldName];
@@ -272,6 +322,15 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
           type: "text", 
           ...customConfig
         };
+      }
+      
+      // Validate and preserve dotPlaceholder for text-or-dots fields
+      const validatedDotPlaceholder = validateDotPlaceholder(mapping[placeholder], placeholder);
+      if (validatedDotPlaceholder !== undefined) {
+        mapping[placeholder].dotPlaceholder = validatedDotPlaceholder;
+      } else if (mapping[placeholder].type !== 'text-or-dots' && mapping[placeholder].dotPlaceholder) {
+        // Remove dotPlaceholder from non-text-or-dots fields
+        delete mapping[placeholder].dotPlaceholder;
       }
     });
   }

@@ -359,6 +359,38 @@ templates/
 }
 ```
 
+#### text-or-dots
+```json
+{
+  "name": "Sum_A",
+  "label": "Tổng số loại cây A",
+  "type": "text-or-dots",
+  "required": false,
+  "dotPlaceholder": "..........."
+}
+```
+
+**Mô tả**: Field type đặc biệt cho phép người dùng nhập text hoặc để trống. Nếu để trống, văn bản xuất ra sẽ tự động thay thế bằng chuỗi dấu chấm (mặc định: "...........").
+
+**Thuộc tính**:
+- `dotPlaceholder` (optional): Chuỗi thay thế tùy chỉnh khi field để trống. Mặc định là "..........." (11 dấu chấm).
+
+**Ví dụ sử dụng**:
+```json
+{
+  "name": "Note",
+  "label": "Ghi chú",
+  "type": "text-or-dots",
+  "required": false,
+  "dotPlaceholder": "___________"
+}
+```
+
+**Hành vi**:
+- Nếu người dùng nhập text → Giữ nguyên text đã nhập
+- Nếu để trống hoặc chỉ có khoảng trắng → Thay thế bằng `dotPlaceholder`
+- Hữu ích cho các trường không bắt buộc mà người dùng có thể điền tay sau khi in
+
 ### 4. Data Processing
 
 #### CCCD Formatting

@@ -324,6 +324,33 @@
     });
   }
 
+  function applyDotPlaceholder(data, phMapping) {
+    const processedData = { ...data };
+    
+    Object.keys(phMapping).forEach(ph => {
+      const fieldDef = phMapping[ph];
+      
+      // Chỉ xử lý fields có type "text-or-dots"
+      if (fieldDef.type !== 'text-or-dots') {
+        return;
+      }
+      
+      // Lấy giá trị hiện tại
+      const value = processedData[ph];
+      
+      // Kiểm tra nếu trống (empty string, null, undefined, whitespace only)
+      const isEmpty = !value || (typeof value === 'string' && value.trim() === '');
+      
+      if (isEmpty) {
+        // Thay thế bằng dot placeholder (default: "...........")
+        const dotPlaceholder = fieldDef.dotPlaceholder || "...........";
+        processedData[ph] = dotPlaceholder;
+      }
+    });
+    
+    return processedData;
+  }
+
   async function generateDocx(templatePath, data, outputPath, options = {}) {
     try {
       const stats = fs.statSync(templatePath);
@@ -623,8 +650,11 @@
         }
       });
 
+      // Apply dot placeholder replacement for text-or-dots fields
+      const processedData = applyDotPlaceholder(fullData, options.phMapping || {});
+
       try {
-        doc.render(fullData);
+        doc.render(processedData);
       } catch (error) {
         let msg = `Error rendering template ${path.basename(templatePath)}: ${error.message}`;
         if (error.properties && Array.isArray(error.properties.errors)) {
@@ -702,4 +732,4 @@
     }
   }
 
-  module.exports = { generateDocx };
+  module.exports = { generateDocx, applyDotPlaceholder };

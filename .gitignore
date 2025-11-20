@@ -7,7 +7,7 @@ node_modules/
 node_modules/
 .claude/
 analyze-broken.js
-git rm-analyze-xml-structure.js
+analyze-xml-structure.js
 create-clean-thue-template.js
 create-perfect-template.js
 debug-broken-tags.js

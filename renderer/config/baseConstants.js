@@ -121,7 +121,27 @@ const BASE_PLACEHOLDERS = {
       decimalPlaces: 2
     },
     order: 8
-  },    
+  },
+
+  S_Text: {
+    type: "text",
+    order: 8
+  },
+
+  Plant: {
+    type: "text",
+    order: 8
+  },
+
+  Mat_do: {
+    type: "number",
+    order: 8
+  },
+
+  SV: {
+    type: "editable-select",
+    order: 8
+  },
   
   Loai_Dat: {
     type: "land-type",
@@ -141,6 +161,11 @@ const BASE_PLACEHOLDERS = {
   
   VTTD: {
     type: "textarea",
+    order: 10
+  },
+
+  AddressQS: {
+    type: "address-select",
     order: 10
   },
   
@@ -171,6 +196,11 @@ const BASE_PLACEHOLDERS = {
     order: 14
   },
 
+  MoneyText: {
+    type: "text",
+    order: 14
+  },
+
   NG: {
     type: "text",
     order: 15
@@ -185,10 +215,30 @@ const BASE_PLACEHOLDERS = {
     type: "textarea",
     order: 17
   },
+
+  Sum_A: {
+    type: "text-or-dots",
+    order: 18
+  },
+
+  Sum_B: {
+    type: "text-or-dots",
+    order: 18
+  },
+
+  Sum_C: {
+    type: "text-or-dots",
+    order: 18
+  },
+
+  Exp: {
+    type: "textarea",
+    order: 19
+  },
   
   Note: {
     type: "textarea",
-    order: 18
+    order: 20
   },
 };
 

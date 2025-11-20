@@ -181,6 +181,14 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
       <input type="email" id="${safeId}" data-ph="${ph}" class="input-field" placeholder="${placeholder}" />
       ${wrapperEnd}
     `;
+  } else if (type === "text-or-dots") {
+    const dotPlaceholder = fieldDef.dotPlaceholder || "...........";
+    inputHtml = `
+      ${wrapperStart}
+      <label for="${safeId}"${requiredClass}><b>${label}</b></label>
+      <input type="text" id="${safeId}" data-ph="${ph}" data-dot-placeholder="${dotPlaceholder}" class="input-field text-or-dots-input" placeholder="${placeholder}" />
+      ${wrapperEnd}
+    `;
   } else {
     inputHtml = `
       ${wrapperStart}

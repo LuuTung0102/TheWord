@@ -142,10 +142,13 @@
         { "name": "AddressD", "label": "Địa chỉ thửa đất", "type": "address-select", "required": true },
         { "name": "TTGLVD", "label": "TT tài sản gắn liền", "type": "textarea" },
         { "name": "Money", "label": "Giá chuyển nhượng", "type": "currency", "required": true },
-        { "name": "Exp", "label": "Năm chăm sóc/năm kinh doanh", "type": "textarea", "required":true},
         { "name": "MoneyText", "label": "Giá chuyển nhượng (chữ)", "type": "text", "hidden": true },
         { "name": "Responsibility", "label": "Trách nhiệm thuế phí", "type": "select", "options": ["A", "B"], "required": true },
-        { "name": "Note", "label": "Ghi chú", "type": "textarea", "required": false}
+        { "name": "Sum_A", "label": "Tổng số loại cây A", "type": "text-or-dots", "required": false, "placeholder": "VD: 150 cây", "dotPlaceholder": "..........."},
+        { "name": "Sum_B", "label": "Tổng số loại cây B", "type": "text-or-dots", "required": false, "placeholder": "VD: 150 cây", "dotPlaceholder": "..........."},
+        { "name": "Sum_C", "label": "Tổng số loại cây C", "type": "text-or-dots", "required": false, "placeholder": "VD: 150 cây", "dotPlaceholder": "..........."},
+        { "name": "Exp", "label": "Năm chăm sóc/năm kinh doanh", "type": "textarea", "required":true},
+        { "name": "Note", "label": "Ghi chú", "type": "textarea", "required": false}      
       ]
     }
   },
