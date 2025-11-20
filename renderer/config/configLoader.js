@@ -1,15 +1,10 @@
-
 const { ipcRenderer } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
 let configCache = {};
 
-/**
- * Load config.json từ folder template
- * @param {string} folderPath - Đường dẫn đến folder (VD: "D:/TheWord/templates/HĐ chuyển nhượng")
- * @returns {Object} Config object hoặc null nếu không tìm thấy
- */
+
 async function loadFolderConfig(folderPath) {
   try {
     if (configCache[folderPath]) {
@@ -33,12 +28,7 @@ async function loadFolderConfig(folderPath) {
   }
 }
 
-/**
- * Validate và normalize dotPlaceholder property
- * @param {Object} fieldDef - Field definition object
- * @param {string} placeholder - Placeholder name (for logging)
- * @returns {string|undefined} Validated dotPlaceholder or undefined
- */
+
 function validateDotPlaceholder(fieldDef, placeholder) {
   if (fieldDef.type !== 'text-or-dots') {
     return undefined;
@@ -56,12 +46,6 @@ function validateDotPlaceholder(fieldDef, placeholder) {
   return fieldDef.dotPlaceholder;
 }
 
-/**
- * Build placeholder mapping từ config JSON mới
- * @param {Object} config - Config object từ config.json
- * @param {Array} actualPlaceholders - Danh sách placeholders thực tế từ template Word file
- * @returns {Object} Placeholder mapping
- */
 function buildPlaceholderMapping(config, actualPlaceholders = null) {
   if (!config) return {};
   const mapping = {};
@@ -137,12 +121,10 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
             }
           }
           
-          // Validate and preserve dotPlaceholder for text-or-dots fields
           const validatedDotPlaceholder = validateDotPlaceholder(fieldDef, placeholder);
           if (validatedDotPlaceholder !== undefined) {
             fieldConfig.dotPlaceholder = validatedDotPlaceholder;
           } else if (fieldConfig.type !== 'text-or-dots' && fieldConfig.dotPlaceholder) {
-            // Remove dotPlaceholder from non-text-or-dots fields
             delete fieldConfig.dotPlaceholder;
           }
           
@@ -209,12 +191,10 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
                   fieldConfig.type = "address-select";
                 }
                 
-                // Validate and preserve dotPlaceholder for text-or-dots fields
                 const validatedDotPlaceholder = validateDotPlaceholder(fieldDef, placeholder);
                 if (validatedDotPlaceholder !== undefined) {
                   fieldConfig.dotPlaceholder = validatedDotPlaceholder;
                 } else if (fieldConfig.type !== 'text-or-dots' && fieldConfig.dotPlaceholder) {
-                  // Remove dotPlaceholder from non-text-or-dots fields
                   delete fieldConfig.dotPlaceholder;
                 }
                 
@@ -247,12 +227,10 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
             mapping[placeholder].type = "address-select";
           }
           
-          // Validate and preserve dotPlaceholder for text-or-dots fields
           const validatedDotPlaceholder = validateDotPlaceholder(schemaField, placeholder);
           if (validatedDotPlaceholder !== undefined) {
             mapping[placeholder].dotPlaceholder = validatedDotPlaceholder;
           } else if (mapping[placeholder].type !== 'text-or-dots' && mapping[placeholder].dotPlaceholder) {
-            // Remove dotPlaceholder from non-text-or-dots fields
             delete mapping[placeholder].dotPlaceholder;
           }
         } else {
@@ -324,12 +302,10 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
         };
       }
       
-      // Validate and preserve dotPlaceholder for text-or-dots fields
       const validatedDotPlaceholder = validateDotPlaceholder(mapping[placeholder], placeholder);
       if (validatedDotPlaceholder !== undefined) {
         mapping[placeholder].dotPlaceholder = validatedDotPlaceholder;
       } else if (mapping[placeholder].type !== 'text-or-dots' && mapping[placeholder].dotPlaceholder) {
-        // Remove dotPlaceholder from non-text-or-dots fields
         delete mapping[placeholder].dotPlaceholder;
       }
     });
@@ -338,11 +314,6 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
   return mapping;
 }
 
-/**
- * Get group labels từ config
- * @param {Object} config - Config object từ config.json
- * @returns {Object} Map của group ID -> label
- */
 function getGroupLabels(config) {
   if (!config || !config.groups) return {};
   
@@ -364,11 +335,6 @@ function getGroupLabels(config) {
   return labels;
 }
 
-/**
- * Get subgroup labels từ config
- * @param {Object} config - Config object từ config.json
- * @returns {Object} Map của subgroup ID -> label
- */
 function getSubgroupLabels(config) {
   if (!config) return {};
   const labels = {};

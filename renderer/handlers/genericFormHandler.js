@@ -215,7 +215,6 @@ function renderDropdownOptions(dropdown, options, filterText) {
     `<div class="dropdown-option" data-value="${opt}">${opt}</div>`
   ).join('');
   
-  // Add click handlers
   dropdown.querySelectorAll('.dropdown-option').forEach(optEl => {
     optEl.addEventListener('click', () => {
       const input = document.getElementById(dropdown.id.replace('dropdown-', ''));
@@ -236,7 +235,6 @@ function setupEditableSelectInput(input) {
     return;
   }
   
-  // Function to get current options (may be updated dynamically)
   const getCurrentOptions = () => {
     try {
       return JSON.parse(input.getAttribute('data-options') || '[]');
@@ -246,7 +244,6 @@ function setupEditableSelectInput(input) {
     }
   };
   
-  // Show dropdown on focus
   input.addEventListener('focus', () => {
     const options = getCurrentOptions();
     if (options.length > 0) {
@@ -255,7 +252,6 @@ function setupEditableSelectInput(input) {
     }
   });
   
-  // Filter on input
   input.addEventListener('input', (e) => {
     const options = getCurrentOptions();
     if (options.length > 0) {
@@ -265,7 +261,6 @@ function setupEditableSelectInput(input) {
     }
   });
   
-  // Hide dropdown on blur (with delay for click)
   input.addEventListener('blur', () => {
     setTimeout(() => {
       dropdown.style.display = 'none';
@@ -669,7 +664,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
                 if (typeof window.reSetupAllInputs === 'function') {
                   window.reSetupAllInputs();
                 }
-                // Setup editable-select inputs in new subgroup
                 newSubgroupDiv.querySelectorAll('.editable-select-input').forEach(input => {
                   setupEditableSelectInput(input);
                 });
@@ -736,7 +730,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
         window.reSetupAllInputs();
       }
       
-      // Setup editable-select inputs
       document.querySelectorAll('.editable-select-input').forEach(input => {
         setupEditableSelectInput(input);
       });
@@ -821,7 +814,6 @@ function setupLandTypeSync() {
       loaiDatFInput.dispatchEvent(new Event('input', { bubbles: true }));
       console.log('🔄 Synced Loai_Dat_D -> Loai_Dat_F:', loaiDatFInput.value);
       
-      // Populate SV field options
       if (typeof populateDynamicOptions === 'function') {
         populateDynamicOptions();
       }
@@ -851,7 +843,6 @@ function setupLandTypeSync() {
       loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
       console.log('🔄 Synced Loai_Dat_F -> Loai_Dat:', loaiDatInput.value);
       
-      // Populate SV field options
       if (typeof populateDynamicOptions === 'function') {
         populateDynamicOptions();
       }
@@ -1234,7 +1225,6 @@ function setupReuseDataListeners() {
 }
 
 function populateDynamicOptions(groupData, targetSuffix) {
-  // If called without parameters, extract data from current form fields
   if (!groupData) {
     const loaiDatDInput = document.querySelector('input[data-ph="Loai_Dat_D"]');
     const loaiDatFInput = document.querySelector('input[data-ph="Loai_Dat_F"]');
@@ -1296,12 +1286,9 @@ function populateDynamicOptions(groupData, targetSuffix) {
   console.log('Extracted areas for SV field:', areas);
   
   const svPlaceholder = targetSuffix ? `SV${targetSuffix}` : 'SV';
-  
-  // Find SV field - could be select or editable-select
   const svSelect = document.querySelector(`select[data-ph="${svPlaceholder}"]`);
   const svInput = document.querySelector(`input[data-ph="${svPlaceholder}"]`);
   
-  // Update select field (backward compatible)
   if (svSelect && svSelect.classList.contains('dynamic-options-field')) {
     const currentValue = svSelect.value;
     svSelect.innerHTML = '<option value="">-- Chọn --</option>';
@@ -1318,12 +1305,9 @@ function populateDynamicOptions(groupData, targetSuffix) {
     console.log('✅ Populated SV select options:', areas);
   }
   
-  // Update editable-select field
   if (svInput && svInput.classList.contains('editable-select-input')) {
-    // Update data-options attribute
     svInput.setAttribute('data-options', JSON.stringify(areas));
     
-    // If dropdown is visible, re-render
     const dropdown = document.getElementById(`dropdown-${svInput.id}`);
     if (dropdown && dropdown.style.display === 'block') {
       renderDropdownOptions(dropdown, areas, svInput.value);
