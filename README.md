@@ -8,6 +8,7 @@
 - [Tính Năng Chi Tiết](#tính-năng-chi-tiết)
 - [Cấu Trúc Dự Án](#cấu-trúc-dự-án)
 - [Tech Stack](#tech-stack)
+- [Danh Sách Chức Năng Đầy Đủ](#danh-sách-chức-năng-đầy-đủ)
 
 ---
 
@@ -19,6 +20,13 @@
 ```
 1️⃣ Chọn folder template → 2️⃣ Chọn file Word → 3️⃣ Điền form → 4️⃣ Xuất văn bản ✅
 ```
+
+### 🌟 Điểm Nổi Bật
+- **100% Offline**: Hoạt động hoàn toàn không cần internet
+- **Tự động hóa thông minh**: Tự động format, chuyển đổi và xử lý dữ liệu
+- **Quản lý dữ liệu**: LocalStorage cho người dùng thường xuyên, SessionStorage cho tái sử dụng
+- **Xử lý văn bản nâng cao**: Streaming XML cho file lớn, tự động dọn dẹp format
+- **Giao diện thân thiện**: 2-color UI, taskbar navigation, responsive design
 
 ---
 
@@ -656,5 +664,556 @@ This project is licensed under the ISC License.
 - Flatpickr for the date picker component
 - All contributors and users
 
+
+---
+
+## 📚 Danh Sách Chức Năng Đầy Đủ
+
+### 🎨 Giao Diện & Điều Hướng
+
+#### 1. Two-Panel Layout
+- **Panel Trái (Xanh)**: Khu vực nhập dữ liệu với form động
+- **Panel Phải (Cam)**: Khu vực chọn folder và file template
+- **Responsive Design**: Tự động điều chỉnh theo kích thước màn hình
+
+#### 2. Taskbar Navigation
+- **Chuyển đổi nhanh**: Click để chuyển giữa các nhóm dữ liệu
+- **Active State**: Hiển thị rõ section đang active
+- **Smooth Transition**: Chuyển đổi mượt mà giữa các section
+
+#### 3. Header Controls
+- **Nút "⚙️ Quản lý"**: Truy cập nhanh vào quản lý PERSON
+- **Status Indicator**: Hiển thị trạng thái file đã chọn
+- **Template Counter**: Đếm số lượng folder template
+
+#### 4. Loading & Modal System
+- **Loading Overlay**: Hiển thị tiến trình khi xuất văn bản
+- **Success Modal**: Thông báo thành công với nút "Mở thư mục"
+- **Error Modal**: Hiển thị lỗi chi tiết khi có vấn đề
+
+---
+
+### 📝 Quản Lý Template
+
+#### 5. Folder Template System
+- **Cấu trúc phân cấp**: Folder → Files → Placeholders
+- **Config.json**: Cấu hình chi tiết cho từng folder
+- **Auto-detection**: Tự động phát hiện file .docx trong folder
+- **File Counter**: Hiển thị số lượng file trong mỗi folder
+
+#### 6. Template Selection
+- **Expand/Collapse**: Click folder để mở rộng/thu gọn
+- **File List**: Hiển thị danh sách file trong folder
+- **Visual Feedback**: Highlight folder và file đã chọn
+- **Icon System**: Icon phân biệt folder và file
+
+#### 7. Placeholder Detection
+- **Auto-scan**: Tự động quét placeholder trong file Word
+- **Merge Broken Tags**: Gộp placeholder bị tách ra nhiều text run
+- **Clean Invalid**: Xóa placeholder không hợp lệ
+- **Validation**: Kiểm tra cú pháp {{PlaceholderName}}
+
+---
+
+### 📋 Form Generation & Management
+
+#### 8. Dynamic Form Rendering
+- **Auto-generate**: Tự động tạo form từ placeholder và config
+- **Field Mapping**: Map placeholder với field definition
+- **Group Organization**: Tổ chức theo groups và subgroups
+- **Order Control**: Sắp xếp theo thứ tự định nghĩa
+
+#### 9. Field Types Support
+- **text**: Input text cơ bản
+- **number**: Input số với validation
+- **date**: Date picker với tiếng Việt
+- **select**: Dropdown với options
+- **editable-select**: Dropdown có thể nhập và tìm kiếm
+- **address-select**: Chọn địa chỉ 4 cấp (Tỉnh/Huyện/Xã/Thôn)
+- **money**: Input tiền tệ với auto-format
+- **tel**: Input số điện thoại
+- **email**: Input email với validation
+- **textarea**: Text area nhiều dòng
+- **land-type**: Chọn loại đất cơ bản
+- **land_type_size**: Loại đất + diện tích
+- **land_type_detail**: Loại đất chi tiết (code|vị trí|diện tích)
+- **text-or-dots**: Text hoặc dấu chấm nếu để trống
+- **options**: Dropdown với options động
+
+#### 10. Field Validation
+- **Required Fields**: Đánh dấu và validate trường bắt buộc
+- **Format Validation**: Kiểm tra format CCCD, email, phone
+- **Length Validation**: Giới hạn độ dài input
+- **Custom Validation**: Validation tùy chỉnh theo field type
+
+#### 11. Auto-Format Features
+- **CCCD**: 123456789 → 123.456.789 hoặc 123.456.789.012
+- **Money**: 1000000 → 1,000,000
+- **Phone**: Tự động format số điện thoại
+- **Date**: Format ngày tháng theo chuẩn dd/mm/yyyy
+
+---
+
+### 👥 Quản Lý PERSON (LocalStorage)
+
+#### 12. PERSON CRUD Operations
+- **Create**: Thêm người dùng mới với đầy đủ thông tin
+- **Read**: Xem danh sách và chi tiết người dùng
+- **Update**: Chỉnh sửa thông tin người dùng
+- **Delete**: Xóa người dùng với xác nhận
+
+#### 13. PERSON Data Structure
+- **Unique ID**: Mỗi person có ID duy nhất
+- **Full Data**: Lưu trữ đầy đủ thông tin (Name, CCCD, Address, etc.)
+- **Labels**: Nhãn tiếng Việt cho từng field
+- **Validation**: Kiểm tra dữ liệu trước khi lưu
+
+#### 14. PERSON UI Management
+- **Modal Dialog**: Giao diện quản lý trong modal
+- **Person List**: Danh sách người dùng với nút Sửa/Xóa
+- **Add Form**: Form thêm mới với validation
+- **Edit Form**: Form chỉnh sửa với dữ liệu có sẵn
+- **Preview**: Xem trước thông tin đã chọn
+
+#### 15. PERSON Selection
+- **Button Grid**: Hiển thị danh sách person dạng button
+- **Active State**: Highlight person đã chọn
+- **Auto-fill**: Tự động điền form khi chọn person
+- **Preview Panel**: Hiển thị thông tin chi tiết
+
+#### 16. PERSON Cache Management
+- **Auto-refresh**: Tự động cập nhật khi có thay đổi
+- **Cache Invalidation**: Xóa cache khi cần
+- **Lazy Loading**: Load dữ liệu khi cần thiết
+
+---
+
+### 🔄 Session Storage & Data Reuse
+
+#### 17. Session Data Management
+- **Auto-save**: Tự động lưu khi xuất văn bản
+- **Smart Merge**: Gộp dữ liệu trùng lặp thông minh
+- **Version Control**: Tạo version mới khi có thay đổi
+- **Timestamp**: Đánh dấu thời gian cho mỗi version
+
+#### 18. Data Comparison Logic
+- **NO_CHANGE**: Dữ liệu giống hệt → Không lưu duplicate
+- **ONLY_ADDITIONS**: Chỉ thêm field mới → Merge vào data cũ
+- **HAS_MODIFICATIONS**: Có thay đổi → Tạo version mới
+
+#### 19. Reuse Data Dropdown
+- **Available Groups**: Hiển thị danh sách dữ liệu có thể tái sử dụng
+- **Display Name**: Tên hiển thị với timestamp
+- **Source Tracking**: Theo dõi nguồn gốc dữ liệu
+- **Auto-fill**: Tự động điền form khi chọn
+
+#### 20. Cross-File Deduplication
+- **Detect Duplicates**: Phát hiện dữ liệu trùng lặp giữa các file
+- **Merge Strategy**: Chiến lược merge thông minh
+- **Reference Tracking**: Theo dõi tham chiếu giữa các file
+
+#### 21. Clear Session Data
+- **Nút "Làm mới"**: Xóa tất cả session data
+- **Confirmation**: Xác nhận trước khi xóa
+- **Auto-hide**: Ẩn nút khi không có data
+
+---
+
+### 🏷️ Xử Lý Loại Đất Đặc Biệt
+
+#### 22. Loai_Dat (Basic)
+- **Format**: CLN+NST+BCS
+- **Output**: Đất cây lâu năm và Đất sản xuất nông nghiệp và Đất bằng chưa sử dụng
+- **Land Type Map**: Mapping từ code sang tên đầy đủ
+
+#### 23. Loai_Dat_F (With Size)
+- **Format**: CLN 1236.5; NST 431.1
+- **Output**: 1236.5m² CLN; 431.1m² NST
+- **Tag System**: Quản lý nhiều loại đất dạng tag
+- **Add/Remove**: Thêm/xóa tag động
+
+#### 24. Loai_Dat_D (Detailed)
+- **Format**: CLN|Vị trí 2|1236.5;NST|Vị trí 1|431.1
+- **Output**: 
+  ```
+  + Loại đất 1: CLN:   Vị trí 2                     Diện tích: 1236.5m².
+  + Loại đất 2: NST:   Vị trí 1                     Diện tích: 431.1m².
+  ```
+- **3-Step Input**: Code → Location → Area
+- **Visual Feedback**: Hiển thị tag với đầy đủ thông tin
+
+#### 25. Land Type Priority System
+- **Priority**: Loai_Dat_D > Loai_Dat_F > Loai_Dat
+- **Auto-skip**: Tự động bỏ qua field có priority thấp hơn
+- **Hidden Fields**: Tạo hidden input để sync dữ liệu
+
+#### 26. Land Type Sync
+- **Loai_Dat_D → Loai_Dat_F**: Tự động sync khi nhập
+- **Loai_Dat_F → Loai_Dat**: Tự động sync khi nhập
+- **Bidirectional**: Sync 2 chiều giữa các field
+
+#### 27. Land Type Dropdown
+- **Autocomplete**: Tự động gợi ý khi nhập
+- **Filter**: Lọc theo text đã nhập
+- **Keyboard Navigation**: Điều hướng bằng phím
+- **Click Selection**: Chọn bằng click chuột
+
+#### 28. Dynamic SV Field Population
+- **Auto-extract**: Tự động trích xuất diện tích từ Loai_Dat
+- **Populate Options**: Điền options cho field SV
+- **Format Display**: Hiển thị với đơn vị m²
+
+---
+
+### 🗂️ Subgroup Management
+
+#### 29. Dynamic Subgroup Addition
+- **Nút "➕ Thêm"**: Thêm subgroup mới
+- **Auto-render**: Tự động render form cho subgroup mới
+- **Scroll to View**: Tự động scroll đến subgroup mới
+- **Event Setup**: Setup events cho subgroup mới
+
+#### 30. Subgroup Removal
+- **Nút "❌ Xóa"**: Xóa subgroup không cần
+- **Confirmation**: Xác nhận trước khi xóa
+- **Data Cleanup**: Xóa dữ liệu liên quan
+- **Visibility Control**: Chỉ hiển thị nút xóa khi có thể xóa
+
+#### 31. Subgroup Visibility
+- **Default Visible**: Subgroup đầu tiên mặc định hiển thị
+- **Hidden State**: Các subgroup khác ẩn mặc định
+- **Toggle**: Bật/tắt hiển thị không mất dữ liệu
+- **Persistent**: Dữ liệu được giữ khi ẩn
+
+#### 32. Subgroup Styling
+- **Border**: Viền màu xanh phân biệt
+- **Background**: Nền màu nhạt
+- **Spacing**: Khoảng cách hợp lý
+- **Header**: Tiêu đề với nút điều khiển
+
+---
+
+### 📍 Address Selection System
+
+#### 33. 4-Level Address Hierarchy
+- **Tỉnh/Thành phố**: Cấp 1
+- **Quận/Huyện**: Cấp 2
+- **Phường/Xã**: Cấp 3
+- **Thôn/Buôn**: Cấp 4
+
+#### 34. Cascading Dropdowns
+- **Auto-load**: Tự động load options cho cấp tiếp theo
+- **Reset Children**: Reset các cấp con khi thay đổi cấp cha
+- **Preserve Selection**: Giữ lựa chọn khi có thể
+
+#### 35. Address Data Management
+- **JSON Database**: Dữ liệu địa chỉ Việt Nam đầy đủ
+- **Fast Lookup**: Tra cứu nhanh theo cấp
+- **Memory Efficient**: Chỉ load dữ liệu cần thiết
+
+#### 36. Address Format Output
+- **Full Address**: Ghép đầy đủ 4 cấp
+- **Separator**: Phân cách bằng dấu phẩy
+- **Trim**: Loại bỏ khoảng trắng thừa
+
+---
+
+### 💾 Data Processing & Export
+
+#### 37. Form Data Collection
+- **Collect All**: Thu thập tất cả dữ liệu từ form
+- **Group by Suffix**: Nhóm theo suffix (1, 2, 3...)
+- **Normalize**: Chuẩn hóa dữ liệu trước khi lưu
+- **Validation**: Validate trước khi export
+
+#### 38. Auto-Convert Placeholders
+- **Money → MoneyText**: 1000000 → "Một triệu đồng"
+- **S → S_Text**: 1236.5 → "Một nghìn hai trăm ba mươi sáu phẩy năm"
+- **Name → NameT**: "nguyễn văn a" → "Nguyễn Văn A"
+- **Date → DateText**: 15/03/2024 → "Ngày mười lăm tháng ba năm hai nghìn không trăm hai mươi bốn"
+
+#### 39. Text-or-Dots Processing
+- **Empty Check**: Kiểm tra field có trống không
+- **Dot Replacement**: Thay thế bằng dấu chấm nếu trống
+- **Custom Placeholder**: Cho phép tùy chỉnh chuỗi thay thế
+- **Preserve Input**: Giữ nguyên nếu có nhập
+
+#### 40. XML Streaming Processing
+- **Large File Support**: Xử lý file Word > 10MB
+- **SAX Parser**: Parse XML theo stream
+- **Memory Efficient**: Không load toàn bộ vào memory
+- **Fast Processing**: Xử lý nhanh hơn DOM parser
+
+#### 41. Placeholder Merging
+- **Detect Split**: Phát hiện placeholder bị tách
+- **Merge Tags**: Gộp các text run lại
+- **Clean XML**: Dọn dẹp XML structure
+- **Preserve Format**: Giữ nguyên format Word
+
+#### 42. Empty Line Removal
+- **Detect Empty**: Phát hiện dòng có placeholder trống
+- **Remove Paragraph**: Xóa paragraph không có dữ liệu
+- **Subgroup Check**: Kiểm tra visibility của subgroup
+- **Smart Removal**: Chỉ xóa khi cần thiết
+
+#### 43. Comma Cleanup
+- **Detect Multiple**: Phát hiện dấu phẩy liên tiếp
+- **Clean Pattern**: Xóa pattern ", , ," → ""
+- **Preserve Valid**: Giữ dấu phẩy hợp lệ
+- **Post-render**: Xử lý sau khi render
+
+#### 44. M² Symbol Conversion
+- **m2 → m²**: Chuyển đổi tự động
+- **Multiple Occurrences**: Xử lý tất cả vị trí
+- **XML Safe**: Đảm bảo an toàn trong XML
+
+---
+
+### 📤 Export & Output
+
+#### 45. Single Document Export
+- **Select Output Folder**: Chọn thư mục lưu
+- **Remember Last**: Nhớ thư mục lần trước
+- **Original Filename**: Giữ nguyên tên file
+- **Overwrite Confirm**: Xác nhận nếu file đã tồn tại
+
+#### 46. Export Options
+- **phMapping**: Truyền mapping cho xử lý
+- **visibleSubgroups**: Truyền danh sách subgroup hiển thị
+- **Custom Options**: Tùy chỉnh options khác
+
+#### 47. Output Folder Management
+- **Open Folder**: Mở thư mục sau khi export
+- **Shell Integration**: Tích hợp với file explorer
+- **Cross-platform**: Hoạt động trên Windows/Mac/Linux
+
+#### 48. Export Validation
+- **Pre-export Check**: Kiểm tra trước khi export
+- **Form Validation**: Validate form data
+- **File Existence**: Kiểm tra file template tồn tại
+- **Error Handling**: Xử lý lỗi chi tiết
+
+---
+
+### 🔧 Configuration System
+
+#### 49. Config.json Structure
+- **folders**: Danh sách folder template
+- **groups**: Định nghĩa các nhóm dữ liệu
+- **fieldSchemas**: Schema cho các field
+- **fieldMappings**: Mapping giữa placeholder và field
+
+#### 50. Field Schema Definition
+- **name**: Tên field
+- **label**: Nhãn hiển thị
+- **type**: Loại field
+- **required**: Bắt buộc hay không
+- **options**: Options cho select/dropdown
+- **defaultValue**: Giá trị mặc định
+- **placeholder**: Placeholder text
+- **maxLength**: Độ dài tối đa
+- **hidden**: Ẩn field hay không
+
+#### 51. Field Mapping System
+- **group**: Nhóm chứa field
+- **source**: Nguồn dữ liệu (localStorage/sessionStorage)
+- **schema**: Schema sử dụng
+- **subgroups**: Danh sách subgroup
+- **suffixes**: Suffix cho mỗi subgroup
+
+#### 52. Template Matching
+- **filename**: Tên file template
+- **groups**: Danh sách group sử dụng
+- **Auto-filter**: Tự động lọc config theo template
+
+---
+
+### 🎯 Advanced Features
+
+#### 53. Event Listener Management
+- **Setup**: Setup events cho tất cả input
+- **Cleanup**: Dọn dẹp events khi re-render
+- **Delegation**: Sử dụng event delegation
+- **Performance**: Tối ưu performance
+
+#### 54. Date Picker Integration
+- **Flatpickr**: Sử dụng Flatpickr library
+- **Vietnamese Locale**: Ngôn ngữ tiếng Việt
+- **Format**: dd/mm/yyyy
+- **Keyboard Support**: Hỗ trợ phím tắt
+
+#### 55. Money Input Formatting
+- **Thousand Separator**: Dấu phẩy phân cách nghìn
+- **Auto-format**: Format tự động khi nhập
+- **Remove on Submit**: Xóa format khi submit
+- **Preserve Value**: Giữ nguyên giá trị số
+
+#### 56. CCCD Input Formatting
+- **9 or 12 Digits**: Hỗ trợ 2 format
+- **Dot Separator**: 123.456.789 hoặc 123.456.789.012
+- **Auto-detect**: Tự động phát hiện format
+- **Validation**: Validate số chữ số
+
+#### 57. Phone Input Formatting
+- **10 Digits**: Giới hạn 10 số
+- **Auto-format**: Format tự động
+- **Validation**: Validate format
+
+#### 58. Editable Select
+- **Type to Search**: Nhập để tìm kiếm
+- **Dropdown Options**: Hiển thị options phù hợp
+- **Free Text**: Cho phép nhập text tự do
+- **Keyboard Navigation**: Điều hướng bằng phím
+
+#### 59. Form Field Sorting
+- **Priority Order**: Sắp xếp theo priority
+- **Required First**: Field bắt buộc lên đầu
+- **Alphabetical**: Sắp xếp theo alphabet
+- **Custom Order**: Cho phép tùy chỉnh
+
+#### 60. Responsive Form Layout
+- **3-Column Grid**: 3 field mỗi hàng
+- **Full-width Fields**: Field đặc biệt chiếm full width
+- **Auto-adjust**: Tự động điều chỉnh theo màn hình
+- **Mobile Support**: Hỗ trợ mobile
+
+---
+
+### 🛡️ Error Handling & Validation
+
+#### 61. Form Validation
+- **Required Check**: Kiểm tra field bắt buộc
+- **Format Check**: Kiểm tra format dữ liệu
+- **Length Check**: Kiểm tra độ dài
+- **Custom Rules**: Validation tùy chỉnh
+
+#### 62. Error Display
+- **Inline Errors**: Hiển thị lỗi ngay tại field
+- **Modal Errors**: Hiển thị lỗi trong modal
+- **Error List**: Danh sách tất cả lỗi
+- **Clear Errors**: Xóa lỗi khi sửa
+
+#### 63. Export Error Handling
+- **Template Errors**: Lỗi từ template
+- **Data Errors**: Lỗi từ dữ liệu
+- **File Errors**: Lỗi file system
+- **Detailed Messages**: Thông báo lỗi chi tiết
+
+#### 64. Graceful Degradation
+- **Fallback**: Dự phòng khi có lỗi
+- **Partial Success**: Xử lý thành công một phần
+- **Recovery**: Khôi phục sau lỗi
+- **User Feedback**: Thông báo cho người dùng
+
+---
+
+### 🔍 Debug & Development
+
+#### 65. Console Logging
+- **Structured Logs**: Log có cấu trúc
+- **Log Levels**: Debug/Info/Warn/Error
+- **Context Info**: Thông tin ngữ cảnh
+- **Performance Logs**: Log thời gian xử lý
+
+#### 66. Data Inspection
+- **Form Data**: Xem dữ liệu form
+- **Session Data**: Xem session storage
+- **Config Data**: Xem configuration
+- **Placeholder Data**: Xem placeholders
+
+#### 67. Development Tools
+- **Hot Reload**: Reload nhanh khi dev
+- **DevTools**: Chrome DevTools integration
+- **Source Maps**: Debug code gốc
+- **Error Stack**: Stack trace chi tiết
+
+---
+
+### 🚀 Performance Optimization
+
+#### 68. Lazy Loading
+- **Load on Demand**: Chỉ load khi cần
+- **Defer Non-critical**: Trì hoãn tác vụ không quan trọng
+- **Progressive Enhancement**: Tăng cường dần dần
+
+#### 69. Caching Strategy
+- **Person Cache**: Cache danh sách person
+- **Config Cache**: Cache configuration
+- **Template Cache**: Cache template data
+- **Smart Invalidation**: Invalidate cache thông minh
+
+#### 70. Memory Management
+- **Cleanup**: Dọn dẹp memory không dùng
+- **Event Removal**: Xóa event listeners
+- **DOM Cleanup**: Dọn dẹp DOM elements
+- **Garbage Collection**: Hỗ trợ GC
+
+#### 71. Rendering Optimization
+- **RequestAnimationFrame**: Sử dụng RAF
+- **Batch Updates**: Cập nhật theo batch
+- **Virtual Scrolling**: Scroll ảo cho list dài
+- **Debounce/Throttle**: Giới hạn tần suất xử lý
+
+---
+
+### 🔐 Data Security & Privacy
+
+#### 72. Local Data Storage
+- **No Server**: Không gửi dữ liệu lên server
+- **Local Only**: Dữ liệu chỉ lưu local
+- **User Control**: Người dùng kiểm soát hoàn toàn
+
+#### 73. Data Validation
+- **Input Sanitization**: Làm sạch input
+- **XSS Prevention**: Ngăn chặn XSS
+- **SQL Injection**: Không áp dụng (no database)
+
+#### 74. File System Security
+- **Path Validation**: Validate đường dẫn file
+- **Permission Check**: Kiểm tra quyền truy cập
+- **Safe Operations**: Thao tác file an toàn
+
+---
+
+### 📱 Cross-Platform Support
+
+#### 75. Windows Support
+- **Native Integration**: Tích hợp với Windows
+- **File Explorer**: Mở file explorer
+- **Shell Commands**: Thực thi lệnh shell
+
+#### 76. macOS Support
+- **Native Integration**: Tích hợp với macOS
+- **Finder**: Mở Finder
+- **Shell Commands**: Thực thi lệnh shell
+
+#### 77. Linux Support
+- **Native Integration**: Tích hợp với Linux
+- **File Manager**: Mở file manager
+- **Shell Commands**: Thực thi lệnh shell
+
+---
+
+### 🎨 UI/UX Features
+
+#### 78. Visual Feedback
+- **Hover Effects**: Hiệu ứng khi hover
+- **Active States**: Trạng thái active rõ ràng
+- **Loading States**: Hiển thị trạng thái loading
+- **Success/Error**: Feedback thành công/lỗi
+
+#### 79. Accessibility
+- **Keyboard Navigation**: Điều hướng bằng phím
+- **Focus Management**: Quản lý focus
+- **ARIA Labels**: Nhãn cho screen reader
+- **Color Contrast**: Độ tương phản màu sắc
+
+#### 80. Responsive Design
+- **Mobile First**: Thiết kế mobile trước
+- **Breakpoints**: Điểm ngắt responsive
+- **Flexible Layout**: Layout linh hoạt
+- **Touch Support**: Hỗ trợ touch
+
+---
 
 **Made with ❤️ by LuuTung0102**
