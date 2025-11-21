@@ -622,19 +622,16 @@ function reSetupAllInputs() {
   
   document.querySelectorAll('.land-type-size-container').forEach(container => {
     const ph = container.dataset.ph;
-    console.log('Found land-type-size-container:', { ph, containerId: container.id });
     
     if (ph && ph.includes('Loai_Dat_D')) {
       const containerId = container.id.replace('_container', '');
       if (!container.dataset.landTypeDetailSetup) {
-        console.log('Setting up land type detail:', containerId, ph);
         setupLandTypeDetailInput(container, containerId);
         container.dataset.landTypeDetailSetup = 'true';
       }
     } else {
       const inputId = container.querySelector('.tag-input')?.id;
       if (inputId && !container.dataset.landTypeSizeSetup) {
-        console.log('Setting up land type size:', inputId, ph);
         setupLandTypeSizeInput(container, inputId);
         container.dataset.landTypeSizeSetup = 'true';
       }
@@ -720,19 +717,7 @@ function setupLandTypeDetailInput(container, inputId) {
   
   const getLandKeys = () => {
     return window.landTypeMap ? Object.keys(window.landTypeMap).sort() : [];
-  };
-  
-  console.log('Land type detail setup:', { 
-    inputId, 
-    landKeysCount: getLandKeys().length, 
-    ph,
-    typeInput: !!typeInput,
-    locationInput: !!locationInput,
-    areaInput: !!areaInput,
-    dropdown: !!dropdown,
-    addBtn: !!addBtn,
-    tagsWrapper: !!tagsWrapper
-  });
+  };  
   
   let tags = [];
   let selectedIndex = -1;
@@ -826,7 +811,6 @@ function setupLandTypeDetailInput(container, inputId) {
   function updateHiddenValue() {
     const hiddenInput = document.getElementById(inputId);
     if (!hiddenInput) {
-      console.warn('Hidden input not found:', inputId);
       return;
     }
     
@@ -851,8 +835,6 @@ function setupLandTypeDetailInput(container, inputId) {
       (!query || key.toUpperCase().includes(query.toUpperCase()))
     );
     
-    console.log('Update dropdown:', { query, filteredCount: filtered.length, landKeysTotal: landKeys.length });
-    
     dropdown.innerHTML = filtered
       .map(key => {
         const desc = window.landTypeMap ? window.landTypeMap[key] : key;
@@ -861,17 +843,14 @@ function setupLandTypeDetailInput(container, inputId) {
       .join("");
     
     dropdown.style.display = filtered.length ? "block" : "none";
-    console.log('Dropdown display:', dropdown.style.display, 'Items:', filtered.slice(0, 3));
   }
   
   typeInput.addEventListener('input', (e) => {
     const query = e.target.value.trim().toUpperCase();
-    console.log('Type input changed:', query);
     updateDropdown(query);
   });
   
   typeInput.addEventListener('focus', () => {
-    console.log('Type input focused');
     const query = typeInput.value.trim().toUpperCase();
     updateDropdown(query);
   });
@@ -936,13 +915,11 @@ function setupLandTypeDetailInput(container, inputId) {
   });
   
   dropdown.addEventListener('click', (e) => {
-    console.log('Dropdown clicked:', e.target, e.target.classList);
     e.preventDefault();
     e.stopPropagation();
     
     if (e.target.classList.contains('suggestion-item')) {
       const key = e.target.dataset.key;
-      console.log('Selected land type:', key);
       typeInput.value = key;
       dropdown.style.display = 'none';
       selectedIndex = -1;

@@ -315,7 +315,6 @@
               mergedDataGroups[versionedKey] = normalizedNew;
             }
           } catch (error) {
-            console.error(`Error analyzing changes for group ${groupKey}:`, error);
             const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
             mergedDataGroups[versionedKey] = newData;
           }
@@ -330,7 +329,6 @@
 
       return true;
     } catch (err) {
-      console.error('saveFormData error', err);
       return false;
     }
   }

@@ -271,33 +271,23 @@ class MainApp {
 
 
   async handleExport() {
-    console.log('🚀 handleExport called');
-    
     if (!this.selectedFolder || !this.selectedFile) {
-      console.error('❌ No folder or file selected');
       this.showError('Vui lòng chọn folder và file trước');
       return;
     }
 
-    console.log('✅ Folder and file selected:', this.selectedFolder, this.selectedFile);
-
     if (window.validateForm && typeof window.validateForm === 'function') {
-      console.log('🔍 Validating form...');
       const isValid = window.validateForm();
       if (!isValid) {
-        console.error('❌ Form validation failed');
         return; 
       }
-      console.log('✅ Form validation passed');
     } else {
       console.log('⚠️ No validateForm function found');
     }
 
     try {
       this.showLoading();
-      console.log('📊 Collecting form data...');
       const formData = this.collectFormData();
-      console.log('✅ Form data collected:', formData);
       if (window.sessionStorageManager && this.selectedFile) {
         
         const saved = window.sessionStorageManager.saveFormData(
@@ -352,7 +342,6 @@ class MainApp {
     try {
       if (window.collectGenericFormData) {
         const data = window.collectGenericFormData();
-        console.log('📊 Collected form data (generic):', data);
         if (data.Loai_Dat_D) {
           console.log('✅ Loai_Dat_D found:', data.Loai_Dat_D);
         } else {
@@ -370,10 +359,8 @@ class MainApp {
         }
       });
       
-      console.log('📊 Collected form data (fallback):', data);
       return data;
     } catch (error) {
-      console.error('❌ Error collecting form data:', error);
       return {};
     }
   }

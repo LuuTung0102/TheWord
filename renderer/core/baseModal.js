@@ -60,7 +60,6 @@
 
     setupEventListeners() {
       if (!this.modal) {
-        console.error(`❌ Cannot setup listeners: modal not found for ${this.modalId}`);
         return;
       }
 
@@ -68,9 +67,7 @@
       const closeBtn = this.modal.querySelector(`.${baseClass}-close`);
       if (closeBtn) {
         this.addEventListener(closeBtn, 'click', () => this.hide());
-        console.log(`✅ Close button listener added for ${this.modalId}`);
       } else {
-        console.warn(`⚠️ Close button not found for ${this.modalId}`);
       }
       this.setupCustomEventListeners();
     }
@@ -157,7 +154,6 @@
 
   if (typeof window !== 'undefined') {
     window.BaseModal = BaseModal;
-    console.log('✅ BaseModal initialized');
   }
 
   if (typeof module !== 'undefined' && module.exports) {

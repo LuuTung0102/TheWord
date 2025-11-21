@@ -236,6 +236,5 @@
 
   if (typeof window !== 'undefined') {
     window.personManager = new PersonManager();
-    console.log('✅ PersonManager initialized');
   }
 })();

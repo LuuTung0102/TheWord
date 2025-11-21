@@ -39,7 +39,6 @@ function validateDotPlaceholder(fieldDef, placeholder) {
   }
   
   if (typeof fieldDef.dotPlaceholder !== 'string') {
-    console.warn(`Invalid dotPlaceholder for ${placeholder}: must be string, using default "..........."`);
     return "...........";
   }
   

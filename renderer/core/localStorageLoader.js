@@ -37,7 +37,6 @@
 
   function clearSavedPeopleCache() {
     savedPeopleCache = null;
-    console.log('✅ Cleared saved people cache');
   }
 
   if (typeof window !== 'undefined') {

@@ -20,7 +20,6 @@
       let textAttrs = '';
       let paragraphHasPlaceholder = false;
       let paragraphTextContent = '';
-
   
       function escapeXml(str) {
         return str
@@ -31,7 +30,6 @@
           .replace(/'/g, '&apos;');
       }
 
-  
       function mergePlaceholders(text) {
         let result = text;
         for (let i = 0; i < 5; i++) {
@@ -582,7 +580,6 @@
             data.Loai_Dat_D = '';
           }
         } catch (error) {
-          console.error('Error processing Loai_Dat_D:', error);
           data.Loai_Dat_D = '';
         }
       } else {
@@ -626,7 +623,6 @@
             data[key] = data[key].replace(/m2/g, 'm²');
           }
           if (data[key].includes('{') || data[key].includes('}')) {
-            console.warn(`Warning: Field ${key} contains curly braces:`, data[key]);
             data[key] = data[key].replace(/[{}]/g, '');
           }
         }
@@ -637,7 +633,6 @@
             fullData[key] = fullData[key].replace(/m2/g, 'm²');
           }
           if (fullData[key].includes('{') || fullData[key].includes('}')) {
-            console.warn(`Warning: Field ${key} contains curly braces:`, fullData[key]);
             fullData[key] = fullData[key].replace(/[{}]/g, '');
           }
         }
@@ -705,7 +700,6 @@
           renderedZip.file('word/document.xml', xml);
         }
       } catch (cleanupError) {
-        console.warn('⚠️ Warning: Comma cleanup failed:', cleanupError.message);
       }
 
       const buffer = doc.getZip().generate({

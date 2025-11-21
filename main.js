@@ -36,17 +36,13 @@ ipcMain.handle("load-placeholders", async (event, fileNames) => {
 });
 
 ipcMain.handle("get-templates-root", async () => {
-  console.log(`🔍 get-templates-root: Returning root path: ${__dirname}`);
   return __dirname;
 });
 
 ipcMain.handle("get-templates", async () => {
   try {
     const templatesDir = path.join(__dirname, "templates");
-    console.log("🔍 get-templates: Checking folder:", templatesDir);
-  
     if (!fs.existsSync(templatesDir)) {
-      console.log("🔍 get-templates: Creating folder:", templatesDir);
       fs.mkdirSync(templatesDir);
     }
     
@@ -67,11 +63,8 @@ ipcMain.handle("get-templates", async () => {
         });
       }
     }
-    
-    console.log("🔍 get-templates: Found folders:", folders);
     return folders;
   } catch (err) {
-    console.error("❌ Lỗi get-templates:", err);
     return [];
   }
 });
@@ -79,15 +72,12 @@ ipcMain.handle("get-templates", async () => {
 ipcMain.handle("load-addresses", async () => {
   try {
     const addressPath = path.join(__dirname, "data", "address.json");
-  
     if (!fs.existsSync(addressPath)) {
-      console.error("❌ File address.json không tồn tại tại:", addressPath);
       return [];
     }
     const data = fs.readFileSync(addressPath, "utf8");
     return JSON.parse(data);
   } catch (err) {
-    console.error("❌ Lỗi load address.json:", err);
     return [];
   }
 });
@@ -116,7 +106,6 @@ ipcMain.handle("save-temp-file", async (event, { buffer, fileName }) => {
     console.log(`✅ Saved temp file: ${tempPath}`);
     return tempPath;
   } catch (error) {
-    console.error("❌ Error saving temp file:", error);
     throw error;
   }
 });
@@ -138,7 +127,6 @@ ipcMain.handle("upload-template", async (event, filePath) => {
       counter++;
     }
     fs.copyFileSync(filePath, finalDest);
-    console.log(`✅ Uploaded template: ${path.basename(finalDest)}`);
     try {
       fs.unlinkSync(filePath);
     } catch (cleanupError) {
@@ -146,7 +134,6 @@ ipcMain.handle("upload-template", async (event, filePath) => {
     }
     return path.basename(finalDest);
   } catch (error) {
-    console.error("❌ Error uploading template:", error);
     throw error;
   }
 });
@@ -155,7 +142,6 @@ ipcMain.handle("delete-template", async (event, fileName) => {
   const filePath = path.join(__dirname, "templates", fileName);
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
-    
   }
   return true;
 });
@@ -169,10 +155,8 @@ ipcMain.handle("open-template-file", async (event, fileName) => {
     }
     
     await shell.openPath(filePath);
-    console.log(`✅ Opened template file: ${fileName}`);
     return true;
   } catch (error) {
-    console.error("❌ Error opening template file:", error);
     throw error;
   }
 });
@@ -184,7 +168,6 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
     const generatedPaths = [];
     const folderPath = path.join(__dirname, "templates", folderName);
     const files = fs.readdirSync(folderPath).filter(f => f.endsWith(".docx"));
-    console.log(`📤 Xuất ${files.length} files từ folder "${folderName}"`);
     for (const file of files) {
       const inputPath = path.join(folderPath, file);
       const outputPath = path.join(
@@ -193,7 +176,6 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
       );
       await generateDocx(inputPath, data, outputPath);
       generatedPaths.push(outputPath);
-      console.log(`  ✅ ${file} → ${path.basename(outputPath)}`);
     }
 
     if (exportType === "zip") {
@@ -224,12 +206,9 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
         fs.copyFileSync(file, dest);
         fs.unlinkSync(file);
       }
-
-      console.log(`📁 Đã lưu ${generatedPaths.length} files vào: ${saveDir}`);
       return saveDir;
     }
   } catch (err) {
-    console.error("❌ Lỗi xuất file:", err);
     return null;
   }
 });
@@ -238,21 +217,15 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
 ipcMain.handle("load-main-config", async () => {
   try {
     const configPath = path.join(__dirname, "renderer", "config", "config.json");
-    console.log("📋 load-main-config: Loading from:", configPath);
-    
     if (!fs.existsSync(configPath)) {
-      console.warn("⚠️ load-main-config: Config file not found:", configPath);
       return null;
     }
     
     const configData = fs.readFileSync(configPath, 'utf8');
     const config = JSON.parse(configData);
-    
-    console.log("📋 load-main-config: Loaded config:", config);
     return config;
     
   } catch (err) {
-    console.error("❌ load-main-config: Error:", err);
     return null;
   }
 });
@@ -260,12 +233,9 @@ ipcMain.handle("load-main-config", async () => {
 
 ipcMain.handle("check-folder-exists", async (event, folderPath) => {
   try {
-    console.log("📁 check-folder-exists: Checking:", folderPath);
     const exists = fs.existsSync(folderPath);
-    console.log("📁 check-folder-exists: Result:", exists);
     return exists;
   } catch (err) {
-    console.error("❌ check-folder-exists: Error:", err);
     return false;
   }
 });
@@ -273,19 +243,12 @@ ipcMain.handle("check-folder-exists", async (event, folderPath) => {
 
 ipcMain.handle("get-files-in-folder", async (event, folderPath) => {
   try {
-    console.log("📁 get-files-in-folder: Loading from:", folderPath);
-    
     if (!fs.existsSync(folderPath)) {
-      console.warn("⚠️ get-files-in-folder: Folder not found:", folderPath);
       return [];
     }
-    
     const files = fs.readdirSync(folderPath).filter(file => file.endsWith('.docx'));
-    console.log(`📁 get-files-in-folder: Found ${files.length} files:`, files);
-    return files;
-    
+    return files;  
   } catch (err) {
-    console.error("❌ get-files-in-folder: Error:", err);
     return [];
   }
 });
@@ -293,25 +256,18 @@ ipcMain.handle("get-files-in-folder", async (event, folderPath) => {
 
 ipcMain.handle("get-file-placeholders", async (event, folderPath, fileName) => {
   try {
-    console.log("📋 get-file-placeholders: Loading from:", folderPath, "file:", fileName);
-    
     if (!fs.existsSync(folderPath)) {
-      console.warn("⚠️ get-file-placeholders: Folder not found:", folderPath);
       return [];
     }
     
     const filePath = path.join(folderPath, fileName);
     if (!fs.existsSync(filePath)) {
-      console.warn("⚠️ get-file-placeholders: File not found:", filePath);
       return [];
     }
     
     const placeholders = getPlaceholders(filePath);
-    console.log(`📋 get-file-placeholders: Found ${placeholders.length} placeholders for ${fileName}`);
     return placeholders;
-    
   } catch (err) {
-    console.error("❌ get-file-placeholders: Error:", err);
     return [];
   }
 });
@@ -319,10 +275,7 @@ ipcMain.handle("get-file-placeholders", async (event, folderPath, fileName) => {
 
 ipcMain.handle("get-template-placeholders", async (event, folderPath) => {
   try {
-    console.log("📋 get-placeholders: Loading from:", folderPath);
-    
     if (!fs.existsSync(folderPath)) {
-      console.warn("⚠️ get-placeholders: Folder not found:", folderPath);
       return [];
     }
     
@@ -336,11 +289,8 @@ ipcMain.handle("get-template-placeholders", async (event, folderPath) => {
     }
     
     const result = Array.from(allPlaceholders);
-    console.log(`📋 get-placeholders: Found ${result.length} placeholders`);
     return result;
-    
   } catch (err) {
-    console.error("❌ get-placeholders: Error:", err);
     return [];
   }
 });
@@ -348,12 +298,9 @@ ipcMain.handle("get-template-placeholders", async (event, folderPath) => {
 
 ipcMain.handle("export-single-document", async (event, { folderPath, fileName, formData, options }) => {
   try {
-    console.log("📤 export-single-document: Starting export for:", folderPath, "file:", fileName);
-    console.log("📤 export-single-document: Form data:", formData);
     
     const projectRoot = __dirname;
     const fullFolderPath = path.join(projectRoot, folderPath);
-    console.log(`📤 export-single-document: Full folder path: ${fullFolderPath}`);
     const filePath = path.join(fullFolderPath, fileName);
     
     if (!fs.existsSync(filePath)) {
@@ -389,8 +336,6 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
       throw new Error('Document generation failed');
     }
     
-    console.log(`📤 export-single-document: Generated document: ${outputPath}`);
-    
     return {
       success: true,
       outputPath: outputPath,
@@ -399,7 +344,6 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     };
     
   } catch (err) {
-    console.error("❌ export-single-document: Error:", err);
     return {
       success: false,
       error: err.message
@@ -409,9 +353,6 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
 
 ipcMain.handle("export-documents", async (event, { templateName, formData }) => {
   try {
-    console.log("📤 export-documents: Starting export for:", templateName);
-    console.log("📤 export-documents: Form data:", formData);
-    
     const templatesRoot = path.join(__dirname, "templates");
     const folderPath = path.join(templatesRoot, templateName);
     
@@ -459,13 +400,10 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
 ipcMain.handle("write-local-storage", async (event, data) => {
   try {
     const localStoragePath = path.join(__dirname, "renderer", "config", "local_storage.json");
-    console.log("💾 write-local-storage: Writing to:", localStoragePath);
     fs.writeFileSync(localStoragePath, JSON.stringify(data, null, 2), 'utf8');
-    
-    console.log("✅ write-local-storage: Successfully saved");
+  
     return { success: true };
   } catch (err) {
-    console.error("❌ write-local-storage: Error:", err);
     return { success: false, error: err.message };
   }
 });
@@ -473,7 +411,6 @@ ipcMain.handle("write-local-storage", async (event, data) => {
 ipcMain.handle("open-output-folder", async (event, filePath) => {
   try {
     const { shell } = require("electron");
-    
     if (!filePath) {
       const outputDir = path.join(__dirname, "output");
       if (fs.existsSync(outputDir)) {
@@ -491,16 +428,12 @@ ipcMain.handle("open-output-folder", async (event, filePath) => {
       return { success: false, error: 'Folder not found' };
     }
   } catch (err) {
-    console.error("❌ open-output-folder: Error:", err);
     return { success: false, error: err.message };
   }
 });
 
 ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, fileName }) => {
   try {
-    console.log("📋 copy-file-to-folder: Copying from:", sourcePath);
-    console.log("📋 copy-file-to-folder: To folder:", targetFolder);
-    
     if (!fs.existsSync(sourcePath)) {
       throw new Error('Source file not found');
     }
@@ -522,7 +455,6 @@ ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, 
     }
     
     fs.copyFileSync(sourcePath, targetPath);
-    console.log(`✅ copy-file-to-folder: Copied to: ${targetPath}`);
     
     try {
       fs.unlinkSync(sourcePath);
@@ -532,7 +464,6 @@ ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, 
     
     return finalFileName;
   } catch (err) {
-    console.error("❌ copy-file-to-folder: Error:", err);
     throw err;
   }
 });
@@ -540,34 +471,26 @@ ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, 
 ipcMain.handle("open-file-path", async (event, filePath) => {
   try {
     const { shell } = require("electron");
-    console.log("👁️ open-file-path: Opening:", filePath);
-    
     if (!fs.existsSync(filePath)) {
       throw new Error('File not found');
     }
     
     await shell.openPath(filePath);
-    console.log("✅ open-file-path: Opened successfully");
     return { success: true };
   } catch (err) {
-    console.error("❌ open-file-path: Error:", err);
     return { success: false, error: err.message };
   }
 });
 
 ipcMain.handle("delete-file-path", async (event, filePath) => {
   try {
-    console.log("🗑️ delete-file-path: Deleting:", filePath);
-    
     if (!fs.existsSync(filePath)) {
       throw new Error('File not found');
     }
     
     fs.unlinkSync(filePath);
-    console.log("✅ delete-file-path: Deleted successfully");
     return { success: true };
   } catch (err) {
-    console.error("❌ delete-file-path: Error:", err);
     return { success: false, error: err.message };
   }
 });

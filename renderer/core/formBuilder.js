@@ -175,7 +175,6 @@
 
   if (typeof window !== 'undefined') {
     window.FormBuilder = FormBuilder;
-    console.log('✅ FormBuilder initialized');
   }
 
   if (typeof module !== 'undefined' && module.exports) {

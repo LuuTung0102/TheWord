@@ -24,13 +24,11 @@ function getPlaceholders(filePath) {
       if (ph && (ph.length === 1 || /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(ph))) {
         placeholders.push(ph);
       } else if (ph) {
-        console.warn(`⚠️ Bỏ qua placeholder không hợp lệ: {{${ph}}}`);
       }
     }
   
     return [...new Set(placeholders)];
   } catch (error) {
-    console.error("❌ Lỗi extract placeholders:", error);
     return [];
   }
 }

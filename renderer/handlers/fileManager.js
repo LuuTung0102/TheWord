@@ -1,7 +1,6 @@
 (function() {
   const BaseModal = window.BaseModal;
   if (!BaseModal) {
-    console.error('❌ BaseModal not found. FileManager requires BaseModal.');
     return;
   }
 
@@ -31,7 +30,6 @@
           this.folders = [];
         }
       } catch (error) {
-        console.error('❌ Error loading folders:', error);
         this.folders = [];
       }
     }
@@ -43,7 +41,6 @@
         const files = await window.ipcRenderer.invoke("get-files-in-folder", fullPath);
         return files;
       } catch (error) {
-        console.error('❌ Error loading files:', error);
         return [];
       }
     }
@@ -255,14 +252,12 @@
               this.renderFileList();
             }
           } catch (error) {
-            console.error('❌ Error adding file:', error);
             alert('❌ Không thể thêm file. Vui lòng thử lại.');
           }
         };
 
         input.click();
       } catch (error) {
-        console.error('❌ Error in handleAddFile:', error);
         alert('❌ Đã xảy ra lỗi');
       }
     }
@@ -276,7 +271,6 @@
         
         await window.ipcRenderer.invoke('open-file-path', filePath);
       } catch (error) {
-        console.error('❌ Error opening file:', error);
         alert('❌ Không thể mở file');
       }
     }
@@ -307,7 +301,6 @@
           alert('❌ Không thể xóa file');
         }
       } catch (error) {
-        console.error('❌ Error deleting file:', error);
         alert('❌ Không thể xóa file');
       }
     }
@@ -315,6 +308,5 @@
 
   if (typeof window !== 'undefined') {
     window.fileManager = new FileManager();
-    console.log('✅ FileManager initialized');
   }
 })();

@@ -12,7 +12,6 @@
         const response = await fetch('renderer/config/local_storage.json');
         
         if (!response.ok) {
-          console.error('❌ Failed to load local_storage.json');
           this.people = [];
           return [];
         }
@@ -25,15 +24,10 @@
             this.labels.set(key, label);
           });
           this.labelsLoaded = true;
-          console.log(`✅ Loaded ${this.labels.size} labels from local_storage.json`);
         }
-        
         this.isLoaded = true;
-        
-        console.log(`✅ Loaded ${this.people.length} people from local_storage.json`);
         return this.people;
       } catch (error) {
-        console.error('❌ Error loading people:', error);
         this.people = [];
         return [];
       }
@@ -42,7 +36,6 @@
     async savePeople(people) {
       try {
         if (!window.ipcRenderer) {
-          console.error('❌ IPC not available');
           return false;
         }
 
@@ -61,21 +54,17 @@
         if (result.success) {
           this.people = people;
           this.clearCache();
-          console.log('✅ Saved people to local_storage.json');
           return true;
         } else {
-          console.error('❌ Failed to save:', result.error);
           return false;
         }
       } catch (error) {
-        console.error('❌ Error saving people:', error);
         return false;
       }
     }
 
     getPerson(id) {
       if (!this.isLoaded) {
-        console.warn('⚠️ Data not loaded yet');
         return null;
       }
       
@@ -95,8 +84,6 @@
       
       this.people.push(newPerson);
       this.savePeople(this.people);
-      
-      console.log(`✅ Added new person: ${newId} - ${newName}`);
       return newPerson;
     }
 
@@ -104,14 +91,12 @@
       const person = this.getPerson(id);
       
       if (!person) {
-        console.error(`❌ Person not found: ${id}`);
         return false;
       }
       
       person.data = { ...person.data, ...newData };
       
       this.savePeople(this.people);
-      console.log(`✅ Updated person: ${id}`);
       return true;
     }
 
@@ -119,7 +104,6 @@
       const index = this.people.findIndex(p => p.id === id);
       
       if (index === -1) {
-        console.error(`❌ Person not found: ${id}`);
         return false;
       }
       
@@ -127,7 +111,6 @@
       this.people.splice(index, 1);
       
       this.savePeople(this.people);
-      console.log(`✅ Deleted person: ${id} - ${deletedPerson.name}`);
       return true;
     }
 
@@ -201,6 +184,5 @@
 
   if (typeof window !== 'undefined') {
     window.personDataService = new PersonDataService();
-    console.log('✅ PersonDataService initialized');
   }
 })();

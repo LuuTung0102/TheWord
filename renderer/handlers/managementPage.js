@@ -72,6 +72,5 @@
 
   if (typeof window !== 'undefined') {
     window.managementPage = new ManagementPage();
-    console.log('✅ ManagementPage initialized');
   }
 })();

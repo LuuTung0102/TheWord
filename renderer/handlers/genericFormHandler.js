@@ -231,7 +231,6 @@ function setupEditableSelectInput(input) {
   const dropdown = document.getElementById(`dropdown-${input.id}`);
   
   if (!dropdown) {
-    console.warn(`Dropdown not found for input: ${input.id}`);
     return;
   }
   
@@ -239,7 +238,6 @@ function setupEditableSelectInput(input) {
     try {
       return JSON.parse(input.getAttribute('data-options') || '[]');
     } catch (e) {
-      console.error('Error parsing options:', e);
       return [];
     }
   };
@@ -756,14 +754,6 @@ function getLandFieldsToSkip(allPlaceholders) {
   } else if (hasLoaiDatF) {
     if (hasLoaiDat) skipFields.add('Loai_Dat');
   }
-  
-  console.log('Land fields decision:', { 
-    hasLoaiDatD, 
-    hasLoaiDatF, 
-    hasLoaiDat,
-    skipFields: Array.from(skipFields)
-  });
-  
   return skipFields;
 }
 
@@ -780,7 +770,6 @@ function setupLandTypeSync() {
     loaiDatFInput.setAttribute('data-ph', 'Loai_Dat_F');
     loaiDatFInput.id = 'hidden-Loai_Dat_F';
     document.body.appendChild(loaiDatFInput);
-    console.log('✅ Created hidden input for Loai_Dat_F');
   }
   
   if ((loaiDatDInput || loaiDatFInput) && !loaiDatInput && skipLandFields.has('Loai_Dat')) {
@@ -789,7 +778,6 @@ function setupLandTypeSync() {
     loaiDatInput.setAttribute('data-ph', 'Loai_Dat');
     loaiDatInput.id = 'hidden-Loai_Dat';
     document.body.appendChild(loaiDatInput);
-    console.log('✅ Created hidden input for Loai_Dat');
   }
   
   if (loaiDatDInput && loaiDatFInput) {
@@ -812,7 +800,6 @@ function setupLandTypeSync() {
       loaiDatFInput.value = converted.join('; ');
       loaiDatFInput.dispatchEvent(new Event('change', { bubbles: true }));
       loaiDatFInput.dispatchEvent(new Event('input', { bubbles: true }));
-      console.log('🔄 Synced Loai_Dat_D -> Loai_Dat_F:', loaiDatFInput.value);
       
       if (typeof populateDynamicOptions === 'function') {
         populateDynamicOptions();
@@ -821,7 +808,6 @@ function setupLandTypeSync() {
     
     loaiDatDInput.addEventListener('input', syncDtoF);
     loaiDatDInput.addEventListener('change', syncDtoF);
-    console.log('✅ Setup sync: Loai_Dat_D -> Loai_Dat_F');
   }
   
   if (loaiDatFInput && loaiDatInput) {
@@ -840,9 +826,7 @@ function setupLandTypeSync() {
       }).filter(Boolean);
       
       loaiDatInput.value = codes.join('+');
-      loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
-      console.log('🔄 Synced Loai_Dat_F -> Loai_Dat:', loaiDatInput.value);
-      
+      loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));    
       if (typeof populateDynamicOptions === 'function') {
         populateDynamicOptions();
       }
@@ -850,7 +834,6 @@ function setupLandTypeSync() {
     
     loaiDatFInput.addEventListener('input', syncFtoD);
     loaiDatFInput.addEventListener('change', syncFtoD);
-    console.log('✅ Setup sync: Loai_Dat_F -> Loai_Dat');
   }
 }
 
@@ -1116,7 +1099,6 @@ async function refreshPersonButtons(groupKey) {
     });
   });
   
-  console.log('✅ Person buttons refreshed');
 }
 
 if (typeof window !== 'undefined') {
@@ -1237,7 +1219,6 @@ function populateDynamicOptions(groupData, targetSuffix) {
     }
     
     if (!groupData.Loai_Dat_D && !groupData.Loai_Dat_F) {
-      console.log('No land type data to populate SV options');
       return;
     }
   }
@@ -1279,11 +1260,8 @@ function populateDynamicOptions(groupData, targetSuffix) {
   }
   
   if (areas.length === 0) {
-    console.log('No areas found in land type data');
     return;
   }
-  
-  console.log('Extracted areas for SV field:', areas);
   
   const svPlaceholder = targetSuffix ? `SV${targetSuffix}` : 'SV';
   const svSelect = document.querySelector(`select[data-ph="${svPlaceholder}"]`);
@@ -1302,7 +1280,6 @@ function populateDynamicOptions(groupData, targetSuffix) {
       svSelect.appendChild(option);
     });
     
-    console.log('✅ Populated SV select options:', areas);
   }
   
   if (svInput && svInput.classList.contains('editable-select-input')) {
@@ -1312,8 +1289,6 @@ function populateDynamicOptions(groupData, targetSuffix) {
     if (dropdown && dropdown.style.display === 'block') {
       renderDropdownOptions(dropdown, areas, svInput.value);
     }
-    
-    console.log('✅ Populated SV editable-select options:', areas);
   }
 }
 
@@ -1411,7 +1386,6 @@ function fillFormWithMenData(groupData, targetSuffix) {
         
         loaiDatInput.value = convertedValue;
         loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
-        console.log('✅ Filled Loai_Dat:', convertedValue);
         return;
       }
       
@@ -1511,18 +1485,13 @@ function fillLandTypeSizeField(placeholder, valueString) {
 
 function fillLandTypeDetailField(placeholder, valueString) {
   if (!valueString || !valueString.trim()) return;
-  
-  console.log('🔄 fillLandTypeDetailField:', { placeholder, valueString });
-  
   const hiddenInput = document.querySelector(`input[data-ph="${placeholder}"]`);
   if (!hiddenInput) {
-    console.warn('⚠️ Hidden input not found for:', placeholder);
     return;
   }
   
   const container = document.querySelector(`.land-type-size-container[data-ph="${placeholder}"]`);
   if (!container) {
-    console.warn('⚠️ Container not found for:', placeholder);
     return;
   }
   const isSetup = container.dataset.landTypeDetailSetup === 'true';
@@ -1535,18 +1504,15 @@ function fillLandTypeDetailField(placeholder, valueString) {
       if (containerId) {
         window.setupLandTypeDetailInput(container, containerId);
         container.dataset.landTypeDetailSetup = 'true';
-        console.log('✅ Setup Loai_Dat_D with initial value');
       }
     }
   } else {
     hiddenInput.value = valueString;
     if (container.reloadLandTypeDetailValue && typeof container.reloadLandTypeDetailValue === 'function') {
       container.reloadLandTypeDetailValue();
-      console.log('✅ Reloaded Loai_Dat_D value');
     } else {
       hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
       hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
-      console.log('✅ Updated Loai_Dat_D value via events');
     }
   }
 }
@@ -1608,12 +1574,10 @@ function fillAddressField(placeholder, addressString) {
             if (villageOption) {
               villageElement.value = villageOption.value;
               villageElement.dispatchEvent(new Event('change', { bubbles: true }));
-              console.log('✅ Filled village select:', villageName);
             }
           } else {
             villageElement.value = villageName;
             villageElement.dispatchEvent(new Event('input', { bubbles: true }));
-            console.log('✅ Filled village input:', villageName);
           }
         }, 100);
       }
