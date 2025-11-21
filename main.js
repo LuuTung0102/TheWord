@@ -5,10 +5,9 @@ const AdmZip = require("adm-zip");
 const { generateDocx } = require("./logic/generate");
 const { getPlaceholders } = require("./logic/placeholder");
 
-
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1100,
+    width: 1000,
     height: 900,
     webPreferences: { nodeIntegration: true, contextIsolation: false },
   });
