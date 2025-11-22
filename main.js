@@ -1,6 +1,7 @@
-const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 const AdmZip = require("adm-zip");
 const { generateDocx } = require("./logic/generate");
 const { getPlaceholders } = require("./logic/placeholder");
@@ -94,7 +95,6 @@ ipcMain.handle("add-template", async () => {
 
 ipcMain.handle("save-temp-file", async (event, { buffer, fileName }) => {
   try {
-    const os = require('os');
     const tempDir = os.tmpdir();
     const tempPath = path.join(tempDir, fileName);
     fs.writeFileSync(tempPath, Buffer.from(buffer));
@@ -141,7 +141,6 @@ ipcMain.handle("delete-template", async (event, fileName) => {
 
 ipcMain.handle("open-template-file", async (event, fileName) => {
   try {
-    const { shell } = require('electron');
     const filePath = path.join(__dirname, "templates", fileName);
     if (!fs.existsSync(filePath)) {
       throw new Error('File không tồn tại');
@@ -299,7 +298,6 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
       throw new Error(`File not found: ${fileName} in ${folderPath}`);
     }
     
-    const { app } = require('electron');
     const defaultFolder = global.lastOutputFolder || app.getPath('downloads');
     
     const result = await dialog.showOpenDialog({
@@ -399,7 +397,6 @@ ipcMain.handle("write-local-storage", async (event, data) => {
 
 ipcMain.handle("open-output-folder", async (event, filePath) => {
   try {
-    const { shell } = require("electron");
     if (!filePath) {
       const outputDir = path.join(__dirname, "output");
       if (fs.existsSync(outputDir)) {
@@ -458,7 +455,6 @@ ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, 
 
 ipcMain.handle("open-file-path", async (event, filePath) => {
   try {
-    const { shell } = require("electron");
     if (!fs.existsSync(filePath)) {
       throw new Error('File not found');
     }
