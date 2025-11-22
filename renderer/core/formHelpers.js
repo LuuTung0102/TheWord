@@ -1,3 +1,4 @@
+
 function setupNumericInput(el, maxLength) {
   el.addEventListener("input", (e) => {
     const v = e.target.value.replace(/\D/g, "").slice(0, maxLength);
@@ -1400,4 +1401,3 @@ function setupLandTypeSizeInput(container, inputId) {
 window.reSetupAllInputs = reSetupAllInputs;
 window.formatInputValue = formatInputValue;
 window.setupLandTypeSizeInput = setupLandTypeSizeInput;
-

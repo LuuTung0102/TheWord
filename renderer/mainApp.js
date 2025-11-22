@@ -1,4 +1,3 @@
-
 class MainApp {
   constructor() {
     this.selectedFolder = null;

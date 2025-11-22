@@ -206,10 +206,6 @@
       container.innerHTML = html;
     }
 
-    /**
-     * TASK 6.1, 8.3: Handle adding a new Word file with error handling
-     * Saves file to temp and opens config wizard
-     */
     async handleAddFile() {
       if (!this.selectedFolder) {
         alert('❌ Vui lòng chọn folder trước');
@@ -297,16 +293,6 @@
       }
     }
 
-    /**
-     * TASK 6.2, 6.3, 6.4, 8.3: Show config wizard with comprehensive error handling
-     * Handles:
-     * - File không có placeholders: Hiển thị cảnh báo và cho phép tiếp tục
-     * - File đã tồn tại: Hiển thị dialog xác nhận ghi đè
-     * - Không tìm thấy config.json: Hiển thị lỗi và không cho phép thêm file
-     * - Copy file thất bại: Hiển thị lỗi và không lưu config
-     * @param {string} fileName - Name of the Word file
-     * @param {string} tempFilePath - Path to temporary file
-     */
     async showConfigWizard(fileName, tempFilePath) {
       try {
         if (!this.selectedFolder) {
@@ -533,7 +519,6 @@
         
         alert(errorMessage);
         
-        // Reload file list even on error to ensure UI is in sync
         try {
           this.files = await this.loadFilesInFolder(this.selectedFolder.path);
           this.renderFileList();

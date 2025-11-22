@@ -149,8 +149,6 @@
     renderAutoCreatedSubgroups() {
       const container = this.querySelector('#autoCreatedSubgroupsList');
       if (!container) return;
-
-      // Build subgroups map from placeholderToSubgroup metadata
       const subgroupsMap = new Map();
       
       if (this.templateEntry._metadata && this.templateEntry._metadata.placeholderToSubgroup) {
@@ -169,7 +167,6 @@
         }
       }
 
-      // If no subgroups found from metadata, try autoCreatedSubgroups
       if (subgroupsMap.size === 0 && this.autoCreatedSubgroups && this.autoCreatedSubgroups.length > 0) {
         this.autoCreatedSubgroups.forEach(sg => {
           subgroupsMap.set(sg.subgroupId || sg.id, {
@@ -180,7 +177,6 @@
         });
       }
 
-      // If still no subgroups, show empty message
       if (subgroupsMap.size === 0) {
         container.innerHTML = `
           <div class="auto-created-subgroups-empty">
@@ -189,8 +185,6 @@
         `;
         return;
       }
-
-      // Render subgroups
       const html = `
         <div class="auto-created-subgroups-items">
           ${Array.from(subgroupsMap.values()).map(sg => `
@@ -317,7 +311,6 @@
       if (isChecked) {
         if (!this.templateEntry.groups.includes(groupId)) {
           this.templateEntry.groups.push(groupId);
-          // Initialize with empty array if not exists - user will manually add subgroups
           if (!this.templateEntry.placeholders[groupId]) {
             this.templateEntry.placeholders[groupId] = [];
           }
@@ -595,10 +588,7 @@
     }
 
     _getAvailableSubgroupsForGroup(groupId) {
-      // Get all unique subgroups ONLY from current file (not from config)
       const allSubgroupsSet = new Set();
-      
-      // 1. From placeholderToSubgroup metadata (subgroups detected in current file)
       if (this.templateEntry._metadata && this.templateEntry._metadata.placeholderToSubgroup) {
         const placeholderToSubgroup = this.templateEntry._metadata.placeholderToSubgroup;
         
@@ -609,7 +599,6 @@
         }
       }
       
-      // 2. From autoCreatedSubgroups (newly created subgroups)
       if (this.autoCreatedSubgroups && this.autoCreatedSubgroups.length > 0) {
         this.autoCreatedSubgroups.forEach(sg => {
           if (sg.groupId === groupId) {
@@ -617,14 +606,7 @@
           }
         });
       }
-      
-      // NOTE: We do NOT include subgroups from existingConfig.fieldMappings
-      // Only show subgroups that are actually detected in the current file
-      
-      // Get already assigned subgroups for this group
       const assignedSubgroupIds = this.templateEntry.placeholders[groupId] || [];
-      
-      // Filter out already assigned subgroups
       const availableSubgroups = Array.from(allSubgroupsSet)
         .filter(sgId => !assignedSubgroupIds.includes(sgId))
         .map(sgId => ({
@@ -747,8 +729,6 @@
     }
 
     handleCreateNewGroup() {
-      // TODO: Implement custom dialog for Electron (prompt() not supported)
-      // For now, show a message to user
       alert(
         '⚠️ Tính năng tạo Group mới tạm thời chưa khả dụng\n\n' +
         'Vui lòng sử dụng các groups có sẵn trong config.json.\n\n' +
@@ -756,7 +736,6 @@
       );
       return;
       
-      // Original implementation (commented out until custom dialog is implemented)
       /*
       const groupId = prompt('Nhập Group ID (ví dụ: BCT, NCN):');
       if (!groupId) return;
