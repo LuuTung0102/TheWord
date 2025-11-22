@@ -704,14 +704,6 @@ function setupLandTypeDetailInput(container, inputId) {
   const ph = container.dataset.ph;
   
   if (!typeInput || !locationInput || !areaInput || !dropdown || !addBtn || !tagsWrapper) {
-    console.warn('Land type detail: Missing elements', {
-      typeInput: !!typeInput,
-      locationInput: !!locationInput,
-      areaInput: !!areaInput,
-      dropdown: !!dropdown,
-      addBtn: !!addBtn,
-      tagsWrapper: !!tagsWrapper
-    });
     return;
   }
   

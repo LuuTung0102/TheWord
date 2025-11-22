@@ -13,9 +13,6 @@ function createWindow() {
   });
   win.loadFile("index.html");
   win.webContents.session.webSecurity = false;
-  win.webContents.on("console-message", (event, level, message) => {
-    if (message.includes("Autofill")) return;
-  });
 }
 
 app.whenReady().then(createWindow);
@@ -29,7 +26,6 @@ ipcMain.handle("load-placeholders", async (event, fileNames) => {
     }
     return placeholders;
   } catch (err) {
-    console.error("❌ Lỗi khi đọc placeholder:", err);
     return {};
   }
 });
@@ -102,7 +98,6 @@ ipcMain.handle("save-temp-file", async (event, { buffer, fileName }) => {
     const tempDir = os.tmpdir();
     const tempPath = path.join(tempDir, fileName);
     fs.writeFileSync(tempPath, Buffer.from(buffer));
-    console.log(`✅ Saved temp file: ${tempPath}`);
     return tempPath;
   } catch (error) {
     throw error;
@@ -129,7 +124,6 @@ ipcMain.handle("upload-template", async (event, filePath) => {
     try {
       fs.unlinkSync(filePath);
     } catch (cleanupError) {
-      console.warn("⚠️ Could not clean up temp file:", cleanupError);
     }
     return path.basename(finalDest);
   } catch (error) {
@@ -190,7 +184,6 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
       zip.writeZip(filePath);
       generatedPaths.forEach((p) => fs.unlinkSync(p));
 
-      console.log(`📦 Đã tạo ZIP: ${filePath}`);
       return filePath;
     } else {
       const { filePaths } = await dialog.showOpenDialog({
@@ -378,8 +371,6 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
       throw new Error('No documents were generated');
     }
     
-    console.log(`📤 export-documents: Generated ${generatedPaths.length} documents`);
-    
     return {
       success: true,
       generatedPaths: generatedPaths,
@@ -387,7 +378,6 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
     };
     
   } catch (err) {
-    console.error("❌ export-documents: Error:", err);
     return {
       success: false,
       error: err.message
@@ -458,7 +448,6 @@ ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, 
     try {
       fs.unlinkSync(sourcePath);
     } catch (cleanupError) {
-      console.warn("⚠️ Could not clean up temp file:", cleanupError);
     }
     
     return finalFileName;
@@ -491,5 +480,69 @@ ipcMain.handle("delete-file-path", async (event, filePath) => {
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle("read-folder-config", async (event, folderPath) => {
+  try {
+    const configPath = path.join(folderPath, "config.json");
+    if (!fs.existsSync(configPath)) {
+      return null;
+    }
+    const data = fs.readFileSync(configPath, "utf8");
+    return JSON.parse(data);
+  } catch (err) {
+    throw new Error(`Failed to read config: ${err.message}`);
+  }
+});
+
+ipcMain.handle("write-folder-config", async (event, folderPath, config) => {
+  try {
+    const configPath = path.join(folderPath, "config.json");
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf8");
+    return true;
+  } catch (err) {
+    throw new Error(`Failed to write config: ${err.message}`);
+  }
+});
+
+ipcMain.handle("backup-folder-config", async (event, folderPath) => {
+  try {
+    const configPath = path.join(folderPath, "config.json");
+    if (!fs.existsSync(configPath)) {
+      return null;
+    }
+    const timestamp = Date.now();
+    const backupPath = path.join(folderPath, `config.backup.${timestamp}.json`);
+    fs.copyFileSync(configPath, backupPath);
+    return backupPath;
+  } catch (err) {
+    throw new Error(`Failed to create backup: ${err.message}`);
+  }
+});
+
+ipcMain.handle("restore-folder-config", async (event, backupPath, folderPath) => {
+  try {
+    if (!fs.existsSync(backupPath)) {
+      throw new Error('Backup file not found');
+    }
+    const configPath = path.join(folderPath, "config.json");
+    fs.copyFileSync(backupPath, configPath);
+    return true;
+  } catch (err) {
+    throw new Error(`Failed to restore config: ${err.message}`);
+  }
+});
+
+ipcMain.handle("get-placeholders", async (event, filePath) => {
+  try {
+    if (!fs.existsSync(filePath)) {
+      return [];
+    }
+    const placeholders = getPlaceholders(filePath);
+    return placeholders;
+  } catch (err) {
+    console.error('Error getting placeholders:', err);
+    return [];
   }
 });

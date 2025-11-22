@@ -711,9 +711,6 @@
       return outputPath;
     } catch (error) {
       
-      if (error.properties?.errors) {
-        error.properties.errors.forEach(err => console.error("🧩 Chi tiết:", err.explanation));
-      }
       throw error;
     }
   }

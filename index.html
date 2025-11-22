@@ -107,7 +107,7 @@
             .then(data => {
                 window.addressData = data;
             })
-            .catch(error => console.error('❌ Error loading address data:', error));
+            .catch(error => {});
     </script>
     
     <script src="renderer/config/baseConstants.js"></script>
@@ -119,6 +119,10 @@
     <script src="renderer/core/personDataService.js"></script>
     <script src="renderer/core/sessionStorageManager.js"></script>
     <script src="renderer/core/formValidator.js"></script>
+    <script src="renderer/core/configManager.js"></script>
+    <script src="renderer/core/placeholderAnalyzer.js"></script>
+    <script src="renderer/core/configGenerator.js"></script>
+    <script src="renderer/handlers/configWizard.js"></script>
     <script src="renderer/handlers/personManager.js"></script>
     <script src="renderer/handlers/fileManager.js"></script>
     <script src="renderer/handlers/managementPage.js"></script>

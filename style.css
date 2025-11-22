@@ -1824,3 +1824,833 @@ label.required::after {
   font-size: 0.875rem;
   text-align: center;
 }
+
+/* ========================================
+   Config Wizard Modal Styles
+   ======================================== */
+
+.config-wizard-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+}
+
+.config-wizard-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.config-wizard-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.config-wizard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.config-wizard-header h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #333;
+}
+
+.config-wizard-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.config-wizard-close:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.config-wizard-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 25px;
+}
+
+.config-wizard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.config-wizard-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.config-wizard-section-title {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+.config-wizard-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.config-wizard-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-wizard-field label {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+}
+
+.config-wizard-input,
+.config-wizard-textarea {
+  padding: 10px 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.config-wizard-input:focus,
+.config-wizard-textarea:focus {
+  outline: none;
+  border-color: #2196F3;
+}
+
+.config-wizard-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Placeholder List */
+.placeholder-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.placeholder-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.placeholder-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #e3f2fd;
+  color: #1976D2;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #90caf9;
+}
+
+.placeholder-empty {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+}
+
+/* Group Selector */
+.group-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.group-item {
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  transition: all 0.2s;
+}
+
+.group-item.selected {
+  border-color: #2196F3;
+  background: #f0f8ff;
+}
+
+.group-header {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.group-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #333;
+}
+
+.group-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.group-name {
+  font-size: 15px;
+}
+
+.group-description {
+  font-size: 13px;
+  color: #666;
+  margin-left: 28px;
+}
+
+.group-empty {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+}
+
+/* Subgroup List */
+.subgroup-list {
+  margin-top: 15px;
+  margin-left: 28px;
+  padding-left: 15px;
+  border-left: 3px solid #2196F3;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subgroup-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.subgroup-id {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+}
+
+.subgroup-visibility-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #666;
+}
+
+.subgroup-visibility-toggle {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Actions */
+.config-wizard-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.config-wizard-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.config-wizard-btn-cancel {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.config-wizard-btn-cancel:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.config-wizard-btn-save {
+  background: #2196F3;
+  color: white;
+}
+
+.config-wizard-btn-save:hover {
+  background: #1976D2;
+}
+
+/* Auto-created Subgroups Section */
+.auto-created-subgroups-list {
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.auto-created-subgroups-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.auto-created-subgroup-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #e8f5e9;
+  border: 1px solid #81c784;
+  border-radius: 6px;
+}
+
+.subgroup-badge {
+  font-weight: 600;
+  color: #2e7d32;
+  font-size: 14px;
+}
+
+.subgroup-count {
+  font-size: 12px;
+  color: #558b2f;
+  background: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.auto-created-subgroups-empty {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+}
+
+/* Section Header with Button */
+.config-wizard-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.config-wizard-btn-icon {
+  padding: 8px 16px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.config-wizard-btn-icon:hover {
+  background: #45a049;
+}
+
+/* Subgroup Management */
+.subgroup-management {
+  margin-top: 15px;
+  margin-left: 28px;
+  padding: 15px;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.subgroup-add-section {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+.subgroup-dropdown {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.subgroup-dropdown:focus {
+  outline: none;
+  border-color: #2196F3;
+}
+
+.subgroup-dropdown:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  color: #999;
+}
+
+.subgroup-add-btn {
+  padding: 8px 16px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.subgroup-add-btn:hover:not(:disabled) {
+  background: #1976D2;
+}
+
+.subgroup-add-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.no-subgroups-message {
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+  padding: 10px;
+  margin: 0;
+}
+
+/* Updated Subgroup List */
+.subgroup-list {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subgroup-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.subgroup-item:hover {
+  border-color: #2196F3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.subgroup-id-badge {
+  font-weight: 600;
+  color: #1976D2;
+  font-size: 14px;
+  background: #e3f2fd;
+  padding: 4px 10px;
+  border-radius: 4px;
+  min-width: 60px;
+  text-align: center;
+}
+
+.subgroup-label-text {
+  flex: 1;
+  font-size: 14px;
+  color: #555;
+}
+
+.subgroup-label-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 2px solid #2196F3;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.subgroup-label-input:focus {
+  outline: none;
+  border-color: #1976D2;
+}
+
+.subgroup-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.subgroup-action-btn {
+  padding: 6px 10px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subgroup-action-btn:hover {
+  background: #e0e0e0;
+  border-color: #bbb;
+}
+
+.subgroup-edit-btn:hover {
+  background: #fff3e0;
+  border-color: #ffb74d;
+}
+
+.subgroup-visibility-btn:hover {
+  background: #e3f2fd;
+  border-color: #64b5f6;
+}
+
+.subgroup-remove-btn:hover {
+  background: #ffebee;
+  border-color: #ef5350;
+}
+
+/* Scrollbar styling for wizard */
+.config-wizard-body::-webkit-scrollbar,
+.placeholder-list::-webkit-scrollbar,
+.subgroup-management::-webkit-scrollbar {
+  width: 8px;
+}
+
+.config-wizard-body::-webkit-scrollbar-track,
+.placeholder-list::-webkit-scrollbar-track,
+.subgroup-management::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.config-wizard-body::-webkit-scrollbar-thumb,
+.placeholder-list::-webkit-scrollbar-thumb,
+.subgroup-management::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.config-wizard-body::-webkit-scrollbar-thumb:hover,
+.placeholder-list::-webkit-scrollbar-thumb:hover,
+.subgroup-management::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsive Design for Config Wizard */
+@media (max-width: 768px) {
+  .config-wizard-container {
+    width: 95%;
+    max-width: none;
+    max-height: 90vh;
+  }
+
+  .config-wizard-header {
+    padding: 15px 20px;
+  }
+
+  .config-wizard-header h2 {
+    font-size: 18px;
+  }
+
+  .config-wizard-body {
+    padding: 15px 20px;
+  }
+
+  .config-wizard-section {
+    padding: 15px;
+  }
+
+  .config-wizard-section-title {
+    font-size: 16px;
+  }
+
+  .config-wizard-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .config-wizard-btn-icon {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .subgroup-add-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .subgroup-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .subgroup-item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .subgroup-id-badge {
+    min-width: auto;
+  }
+
+  .subgroup-label-text,
+  .subgroup-label-input {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .subgroup-actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+  }
+
+  .config-wizard-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .config-wizard-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .auto-created-subgroups-items {
+    gap: 8px;
+  }
+
+  .auto-created-subgroup-item {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+
+  .group-item {
+    padding: 12px;
+  }
+
+  .subgroup-management {
+    margin-left: 0;
+    padding: 12px;
+  }
+
+  .subgroup-list {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .config-wizard-container {
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .config-wizard-header {
+    padding: 12px 15px;
+  }
+
+  .config-wizard-body {
+    padding: 12px 15px;
+  }
+
+  .config-wizard-section {
+    padding: 12px;
+  }
+
+  .auto-created-subgroups-items {
+    flex-direction: column;
+  }
+
+  .auto-created-subgroup-item {
+    width: 100%;
+  }
+
+  .subgroup-action-btn {
+    padding: 8px;
+    font-size: 14px;
+  }
+}
+
+/* Validation Error Styles */
+.validation-errors {
+  background: #ffebee;
+  border: 2px solid #ef5350;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.validation-errors-title {
+  font-weight: 600;
+  color: #c62828;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.validation-errors-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #d32f2f;
+}
+
+.validation-errors-list li {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+/* Loading State for Buttons */
+.config-wizard-btn:disabled,
+.config-wizard-btn-icon:disabled,
+.subgroup-add-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Focus States for Accessibility */
+.config-wizard-input:focus-visible,
+.config-wizard-textarea:focus-visible,
+.subgroup-dropdown:focus-visible,
+.subgroup-label-input:focus-visible {
+  outline: 2px solid #2196F3;
+  outline-offset: 2px;
+}
+
+.config-wizard-btn:focus-visible,
+.config-wizard-btn-icon:focus-visible,
+.subgroup-add-btn:focus-visible,
+.subgroup-action-btn:focus-visible {
+  outline: 2px solid #2196F3;
+  outline-offset: 2px;
+}
+
+.group-checkbox:focus-visible {
+  outline: 2px solid #2196F3;
+  outline-offset: 2px;
+}
+
+/* Smooth Transitions */
+.group-item,
+.subgroup-item,
+.auto-created-subgroup-item {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover Effects Enhancement */
+.config-wizard-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.config-wizard-btn-icon:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+/* Empty State Styling */
+.auto-created-subgroups-empty p,
+.group-empty p,
+.no-subgroups-message {
+  font-style: italic;
+}
+
+/* Improved Subgroup Badge Visibility */
+.subgroup-badge {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.subgroup-id-badge {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Courier New', monospace;
+}
+
+/* Max Height for Scrollable Areas */
+.subgroup-management {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.auto-created-subgroups-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.group-selector {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* Improved Visual Hierarchy */
+.config-wizard-section:first-child {
+  border-top: 3px solid #2196F3;
+}
+
+.config-wizard-section:nth-child(2) {
+  border-top: 3px solid #4caf50;
+}
+
+.config-wizard-section:nth-child(3) {
+  border-top: 3px solid #ff9800;
+}

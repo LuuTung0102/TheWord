@@ -50,12 +50,6 @@
 
       document.body.insertAdjacentHTML('beforeend', modalHtml);
       this.modal = document.getElementById(this.modalId);
-      
-      if (!this.modal) {
-        console.error(`❌ Failed to create modal: ${this.modalId}`);
-      } else {
-        console.log(`✅ Modal created: ${this.modalId}`);
-      }
     }
 
     setupEventListeners() {

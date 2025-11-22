@@ -2,7 +2,6 @@
   const BaseModal = window.BaseModal;
   
   if (!BaseModal) {
-    console.error('❌ BaseModal not found. PersonManager requires BaseModal.');
     return;
   }
 

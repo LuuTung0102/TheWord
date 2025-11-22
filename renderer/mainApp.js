@@ -281,8 +281,6 @@ class MainApp {
       if (!isValid) {
         return; 
       }
-    } else {
-      console.log('⚠️ No validateForm function found');
     }
 
     try {
@@ -342,12 +340,6 @@ class MainApp {
     try {
       if (window.collectGenericFormData) {
         const data = window.collectGenericFormData();
-        if (data.Loai_Dat_D) {
-          console.log('✅ Loai_Dat_D found:', data.Loai_Dat_D);
-        } else {
-          console.warn('⚠️ Loai_Dat_D not found in form data');
-        }
-        
         return data;
       }
       
