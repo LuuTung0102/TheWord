@@ -57,11 +57,15 @@
 - **Validation đầy đủ**: Kiểm tra các trường bắt buộc
 - **Auto-refresh**: Cập nhật danh sách tự động
 
-#### 🔄 SessionStorage - Tái Sử Dụng Dữ Liệu
+#### 🔄 SessionStorage - Tái Sử Dụng Dữ Liệu Thông Minh
 - **Lưu dữ liệu tạm thời** giữa các lần xuất văn bản
-- **Merge thông minh**: Tự động gộp dữ liệu trùng lặp
-- **Dropdown "Tái sử dụng"**: Chọn dữ liệu từ các file trước
-- **Phát hiện thay đổi**: Chỉ lưu khi có sự khác biệt
+- **Merge thông minh 3 cấp độ**:
+  - **NO_CHANGE**: Dữ liệu giống hệt → Không lưu duplicate
+  - **ONLY_ADDITIONS**: Chỉ thêm fields mới → Merge vào session cũ
+  - **HAS_MODIFICATIONS**: Có thay đổi giá trị → Tạo version mới với timestamp
+- **Cross-file Merge**: Tự động gộp dữ liệu giống nhau giữa các files
+- **Smart Comparison**: Chỉ so sánh fields có ở cả 2 bên (bỏ qua fields không tồn tại)
+- **Dropdown "Tái sử dụng"**: Chọn dữ liệu từ các file trước với timestamp
 - **Nút "Làm mới"**: Xóa tất cả session data
 
 ### 🏷️ Xử Lý Loại Đất Đặc Biệt
@@ -139,13 +143,44 @@ npm run build:linux
 
 ## 📖 Hướng Dẫn Sử Dụng
 
-### 1. Chọn Folder Template
+### 1. Quản Lý File Word
+
+#### Mở File Manager
+1. Click nút "⚙️ Quản lý" ở header
+2. Chọn "📄 Quản lý File Word"
+3. Dialog File Manager hiển thị
+
+#### Thêm File Word Mới
+1. Trong File Manager, chọn folder từ danh sách bên trái
+2. Click nút "➕ Thêm File" ở header
+3. Chọn file Word (.docx) từ máy tính
+4. **Config Wizard tự động mở**:
+   - Hiển thị thông tin file và placeholders phát hiện được
+   - Tự động phân loại placeholders vào groups/subgroups
+   - Cho phép chỉnh sửa tên template, mô tả
+   - Chọn groups cần sử dụng
+   - Gán subgroups cho từng group
+   - Chỉnh sửa labels và visibility
+5. Click "✅ Lưu cấu hình"
+6. File được copy vào folder và config.json được cập nhật tự động
+7. UI tự động refresh, file mới xuất hiện trong dropdown
+
+#### Xem/Mở File
+1. Click nút "👁️" để mở file Word trong ứng dụng mặc định
+2. Xem và chỉnh sửa template nếu cần
+
+#### Xóa File
+1. Click nút "🗑️" để xóa file
+2. Xác nhận xóa
+3. File và config liên quan được xóa
+
+### 2. Chọn Folder Template
 
 1. Mở ứng dụng TheWord
 2. Ở panel bên phải (màu cam), chọn folder template
 3. Hệ thống sẽ tự động load các file Word trong folder
 
-### 2. Điền Form
+### 3. Điền Form
 
 1. Panel bên trái (màu xanh) hiển thị form nhập liệu
 2. Điền thông tin vào các trường
@@ -155,10 +190,11 @@ npm run build:linux
    - **Land type**: Nhập hoặc chọn từ dropdown
    - **CCCD**: Tự động format khi nhập
 
-### 3. Quản Lý PERSON
+### 4. Quản Lý PERSON
 
 1. Click nút "⚙️ Quản lý" ở header
-2. Dialog hiển thị danh sách PERSON
+2. Chọn "👥 Quản lý Dữ liệu"
+3. Dialog hiển thị danh sách PERSON
 3. **Thêm mới**:
    - Click "➕ Thêm PERSON mới"
    - Điền form (Họ tên, CCCD, Địa chỉ...)
@@ -171,7 +207,7 @@ npm run build:linux
    - Click "🗑️ Xóa" trên PERSON cần xóa
    - Xác nhận xóa
 
-### 4. Tái Sử Dụng Dữ Liệu
+### 5. Tái Sử Dụng Dữ Liệu
 
 1. Khi điền form, tìm dropdown "Tái sử dụng dữ liệu"
 2. Chọn dữ liệu từ:
@@ -180,7 +216,7 @@ npm run build:linux
 3. Dữ liệu sẽ tự động điền vào form
 4. Có thể chỉnh sửa sau khi tái sử dụng
 
-### 5. Xuất Văn Bản
+### 6. Xuất Văn Bản
 
 1. Sau khi điền đầy đủ thông tin
 2. Click nút "📤 XUẤT WORD" ở cuối panel phải
@@ -193,7 +229,109 @@ npm run build:linux
 
 ## 🔍 Tính Năng Chi Tiết
 
-### 1. Hệ Thống Template
+### 1. File Manager & Config Wizard
+
+#### File Manager
+**Giao diện quản lý file Word trực quan** với 2 panel:
+- **Panel trái**: Danh sách folders
+- **Panel phải**: Danh sách files trong folder đã chọn
+
+**Chức năng:**
+- ➕ **Thêm file**: Upload file Word mới
+- 👁️ **Xem file**: Mở file trong ứng dụng mặc định
+- 🗑️ **Xóa file**: Xóa file và config liên quan
+- 🔄 **Auto refresh**: Tự động cập nhật UI sau mỗi thao tác
+
+#### Config Wizard - Tự Động Tạo Config
+
+**Bước 1: Phân Tích Placeholder**
+```javascript
+// Tự động quét và phân tích placeholders
+PlaceholderAnalyzer.analyzePlaceholders(filePath)
+// Returns: {
+//   placeholders: ["Name1", "CCCD1", "Name2", "CCCD2", "Loai_Dat", "S"],
+//   patterns: { withSuffix: Map, withoutSuffix: [] },
+//   groups: { MEN1: [...], MEN2: [...], INFO: [...] }
+// }
+```
+
+**Bước 2: Tự Động Phân Loại**
+- **Phát hiện suffix**: Name1, Name2 → suffix "1", "2"
+- **Match với schema**: Name, CCCD → PersonalInfo schema
+- **Tạo subgroups**: MEN1, MEN2 cho suffix "1", "2"
+- **Gán vào groups**: BCN, BNCN, LAND dựa trên applicableTo
+
+**Bước 3: Config Wizard UI**
+```
+┌─────────────────────────────────────────┐
+│ ⚙️ Cấu hình Template                    │
+├─────────────────────────────────────────┤
+│ 📄 Thông tin cơ bản                     │
+│   Tên template: [___________________]   │
+│   Mô tả: [_________________________]   │
+│                                          │
+│ 🔖 Subgroups được tạo tự động           │
+│   • MEN1 (5 fields)                     │
+│   • MEN2 (5 fields)                     │
+│   • INFO (8 fields)                     │
+│                                          │
+│ 📋 Chọn Groups và gán Subgroups         │
+│   ☑ BCN - Bên chuyển nhượng            │
+│     Subgroups: [MEN1 ▼] [➕ Thêm]      │
+│     • MEN1 [✏️ Sửa] [👁️ Hiện] [🗑️ Xóa] │
+│                                          │
+│   ☑ LAND - Thông tin đất đai           │
+│     Subgroups: [INFO ▼] [➕ Thêm]      │
+│     • INFO [✏️ Sửa] [👁️ Hiện] [🗑️ Xóa] │
+│                                          │
+│ [❌ Hủy]              [✅ Lưu cấu hình] │
+└─────────────────────────────────────────┘
+```
+
+**Bước 4: Lưu Config**
+- Cập nhật `config.json` với template entry mới
+- Thêm/cập nhật fieldMappings nếu có subgroups mới
+- Thêm groups mới nếu cần
+- Tạo backup trước khi lưu
+- Restore từ backup nếu có lỗi
+
+**Bước 5: Auto Refresh**
+- Copy file vào folder template
+- Reload templates trong mainApp
+- Render lại file list
+- File mới xuất hiện ngay trong dropdown
+
+#### Xử Lý Trường Hợp Đặc Biệt
+
+**File không có placeholder:**
+```
+⚠️ Cảnh báo: File không có placeholder
+
+File "example.docx" không chứa placeholder nào.
+
+Bạn có muốn tiếp tục tạo cấu hình không?
+
+[OK] [Cancel]
+```
+
+**File đã tồn tại:**
+```
+⚠️ Cảnh báo: File đã tồn tại
+
+File "example.docx" đã có cấu hình trong config.json.
+
+Bạn có muốn cập nhật cấu hình hiện tại không?
+
+[OK - Cập nhật] [Cancel - Giữ nguyên]
+```
+
+**Validation:**
+- Tên template không được trống (min 3 ký tự)
+- Phải chọn ít nhất 1 group
+- Mỗi group phải có ít nhất 1 subgroup
+- Không cho phép HTML tags trong tên/mô tả
+
+### 2. Hệ Thống Template
 
 #### Cấu Trúc Folder Template
 ```
@@ -443,7 +581,7 @@ Output:
 + Loại đất 2: NST:   Vị trí 1                     Diện tích: 431.1m².
 ```
 
-### 5. Session Storage Logic
+### 5. Session Storage Logic - Smart Data Merge
 
 #### Lưu Dữ Liệu
 ```javascript
@@ -451,15 +589,51 @@ Output:
 sessionStorageManager.saveFormData(fileName, formData, reusedGroups, reusedGroupSources, config);
 ```
 
-#### Merge Logic
-1. **NO_CHANGE**: Dữ liệu giống hệt → Không lưu duplicate
-2. **ONLY_ADDITIONS**: Chỉ thêm field mới → Merge vào file cũ
-3. **HAS_MODIFICATIONS**: Có thay đổi → Lưu riêng
+#### Merge Logic Chi Tiết
+
+**1. NO_CHANGE - Dữ liệu giống hệt**
+```javascript
+// Source: { Name: "Nguyễn Văn A", CCCD: "123456789" }
+// Current: { Name: "Nguyễn Văn A", CCCD: "123456789" }
+// Result: Không lưu duplicate, giữ nguyên session cũ
+```
+
+**2. ONLY_ADDITIONS - Chỉ thêm fields mới**
+```javascript
+// Source: { Name: "Nguyễn Văn A", CCCD: "123456789" }
+// Current: { Name: "Nguyễn Văn A", CCCD: "123456789", MST: "0123456789", SDT: "0987654321" }
+// Result: Merge vào session cũ
+// Output: { Name: "Nguyễn Văn A", CCCD: "123456789", MST: "0123456789", SDT: "0987654321" }
+```
+
+**3. HAS_MODIFICATIONS - Có thay đổi giá trị**
+```javascript
+// Source: { Name: "Nguyễn Văn A", CCCD: "123456789" }
+// Current: { Name: "Trần Văn B", CCCD: "123456789" }
+// Result: Tạo version mới với timestamp
+// Output: MEN1_20251122_153251
+```
+
+#### Smart Comparison Rules
+- **Chỉ so sánh fields có ở cả 2 bên**: Nếu source có field mà current không có → BỎ QUA (không coi là xóa)
+- **Empty fields được bỏ qua**: Fields rỗng không tham gia so sánh
+- **Normalize trước khi so sánh**: CCCD, Money, SDT được chuẩn hóa format
+
+#### Cross-File Deduplication
+```javascript
+// File A có: { Name: "Nguyễn Văn A", CCCD: "123456789" }
+// File B thêm: { Name: "Nguyễn Văn A", CCCD: "123456789", MST: "0123456789" }
+// Result: Merge vào File A, không tạo duplicate trong File B
+```
 
 #### Tái Sử Dụng
 ```javascript
 // Lấy danh sách dữ liệu có thể tái sử dụng
 const available = sessionStorageManager.getAvailableMenGroups();
+// Returns: [
+//   { fileName: "Thuế.docx", groupKey: "MEN1", displayName: "Nguyễn Văn A (Thuế - 22/11/2025 15:32)" },
+//   { fileName: "Thuế.docx", groupKey: "MEN1_20251122_153251", displayName: "Trần Văn B (Thuế - 22/11/2025 15:32:51)" }
+// ]
 
 // Lấy dữ liệu cụ thể
 const data = sessionStorageManager.getMenGroupData(fileName, menKey);
@@ -497,13 +671,18 @@ TheWord/
 ├── renderer/
 │   ├── config/
 │   │   ├── config.json      # Main config
+│   │   ├── constants.js     # ⭐ Constants & magic numbers
 │   │   ├── local_storage.json  # PERSON data
 │   │   ├── land_types.json  # Danh sách loại đất
 │   │   └── address.json     # Dữ liệu địa chỉ VN
 │   ├── core/
+│   │   ├── baseModal.js     # Base modal class
+│   │   ├── configGenerator.js  # Config generation
+│   │   ├── configManager.js    # Config CRUD operations
+│   │   ├── placeholderAnalyzer.js  # Placeholder analysis
 │   │   ├── utils.js         # Utility functions
 │   │   ├── personDataService.js  # CRUD PERSON
-│   │   ├── sessionStorageManager.js  # Session storage
+│   │   ├── sessionStorageManager.js  # ⭐ Smart session storage
 │   │   ├── formValidator.js  # Validation logic
 │   │   └── formHelpers.js   # Form helper functions
 │   ├── handlers/
@@ -511,7 +690,9 @@ TheWord/
 │   │   ├── templateManager.js     # Template management
 │   │   ├── exportHandler.js       # Export logic
 │   │   ├── personManager.js       # PERSON UI
-│   │   └── fileManager.js         # File operations
+│   │   ├── fileManager.js         # ⭐ File operations + auto refresh
+│   │   ├── configWizard.js        # Config wizard UI
+│   │   └── managementPage.js      # Management page
 │   └── mainApp.js           # Main application
 ├── templates/
 │   ├── Biến động đất đai/
@@ -523,8 +704,12 @@ TheWord/
 ├── index.html               # Main HTML
 ├── main.js                  # Electron main process
 ├── style.css                # Styles
-└── package.json             # Dependencies
+├── package.json             # Dependencies
+├── CODE_CLEANUP_REPORT.md   # ⭐ Code cleanup analysis report
+└── CLEANUP_SUMMARY.md       # ⭐ Cleanup summary
 ```
+
+**⭐ = Mới thêm/cập nhật trong v5.1**
 
 ---
 
@@ -597,7 +782,19 @@ TheWord/
 
 ## 📝 Version History
 
-### v5.0 (Current)
+### v5.1 (Current)
+- ✅ **File Manager**: Quản lý file Word với UI trực quan
+- ✅ **Config Wizard**: Tự động tạo config cho file Word mới
+- ✅ **Auto Placeholder Detection**: Tự động phát hiện và phân loại placeholders
+- ✅ **Smart Config Generation**: Tự động tạo groups, subgroups, field mappings
+- ✅ **Code Cleanup**: Giảm 32.5% code (xóa 14 debug files)
+- ✅ **Session Storage Logic**: Smart merge với NO_CHANGE, ONLY_ADDITIONS, HAS_MODIFICATIONS
+- ✅ **Auto Refresh**: Tự động cập nhật UI sau khi thêm file Word mới
+- ✅ **Constants Management**: Centralized configuration trong constants.js
+- ✅ **Improved Comparison**: Chỉ so sánh fields có ở cả 2 bên
+- ✅ **Cross-file Merge**: Merge dữ liệu thông minh giữa các files
+
+### v5.0
 - ✅ Person Data Management System
 - ✅ PersonDataService với CRUD operations
 - ✅ PersonManager UI với modal dialog
