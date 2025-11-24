@@ -100,6 +100,17 @@
 - **Taskbar navigation**: Chuyển đổi nhanh giữa các nhóm
 - **Responsive design**: Tự động điều chỉnh theo kích thước màn hình
 - **Loading overlay**: Hiển thị tiến trình khi xuất văn bản
+- **Notification System**: Thông báo đẹp thay thế alert/confirm
+
+### 🔔 Hệ Thống Thông Báo
+- **Toast Notifications**: Thông báo dạng toast ở góc phải trên
+- **4 Loại Thông Báo**: Success (xanh lá), Error (đỏ), Warning (cam), Info (xanh dương)
+- **Auto-dismiss**: Tự động đóng sau 4-6 giây
+- **Manual Close**: Nút đóng thủ công
+- **Confirm Dialog**: Dialog xác nhận với overlay mờ
+- **Animation**: Trượt vào từ phải, mượt mà
+- **Multiple Support**: Hiển thị nhiều thông báo cùng lúc
+- **Responsive**: Tối ưu cho mobile
 
 ---
 
@@ -671,18 +682,19 @@ TheWord/
 ├── renderer/
 │   ├── config/
 │   │   ├── config.json      # Main config
-│   │   ├── constants.js     # ⭐ Constants & magic numbers
+│   │   ├── baseConstants.js # Constants & magic numbers
 │   │   ├── local_storage.json  # PERSON data
 │   │   ├── land_types.json  # Danh sách loại đất
 │   │   └── address.json     # Dữ liệu địa chỉ VN
 │   ├── core/
 │   │   ├── baseModal.js     # Base modal class
+│   │   ├── notificationManager.js  # ⭐ Notification system
 │   │   ├── configGenerator.js  # Config generation
 │   │   ├── configManager.js    # Config CRUD operations
 │   │   ├── placeholderAnalyzer.js  # Placeholder analysis
 │   │   ├── utils.js         # Utility functions
 │   │   ├── personDataService.js  # CRUD PERSON
-│   │   ├── sessionStorageManager.js  # ⭐ Smart session storage
+│   │   ├── sessionStorageManager.js  # Smart session storage
 │   │   ├── formValidator.js  # Validation logic
 │   │   └── formHelpers.js   # Form helper functions
 │   ├── handlers/
@@ -782,7 +794,15 @@ TheWord/
 
 ## 📝 Version History
 
-### v5.1 (Current)
+### v5.2 (Current)
+- ✅ **Notification System**: Hệ thống thông báo HTML/CSS thay thế alert
+- ✅ **Toast Notifications**: Thông báo dạng toast với animation mượt mà
+- ✅ **Confirm Dialogs**: Dialog xác nhận đẹp thay thế confirm
+- ✅ **Auto-dismiss**: Tự động đóng sau vài giây
+- ✅ **Multiple Notifications**: Hỗ trợ nhiều thông báo cùng lúc
+- ✅ **Responsive**: Tối ưu cho mobile và desktop
+
+### v5.1
 - ✅ **File Manager**: Quản lý file Word với UI trực quan
 - ✅ **Config Wizard**: Tự động tạo config cho file Word mới
 - ✅ **Auto Placeholder Detection**: Tự động phát hiện và phân loại placeholders
@@ -1301,6 +1321,86 @@ This project is licensed under the ISC License.
 - **Partial Success**: Xử lý thành công một phần
 - **Recovery**: Khôi phục sau lỗi
 - **User Feedback**: Thông báo cho người dùng
+
+---
+
+### 🔔 Notification System API
+
+#### 81. Toast Notifications
+**Success Notification:**
+```javascript
+showSuccess('File đã được thêm thành công!');
+// Auto-dismiss sau 4 giây
+// Màu xanh lá, icon ✅
+```
+
+**Error Notification:**
+```javascript
+showError('Không thể tải file. Vui lòng thử lại.');
+// Auto-dismiss sau 6 giây
+// Màu đỏ, icon ❌
+```
+
+**Warning Notification:**
+```javascript
+showWarning('Chỉ cho phép xuất 1 folder tại 1 thời điểm!');
+// Auto-dismiss sau 5 giây
+// Màu cam, icon ⚠️
+```
+
+**Info Notification:**
+```javascript
+showInfo('Đã hủy thêm file');
+// Auto-dismiss sau 4 giây
+// Màu xanh dương, icon ℹ️
+```
+
+#### 82. Confirm Dialog
+**Basic Confirm:**
+```javascript
+showConfirm(
+  'Bạn có chắc muốn xóa file này?\n\nFile sẽ bị xóa vĩnh viễn.',
+  () => {
+    // Callback khi nhấn "Xác nhận"
+    deleteFile();
+  },
+  () => {
+    // Callback khi nhấn "Hủy" (optional)
+    console.log('Đã hủy');
+  }
+);
+```
+
+**Async Confirm:**
+```javascript
+const confirmed = await new Promise((resolve) => {
+  showConfirm(
+    'Bạn có muốn cập nhật cấu hình hiện tại không?',
+    () => resolve(true),
+    () => resolve(false)
+  );
+});
+
+if (confirmed) {
+  // Xử lý khi xác nhận
+}
+```
+
+#### 83. Custom Duration
+```javascript
+// Tùy chỉnh thời gian hiển thị (ms)
+showSuccess('Thành công!', 3000);  // 3 giây
+showError('Lỗi!', 8000);           // 8 giây
+showInfo('Thông tin', 0);          // Không tự động đóng
+```
+
+#### 84. Notification Features
+- **HTML Escape**: Tự động escape HTML để tránh XSS
+- **Multiple Notifications**: Stack nhiều thông báo
+- **Click to Close**: Click nút × để đóng
+- **Overlay Click**: Click overlay để đóng confirm dialog
+- **Keyboard Support**: ESC để đóng (planned)
+- **Queue Management**: Quản lý hàng đợi thông báo
 
 ---
 
