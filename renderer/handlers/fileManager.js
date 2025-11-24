@@ -242,7 +242,6 @@
                 fileName: file.name
               });
             } catch (tempError) {
-              console.error('Failed to save temp file:', tempError);
               throw new Error(`Không thể lưu file tạm: ${tempError.message}`);
             }
 
@@ -252,14 +251,12 @@
             
             await this.showConfigWizard(file.name, tempPath);
           } catch (error) {
-            console.error('Error adding file:', error);
             showError(`Không thể thêm file\n\n${error.message}\n\nVui lòng thử lại.`);
           }
         };
 
         input.click();
       } catch (error) {
-        console.error('Error in handleAddFile:', error);
         showError(`Đã xảy ra lỗi\n\n${error.message}\n\nVui lòng thử lại.`);
       }
     }
@@ -311,7 +308,6 @@
         try {
           existingConfig = await configManager.readConfig(folderPath);
         } catch (error) {
-          console.error('Error reading config:', error);
           showError(`Không tìm thấy config.json\n\nKhông tìm thấy file config.json trong folder "${this.selectedFolder.name}".\n\nVui lòng tạo config.json trước khi thêm file Word.\n\nChi tiết: ${error.message}`);
           return;
         }
@@ -384,7 +380,6 @@
                 fileName: fileName
               });
             } catch (copyError) {
-              console.error('Failed to copy file:', copyError);
               throw new Error(`Không thể copy file vào folder: ${copyError.message}`);
             }
 
@@ -461,7 +456,6 @@
             
             showSuccess(`File "${fileName}" đã được thêm và cấu hình thành công!`);
           } catch (error) {
-            console.error('Failed to copy file or save config:', error);
             let errorMessage = '❌ Lỗi: Không thể lưu file\n\n';
             
             if (error.message.includes('copy file')) {
@@ -491,11 +485,8 @@
           
           showInfo(`Đã hủy thêm file "${fileName}"`);
         }
-      } catch (error) {
-        console.error('Error in showConfigWizard:', error);
-        
-        let errorMessage = '❌ Đã xảy ra lỗi\n\n';
-        
+      } catch (error) { 
+        let errorMessage = '❌ Đã xảy ra lỗi\n\n';  
         if (error.message.includes('config.json')) {
           errorMessage += 'Lỗi liên quan đến file config.json.\n';
           errorMessage += 'Vui lòng kiểm tra file config.json có tồn tại và hợp lệ.\n\n';
@@ -508,16 +499,12 @@
         } else {
           errorMessage += `${error.message}\n\n`;
         }
-        
         errorMessage += 'Chi tiết lỗi đã được ghi vào console.';
-        
         showError(errorMessage);
-        
         try {
           this.files = await this.loadFilesInFolder(this.selectedFolder.path);
           this.renderFileList();
         } catch (reloadError) {
-          console.error('Error reloading file list:', reloadError);
         }
       }
     }
@@ -527,7 +514,6 @@
         showError('Không có folder nào được chọn');
         return;
       }
-
       const confirmed = await new Promise((resolve) => {
         showConfirm(
           `Bạn có chắc muốn xóa file "${fileName}"?\n\nFile sẽ bị xóa vĩnh viễn và không thể khôi phục.\nCấu hình trong config.json cũng sẽ bị xóa.`,
@@ -537,7 +523,6 @@
       });
       
       if (!confirmed) return;
-
       try {
         const templatesRoot = await window.ipcRenderer.invoke("get-templates-root");
         const folderPath = `${templatesRoot}\\${this.selectedFolder.path.replace(/\//g, '\\')}`;
@@ -552,7 +537,6 @@
         try {
           const configManager = window.configManager;
           const config = await configManager.readConfig(folderPath);
-          
           if (config && config.templates) {
             config.templates = config.templates.filter(t => t.filename !== fileName);
             await configManager.writeConfig(folderPath, config);
@@ -561,13 +545,11 @@
             showSuccess('Đã xóa file thành công');
           }
         } catch (configError) {
-          console.warn('Error updating config after file deletion:', configError);
           showWarning(`File đã được xóa thành công.\n\nNhưng không thể cập nhật config.json.\nBạn có thể cần xóa cấu hình thủ công.`);
         }
         this.files = await this.loadFilesInFolder(this.selectedFolder.path);
         this.renderFileList();
       } catch (error) {
-        console.error('Error deleting file:', error);
         showError(`Không thể xóa file: ${error.message || 'Lỗi không xác định'}`);
       }
     }

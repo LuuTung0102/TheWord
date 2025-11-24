@@ -538,7 +538,6 @@ ipcMain.handle("get-placeholders", async (event, filePath) => {
     const placeholders = getPlaceholders(filePath);
     return placeholders;
   } catch (err) {
-    console.error('Error getting placeholders:', err);
     return [];
   }
 });

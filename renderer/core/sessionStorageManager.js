@@ -203,24 +203,13 @@
               differences.push({ field: key, other: otherVal, current: currentVal, type: 'REMOVED' });
             }
           }
-
-          console.log(`[SessionStorage] Comparing ${groupKey} (${fileName}) with ${otherGroupKey} (${otherFile}):`, {
-            changeType: changeAnalysis.type,
-            totalFields: allKeys.size,
-            differences: differences.length
-          });
-          
+         
           if (differences.length > 0) {
-            console.log(`[SessionStorage] Differences for ${groupKey}:`);
-            console.table(differences);
           }
-
           if (changeAnalysis.type === "NO_CHANGE") {
-            console.log(`[SessionStorage] NO_CHANGE - removing ${groupKey} from ${fileName}`);
             groupsToDelete.add(groupKey);
             break;
           } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-            console.log(`[SessionStorage] ONLY_ADDITIONS - merging ${groupKey} into ${otherFile}/${otherGroupKey}`);
             existingData[otherFile].dataGroups[otherGroupKey] = {
               ...otherGroupData,
               ...groupData 
@@ -232,26 +221,15 @@
         if (groupsToDelete.has(groupKey)) break;
       }
     }
-
-    console.log('[SessionStorage] Groups to delete:', Array.from(groupsToDelete));
     for (const g of groupsToDelete) {
       delete dataGroups[g];
     }
   }
 
-  function saveFormData(fileName, formData, reusedGroups, reusedGroupSources, config) {
-    console.log('[SessionStorage] ===== START saveFormData =====');
-    console.log('[SessionStorage] fileName:', fileName);
-    console.log('[SessionStorage] formData keys:', Object.keys(formData));
-    console.log('[SessionStorage] reusedGroups:', reusedGroups);
-    
+  function saveFormData(fileName, formData, reusedGroups, reusedGroupSources, config) { 
     try {
       const existingData = getAllSessionData();
-      console.log('[SessionStorage] existingData:', existingData);
-      
       let dataGroups = parseFormDataToGroups(formData, config);
-      console.log('[SessionStorage] dataGroups after parse:', dataGroups);
-
       if (config?.fieldMappings) {
         config.fieldMappings.forEach((mapping) => {
           if (mapping.source === "localStorage" && mapping.subgroups) {
@@ -262,57 +240,39 @@
           }
         });
       }
-
       mergeDuplicateGroupsAcrossFiles(dataGroups, existingData, fileName);
-
       const groupsToRemove = [];
       if (reusedGroups?.size > 0) {
         reusedGroups.forEach((reusedKey) => {
           const isFromLocalStorage = reusedKey.startsWith("localStorage:");
           const groupKey = isFromLocalStorage ? reusedKey.replace("localStorage:", "") : reusedKey;
           if (!dataGroups[groupKey]) return;
-
           if (isFromLocalStorage) {
             groupsToRemove.push(groupKey);
             return;
           }
-
           const sourceInfo = reusedGroupSources?.get?.(reusedKey);
           if (!sourceInfo || !sourceInfo.sourceData) return;
-
           const sourceFileName = sourceInfo.sourceFileName;
           const sourceGroupKey = sourceInfo.sourceGroupKey;
           const sourceData = sourceInfo.sourceData;
           const isSameFile = sourceFileName === fileName;
-
           const normalizedCurrent = normalizeDataForComparison(dataGroups[groupKey]);
           const normalizedSource = normalizeDataForComparison(sourceData);
           const changeAnalysis = analyzeChanges(normalizedSource, normalizedCurrent);
 
-          console.log(`[SessionStorage] Reused group ${groupKey} from ${sourceFileName}:`, {
-            isSameFile,
-            changeType: changeAnalysis.type,
-            sourceKeys: Object.keys(normalizedSource),
-            currentKeys: Object.keys(normalizedCurrent)
-          });
-
           if (changeAnalysis.type === "NO_CHANGE") {
-            console.log(`[SessionStorage] NO_CHANGE - removing duplicate ${groupKey}`);
             groupsToRemove.push(groupKey);
           } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-            console.log(`[SessionStorage] ONLY_ADDITIONS - merging into current file ${fileName}`);
             dataGroups[groupKey] = { 
               ...sourceData,
               ...dataGroups[groupKey]  
             };
           } else {
-            console.log(`[SessionStorage] HAS_MODIFICATIONS - will create versioned key later`);
           }
         });
       }
-
       groupsToRemove.forEach(g => delete dataGroups[g]);
-      
       const processedReusedKeys = new Set(Array.from(reusedGroups || []).map(k =>
         k.startsWith("localStorage:") ? k.replace("localStorage:", "") : k
       ));
@@ -320,17 +280,13 @@
       for (const groupKey of Object.keys(dataGroups)) {
         if (processedReusedKeys.has(groupKey)) continue;
         if (isSubgroupInConfig(groupKey, config)) continue;
-
         const normalizedCurrent = normalizeDataForComparison(dataGroups[groupKey]);
-
         for (const [otherFileName, otherFileData] of Object.entries(existingData)) {
           if (otherFileName === fileName) continue;
           const otherGroups = otherFileData.dataGroups || {};
           if (!otherGroups[groupKey]) continue;
-
           const normalizedOther = normalizeDataForComparison(otherGroups[groupKey]);
           const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
-
           if (changeAnalysis.type === "NO_CHANGE") {
             delete dataGroups[groupKey];
             break;
@@ -344,28 +300,22 @@
           }
         }
       }
-
       Object.keys(existingData).forEach(f => {
         const fd = existingData[f];
         if (fd?.dataGroups && Object.keys(fd.dataGroups).length === 0) delete existingData[f];
       });
-
       if (Object.keys(dataGroups).length === 0) {
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
         return false;
       }
-      
       const oldDataGroups = existingData[fileName]?.dataGroups || {};
       const mergedDataGroups = { ...oldDataGroups };
-      
       Object.keys(dataGroups).forEach(groupKey => {
         const newData = dataGroups[groupKey];
-        
         if (!mergedDataGroups[groupKey]) {
           mergedDataGroups[groupKey] = newData;
         } else {
           const oldData = mergedDataGroups[groupKey];
-          
           try {
             if (!oldData || typeof oldData !== 'object') {
               const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
@@ -375,11 +325,9 @@
             const normalizedOld = normalizeDataForComparison(oldData);
             const normalizedNew = normalizeDataForComparison(newData);          
             const changeAnalysis = analyzeChanges(normalizedOld, normalizedNew);
-
             if (typeof console !== 'undefined' && console.log) {
               const differences = [];
               const allKeys = new Set([...Object.keys(normalizedOld), ...Object.keys(normalizedNew)]);
-              
               for (const key of allKeys) {
                 const oldVal = normalizedOld[key];
                 const newVal = normalizedNew[key];
@@ -409,17 +357,10 @@
                 }
               }
               
-              console.log(`[SessionStorage] Analyzing ${groupKey}:`, {
-                changeType: changeAnalysis.type,
-                totalFields: allKeys.size,
-                differences: differences.length > 0 ? differences : 'No differences'
-              });
-              
               if (differences.length > 0) {
                 console.table(differences);
               }
             }
-            
             if (changeAnalysis.type === "NO_CHANGE") {
             } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
               const merged = {
@@ -443,7 +384,6 @@
         rawData: formData
       };
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
-
       return true;
     } catch (err) {
       return false;
@@ -454,7 +394,6 @@
   function parseFormDataToGroups(formData, config) {
     const groups = {};
     const suffixToGroupMap = {};
-
     if (config?.fieldMappings) {
       config.fieldMappings.forEach((mapping) => {
         if (mapping.subgroups) {
@@ -490,8 +429,7 @@
 
   function getAvailableMenGroups() {
     const allData = getAllSessionData();
-    const available = [];
-    
+    const available = []; 
     Object.keys(allData).forEach(fileName => {
       const fileData = allData[fileName];
       const groups = fileData.dataGroups;
@@ -501,13 +439,11 @@
           const groupData = groups[groupKey];
           const shortFileName = fileName.replace('.docx', '');
           const timestampMatch = groupKey.match(/^(.+)_(\d{8}_\d{6,9})$/);
-          let displayName;
-          
+          let displayName; 
           if (timestampMatch) {
             const baseKey = timestampMatch[1];
             const timestamp = timestampMatch[2];
-            const formattedTime = formatTimestampForDisplay(timestamp);
-            
+            const formattedTime = formatTimestampForDisplay(timestamp);  
             if (baseKey.startsWith('MEN')) {
               displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName} - ${formattedTime})`;
             } else if (baseKey === 'INFO') {
@@ -524,7 +460,6 @@
               displayName = `${groupKey} (${shortFileName})`;
             }
           }
-
           available.push({
             fileName,
             groupKey,
@@ -545,7 +480,6 @@
       if (b.timestamp) return 1;
       return a.displayName.localeCompare(b.displayName);
     });
-
     return available;
   }
 

@@ -1,7 +1,6 @@
 (function() {
   const BaseModal = window.BaseModal;
   if (!BaseModal) {
-    console.error('BaseModal not found');
     return;
   }
 
@@ -25,7 +24,6 @@
     async open(fileName, templateEntry, autoCreatedSubgroups, folderPath, existingConfig) {
       this.fileName = fileName;
       if (!templateEntry || typeof templateEntry !== 'object') {
-        console.error('Invalid templateEntry provided to ConfigWizard:', templateEntry);
         throw new Error('Template entry must be a valid object');
       }
       
@@ -337,7 +335,6 @@
           visibilityStates
         };
       } catch (error) {
-        console.error('Error collecting form data:', error);
         throw new Error(`Failed to collect form data: ${error.message}`);
       }
     }
@@ -414,7 +411,6 @@
           newGroups
         };
       } catch (error) {
-        console.error('Error collecting form data with field mappings:', error);
         throw new Error(`Failed to collect form data: ${error.message}`);
       }
     }
@@ -449,7 +445,6 @@
 
         this.hide();
       } catch (error) {
-        console.error('Error saving config:', error);
         this._showErrorMessage('❌ Lỗi không mong đợi', [error.message || 'Đã xảy ra lỗi khi lưu cấu hình']);
       }
     }
@@ -572,7 +567,6 @@
 
     handleAddSubgroupToGroup(groupId, subgroupId) {
       if (!groupId || !subgroupId) {
-        console.warn('handleAddSubgroupToGroup: Missing groupId or subgroupId');
         return false;
       }
 
@@ -648,7 +642,6 @@
           button.title = subgroup.visible ? 'Hiển thị' : 'Ẩn';
         }
       } else {
-        console.warn(`Subgroup ${subgroupId} not found in autoCreatedSubgroups for group ${groupId}`);
       }
     }
 
@@ -753,7 +746,6 @@
 
         return fieldMapping.subgroups;
       } catch (error) {
-        console.error('Error getting subgroups:', error);
         return [];
       }
     }

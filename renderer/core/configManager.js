@@ -19,14 +19,12 @@
         if (config) {
           const validation = this.validateConfig(config);
           if (!validation.valid) {
-            console.warn('Config validation warnings:', validation.errors);
           }
           this.configCache.set(folderPath, config);
         }
         
         return config;
       } catch (error) {
-        console.error('Failed to read config:', error);
         throw new Error(`Failed to read config: ${error.message}`);
       }
     }
@@ -60,7 +58,6 @@
         
         return success;
       } catch (error) {
-        console.error('Failed to write config:', error);
         throw new Error(`Failed to write config: ${error.message}`);
       }
     }
@@ -75,15 +72,9 @@
           throw new Error('IPC renderer not available');
         }
 
-        const backupPath = await window.ipcRenderer.invoke('backup-folder-config', folderPath);
-        
-        if (!backupPath) {
-          console.warn('No backup created - config.json may not exist');
-        }
-        
+        const backupPath = await window.ipcRenderer.invoke('backup-folder-config', folderPath);     
         return backupPath;
       } catch (error) {
-        console.error('Failed to create backup:', error);
         throw new Error(`Failed to create backup: ${error.message}`);
       }
     }
@@ -111,7 +102,6 @@
         
         return success;
       } catch (error) {
-        console.error('Failed to restore from backup:', error);
         throw new Error(`Failed to restore from backup: ${error.message}`);
       }
     }
@@ -326,7 +316,6 @@
 
         return true;
       } catch (error) {
-        console.error('Failed to add template entry:', error);
         throw new Error(`Failed to add template entry: ${error.message}`);
       }
     }
@@ -378,7 +367,6 @@
 
         return true;
       } catch (error) {
-        console.error('Failed to update template entry:', error);
         throw new Error(`Failed to update template entry: ${error.message}`);
       }
     }
@@ -437,7 +425,6 @@
         try {
           backupPath = await this.createBackup(folderPath);
         } catch (backupError) {
-          console.warn('Could not create backup:', backupError.message);
         }
 
         const config = await this.readConfig(folderPath);
@@ -458,14 +445,10 @@
         
         return { success: true, backupPath };
       } catch (error) {
-        console.error('Config update failed:', error);
         if (backupPath) {
           try {
-            console.log('Attempting to restore from backup...');
             await this.restoreFromBackup(backupPath, folderPath);
-            console.log('Successfully restored from backup');
           } catch (restoreError) {
-            console.error('Failed to restore from backup:', restoreError);
             return {
               success: false,
               error: error.message,

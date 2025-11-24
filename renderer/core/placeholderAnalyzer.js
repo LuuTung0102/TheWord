@@ -24,7 +24,6 @@
         groups
       };
     } catch (error) {
-      console.error('Error analyzing placeholders:', error);
       return {
         placeholders: [],
         patterns: {
