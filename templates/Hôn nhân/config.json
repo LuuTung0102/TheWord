@@ -1,9 +1,23 @@
 {
   "templates": [
     {
-      "id": "gi-y-x-c-nh-n-t-nh-tr-ng-h-n-nh-n",
-      "filename": "Giấy xác nhận tình trạng hôn nhân.docx",
-      "name": "Giấy xác nhận tình trạng hôn nhân",
+      "id": "ch-a-k-t-h-n",
+      "filename": "Chưa kết hôn.docx",
+      "name": "Chưa kết hôn",
+      "description": "",
+      "groups": [
+        "TTHN"
+      ],
+      "placeholders": {
+        "TTHN": [
+          "MEN1"
+        ]
+      }
+    },
+    {
+      "id": "ly-h-n",
+      "filename": "Ly Hôn.docx",
+      "name": "Chưa kết hôn",
       "description": "",
       "groups": [
         "TTHN",

@@ -578,7 +578,7 @@
 
       const assignedSubgroups = this.templateEntry.placeholders[groupId] || [];
       if (assignedSubgroups.includes(subgroupId)) {
-        alert(`❌ Lỗi trùng lặp\n\nSubgroup "${subgroupId}" đã tồn tại trong group "${groupId}".\n\nMỗi subgroup chỉ có thể được thêm vào một group một lần.`);
+        showError(`Lỗi trùng lặp\n\nSubgroup "${subgroupId}" đã tồn tại trong group "${groupId}".\n\nMỗi subgroup chỉ có thể được thêm vào một group một lần.`);
         return false;
       }
 
@@ -653,11 +653,7 @@
     }
 
     handleCreateNewGroup() {
-      alert(
-        '⚠️ Tính năng tạo Group mới tạm thời chưa khả dụng\n\n' +
-        'Vui lòng sử dụng các groups có sẵn trong config.json.\n\n' +
-        'Để thêm group mới, vui lòng chỉnh sửa trực tiếp file config.json.'
-      );
+      showWarning('Tính năng tạo Group mới tạm thời chưa khả dụng\n\nVui lòng sử dụng các groups có sẵn trong config.json.\n\nĐể thêm group mới, vui lòng chỉnh sửa trực tiếp file config.json.');
       return;
       
       /*
@@ -765,7 +761,7 @@
     _showErrorMessage(title, errors) {
       const errorList = Array.isArray(errors) ? errors : [errors];
       const message = `${title}\n\n${errorList.map((err, i) => `${i + 1}. ${err}`).join('\n')}`;
-      alert(message);
+      showError(message);
     }
 
     _showValidationErrors(container, errors) {

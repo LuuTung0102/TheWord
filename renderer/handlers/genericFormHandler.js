@@ -407,13 +407,13 @@ async function renderGenericForm(placeholders, config, folderPath) {
         if (window.sessionStorageManager && window.sessionStorageManager.clearAllSessionData) {
           window.sessionStorageManager.clearAllSessionData();
         } else {
-          alert('❌ Không thể xóa session data. Vui lòng thử lại.');
+          showError('Không thể xóa session data. Vui lòng thử lại.');
           return;
         }
         
         clearBtn.remove();
         await renderGenericForm(placeholders, config, folderPath);
-        alert('✅ Đã xóa tất cả session data thành công!');
+        showSuccess('Đã xóa tất cả session data thành công!');
       });
     }
   }

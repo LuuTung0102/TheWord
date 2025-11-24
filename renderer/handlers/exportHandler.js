@@ -22,13 +22,13 @@ function setupExportButton() {
     const selectedTemplates = typeof getSelectedTemplates === 'function' ? getSelectedTemplates() : (window.selectedTemplates || []);
     
     if (selectedTemplates.length === 0) {
-      alert("❌ Vui lòng chọn ít nhất 1 folder!");
+      showError("Vui lòng chọn ít nhất 1 folder!");
       if (typeof hideLoading === 'function') hideLoading();
       return;
     }
     
     if (selectedTemplates.length > 1) {
-      alert("⚠️ Chỉ cho phép xuất 1 folder tại 1 thời điểm!");
+      showWarning("Chỉ cho phép xuất 1 folder tại 1 thời điểm!");
       if (typeof hideLoading === 'function') hideLoading();
       return;
     }
@@ -47,28 +47,16 @@ function setupExportButton() {
       }
 
       if (!result) {
-        if (typeof showError === 'function') {
-          showError("Xuất file thất bại!");
-        } else {
-          alert("❌ Xuất file thất bại!");
-        }
+        showError("Xuất file thất bại!");
       } else {
-        if (typeof showSuccess === 'function') {
-          showSuccess(`Đã xuất file tại: ${result}`);
-        } else {
-          alert(`✅ Đã xuất file tại: \n${result}`);
-        }
+        showSuccess(`Đã xuất file tại: ${result}`);
       }
     } catch (err) {
       if (typeof hideLoading === 'function') {
         hideLoading();
       }
       
-      if (typeof showError === 'function') {
-        showError("Xuất file thất bại!");
-      } else {
-        alert("❌ Xuất file thất bại!");
-      }
+      showError("Xuất file thất bại!");
     }
   });
 }

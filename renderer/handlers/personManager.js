@@ -127,7 +127,7 @@
     handleEditPerson(id) {
       const person = window.personDataService.getPerson(id);
       if (!person) {
-        alert('❌ Không tìm thấy PERSON này');
+        showError('Không tìm thấy PERSON này');
         return;
       }
 
@@ -163,7 +163,7 @@
       const success = window.personDataService.updatePerson(this.currentEditId, newData);
       
       if (success) {
-        alert('✅ Đã cập nhật thành công!');
+        showSuccess('Đã cập nhật thành công!');
         this.currentEditId = null;
         this.renderPersonList();
       } else {
@@ -171,13 +171,20 @@
       }
     }
 
-    handleDeletePerson(id) {
+    async handleDeletePerson(id) {
       const person = window.personDataService.getPerson(id);
       if (!person) {
-        alert('❌ Không tìm thấy PERSON này');
+        showError('Không tìm thấy PERSON này');
         return;
       }
-      const confirmed = confirm(`⚠️ Bạn có chắc muốn xóa "${person.name}"?\n\nDữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục.`);
+      
+      const confirmed = await new Promise((resolve) => {
+        showConfirm(
+          `Bạn có chắc muốn xóa "${person.name}"?\n\nDữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục.`,
+          () => resolve(true),
+          () => resolve(false)
+        );
+      });
       
       if (!confirmed) {
         return;
@@ -186,10 +193,10 @@
       const success = window.personDataService.deletePerson(id);
       
       if (success) {
-        alert('✅ Đã xóa thành công!');
+        showSuccess('Đã xóa thành công!');
         this.renderPersonList();
       } else {
-        alert('❌ Không thể xóa. Vui lòng thử lại.');
+        showError('Không thể xóa. Vui lòng thử lại.');
       }
     }
 
@@ -225,7 +232,7 @@
       const newPerson = window.personDataService.addPerson(newData);
       
       if (newPerson) {
-        alert(`✅ Đã thêm thành công: ${newPerson.id} - ${newPerson.name}`);
+        showSuccess(`Đã thêm thành công: ${newPerson.id} - ${newPerson.name}`);
         this.renderPersonList();
       } else {
         window.FormBuilder.showFormError('Không thể lưu dữ liệu. Vui lòng thử lại.');

@@ -34,19 +34,6 @@
         "Ngay_Cap": "24/11/2023",
         "Address": "thôn An Cư, X. Cư Huê, H.Ea Kar, T. Đắk Lắk"
       }
-    },
-    {
-      "id": "PERSON3",
-      "name": "Người 3",
-      "data": {
-        "Gender": "Ông",
-        "Name": "",
-        "Date": "",
-        "CCCD": "",
-        "Noi_Cap": "",
-        "Ngay_Cap": "",
-        "Address": ""
-      }
     }
   ]
 }

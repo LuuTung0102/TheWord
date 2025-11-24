@@ -208,7 +208,7 @@
 
     async handleAddFile() {
       if (!this.selectedFolder) {
-        alert('❌ Vui lòng chọn folder trước');
+        showError('Vui lòng chọn folder trước');
         return;
       }
 
@@ -222,21 +222,13 @@
           const file = e.target.files[0];
           if (!file) return;
           if (!file.name.endsWith('.docx')) {
-            alert(
-              '❌ Lỗi: Định dạng file không hợp lệ\n\n' +
-              'Chỉ chấp nhận file Word định dạng .docx\n\n' +
-              `File được chọn: ${file.name}`
-            );
+            showError(`Định dạng file không hợp lệ\n\nChỉ chấp nhận file Word định dạng .docx\n\nFile được chọn: ${file.name}`);
             return;
           }
 
           const maxSize = 10 * 1024 * 1024; 
           if (file.size > maxSize) {
-            alert(
-              '❌ Lỗi: File quá lớn\n\n' +
-              `File "${file.name}" có kích thước ${(file.size / 1024 / 1024).toFixed(2)}MB\n\n` +
-              'Kích thước tối đa cho phép: 10MB'
-            );
+            showError(`File quá lớn\n\nFile "${file.name}" có kích thước ${(file.size / 1024 / 1024).toFixed(2)}MB\n\nKích thước tối đa: 10MB`);
             return;
           }
 
@@ -261,22 +253,14 @@
             await this.showConfigWizard(file.name, tempPath);
           } catch (error) {
             console.error('Error adding file:', error);
-            alert(
-              '❌ Không thể thêm file\n\n' +
-              `${error.message}\n\n` +
-              'Vui lòng thử lại.'
-            );
+            showError(`Không thể thêm file\n\n${error.message}\n\nVui lòng thử lại.`);
           }
         };
 
         input.click();
       } catch (error) {
         console.error('Error in handleAddFile:', error);
-        alert(
-          '❌ Đã xảy ra lỗi\n\n' +
-          `${error.message}\n\n` +
-          'Vui lòng thử lại.'
-        );
+        showError(`Đã xảy ra lỗi\n\n${error.message}\n\nVui lòng thử lại.`);
       }
     }
 
@@ -289,14 +273,14 @@
         
         await window.ipcRenderer.invoke('open-file-path', filePath);
       } catch (error) {
-        alert('❌ Không thể mở file');
+        showError('Không thể mở file');
       }
     }
 
     async showConfigWizard(fileName, tempFilePath) {
       try {
         if (!this.selectedFolder) {
-          alert('❌ Không có folder nào được chọn');
+          showError('Không có folder nào được chọn');
           return;
         }
 
@@ -310,17 +294,15 @@
         const analyzer = new window.PlaceholderAnalyzer();
         const analysis = await analyzer.analyzePlaceholders(filePath);
         if (!analysis.placeholders || analysis.placeholders.length === 0) {
-          const proceed = confirm(
-            `⚠️ Cảnh báo: File không có placeholder\n\n` +
-            `File "${fileName}" không chứa placeholder nào.\n\n` +
-            `Bạn có muốn tiếp tục tạo cấu hình không?\n\n` +
-            `(Nhấn OK để tiếp tục, Cancel để hủy)`
+          showConfirm(
+            `Cảnh báo: File không có placeholder\n\nFile "${fileName}" không chứa placeholder nào.\n\nBạn có muốn tiếp tục tạo cấu hình không?`,
+            () => {},
+            () => {
+              showInfo('Đã hủy thêm file');
+              return;
+            }
           );
-          
-          if (!proceed) {
-            alert('ℹ️ Đã hủy thêm file');
-            return;
-          }
+          return;
         }
 
         const configManager = window.configManager;
@@ -330,44 +312,32 @@
           existingConfig = await configManager.readConfig(folderPath);
         } catch (error) {
           console.error('Error reading config:', error);
-          alert(
-            `❌ Lỗi: Không tìm thấy config.json\n\n` +
-            `Không tìm thấy file config.json trong folder "${this.selectedFolder.name}".\n\n` +
-            `Vui lòng tạo config.json trước khi thêm file Word.\n\n` +
-            `Chi tiết lỗi: ${error.message}`
-          );
+          showError(`Không tìm thấy config.json\n\nKhông tìm thấy file config.json trong folder "${this.selectedFolder.name}".\n\nVui lòng tạo config.json trước khi thêm file Word.\n\nChi tiết: ${error.message}`);
           return;
         }
 
         if (!existingConfig) {
-          alert(
-            `❌ Lỗi: Config không hợp lệ\n\n` +
-            `File config.json trong folder "${this.selectedFolder.name}" không hợp lệ hoặc rỗng.\n\n` +
-            `Vui lòng kiểm tra lại file config.json.`
-          );
+          showError(`Config không hợp lệ\n\nFile config.json trong folder "${this.selectedFolder.name}" không hợp lệ hoặc rỗng.\n\nVui lòng kiểm tra lại file config.json.`);
           return;
         }
 
         if (!existingConfig.groups || !Array.isArray(existingConfig.groups)) {
-          alert(
-            `❌ Lỗi: Config không đầy đủ\n\n` +
-            `File config.json thiếu thông tin "groups".\n\n` +
-            `Vui lòng kiểm tra lại cấu trúc file config.json.`
-          );
+          showError(`Config không đầy đủ\n\nFile config.json thiếu thông tin "groups".\n\nVui lòng kiểm tra lại cấu trúc file config.json.`);
           return;
         }
 
         const existingTemplate = existingConfig.templates?.find(t => t.filename === fileName);
         if (existingTemplate) {
-          const overwrite = confirm(
-            `⚠️ Cảnh báo: File đã tồn tại\n\n` +
-            `File "${fileName}" đã có cấu hình trong config.json.\n\n` +
-            `Bạn có muốn cập nhật cấu hình hiện tại không?\n\n` +
-            `(Nhấn OK để cập nhật, Cancel để giữ nguyên cấu hình cũ)`
-          );
+          const shouldContinue = await new Promise((resolve) => {
+            showConfirm(
+              `Cảnh báo: File đã tồn tại\n\nFile "${fileName}" đã có cấu hình trong config.json.\n\nBạn có muốn cập nhật cấu hình hiện tại không?`,
+              () => resolve(true),
+              () => resolve(false)
+            );
+          });
           
-          if (!overwrite) {
-            alert('ℹ️ Đã giữ nguyên cấu hình cũ');
+          if (!shouldContinue) {
+            showInfo('Đã giữ nguyên cấu hình cũ');
             this.files = await this.loadFilesInFolder(this.selectedFolder.path);
             this.renderFileList();
             return;
@@ -489,7 +459,7 @@
               }));
             }
             
-            alert(`✅ File "${fileName}" đã được thêm và cấu hình thành công!`);
+            showSuccess(`File "${fileName}" đã được thêm và cấu hình thành công!`);
           } catch (error) {
             console.error('Failed to copy file or save config:', error);
             let errorMessage = '❌ Lỗi: Không thể lưu file\n\n';
@@ -509,7 +479,7 @@
             
             errorMessage += 'Cấu hình không được lưu. Vui lòng thử lại.';
             
-            alert(errorMessage);
+            showError(errorMessage);
           }
         } else {
           this.files = await this.loadFilesInFolder(this.selectedFolder.path);
@@ -519,7 +489,7 @@
             await window.mainAppInstance.loadFilesInFolder(this.selectedFolder.name);
           }
           
-          alert(`ℹ️ Đã hủy thêm file "${fileName}"`);
+          showInfo(`Đã hủy thêm file "${fileName}"`);
         }
       } catch (error) {
         console.error('Error in showConfigWizard:', error);
@@ -541,7 +511,7 @@
         
         errorMessage += 'Chi tiết lỗi đã được ghi vào console.';
         
-        alert(errorMessage);
+        showError(errorMessage);
         
         try {
           this.files = await this.loadFilesInFolder(this.selectedFolder.path);
@@ -554,15 +524,17 @@
 
     async handleDeleteFile(fileName) {
       if (!this.selectedFolder) {
-        alert('❌ Không có folder nào được chọn');
+        showError('Không có folder nào được chọn');
         return;
       }
 
-      const confirmed = confirm(
-        `⚠️ Bạn có chắc muốn xóa file "${fileName}"?\n\n` +
-        `File sẽ bị xóa vĩnh viễn và không thể khôi phục.\n` +
-        `Cấu hình trong config.json cũng sẽ bị xóa.`
-      );
+      const confirmed = await new Promise((resolve) => {
+        showConfirm(
+          `Bạn có chắc muốn xóa file "${fileName}"?\n\nFile sẽ bị xóa vĩnh viễn và không thể khôi phục.\nCấu hình trong config.json cũng sẽ bị xóa.`,
+          () => resolve(true),
+          () => resolve(false)
+        );
+      });
       
       if (!confirmed) return;
 
@@ -573,7 +545,7 @@
         const deleteResult = await window.ipcRenderer.invoke('delete-file-path', filePath);
         
         if (!deleteResult.success) {
-          alert(`❌ Không thể xóa file: ${deleteResult.error || 'Lỗi không xác định'}`);
+          showError(`Không thể xóa file: ${deleteResult.error || 'Lỗi không xác định'}`);
           return;
         }
 
@@ -584,23 +556,19 @@
           if (config && config.templates) {
             config.templates = config.templates.filter(t => t.filename !== fileName);
             await configManager.writeConfig(folderPath, config);
-            alert('✅ Đã xóa file và cấu hình thành công');
+            showSuccess('Đã xóa file và cấu hình thành công');
           } else {
-            alert('✅ Đã xóa file thành công');
+            showSuccess('Đã xóa file thành công');
           }
         } catch (configError) {
           console.warn('Error updating config after file deletion:', configError);
-          alert(
-            `✅ File đã được xóa thành công.\n\n` +
-            `⚠️ Nhưng không thể cập nhật config.json.\n` +
-            `Bạn có thể cần xóa cấu hình thủ công.`
-          );
+          showWarning(`File đã được xóa thành công.\n\nNhưng không thể cập nhật config.json.\nBạn có thể cần xóa cấu hình thủ công.`);
         }
         this.files = await this.loadFilesInFolder(this.selectedFolder.path);
         this.renderFileList();
       } catch (error) {
         console.error('Error deleting file:', error);
-        alert(`❌ Không thể xóa file: ${error.message || 'Lỗi không xác định'}`);
+        showError(`Không thể xóa file: ${error.message || 'Lỗi không xác định'}`);
       }
     }
   }
