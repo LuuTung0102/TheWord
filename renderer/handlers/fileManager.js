@@ -471,24 +471,19 @@
             this.files = await this.loadFilesInFolder(this.selectedFolder.path);
             this.renderFileList();
             
-            // Notify mainApp to refresh
             if (window.mainAppInstance) {
-              // Refresh files in folder
               if (typeof window.mainAppInstance.loadFilesInFolder === 'function') {
                 await window.mainAppInstance.loadFilesInFolder(this.selectedFolder.name);
               }
               
-              // Reload all templates
               if (typeof window.mainAppInstance.loadTemplates === 'function') {
                 await window.mainAppInstance.loadTemplates();
               }
               
-              // Re-render UI
               if (typeof window.mainAppInstance.renderFiles === 'function') {
                 window.mainAppInstance.renderFiles();
               }
             } else {
-              // Fallback: dispatch custom event
               window.dispatchEvent(new CustomEvent('templates-updated', { 
                 detail: { folderName: this.selectedFolder.name } 
               }));
@@ -519,8 +514,7 @@
         } else {
           this.files = await this.loadFilesInFolder(this.selectedFolder.path);
           this.renderFileList();
-          
-          // Notify mainApp to refresh (in case file was copied before cancel)
+        
           if (window.mainAppInstance && typeof window.mainAppInstance.loadFilesInFolder === 'function') {
             await window.mainAppInstance.loadFilesInFolder(this.selectedFolder.name);
           }

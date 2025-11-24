@@ -2015,6 +2015,12 @@ label.required::after {
   background: #f0f8ff;
 }
 
+.group-item.suggested {
+  border-color: #ffc107;
+  background: #fffbf0;
+  border-style: dashed;
+}
+
 .group-header {
   display: flex;
   flex-direction: column;

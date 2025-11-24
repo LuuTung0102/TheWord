@@ -51,56 +51,35 @@
       return `
         <div class="config-wizard-content">
           <div class="config-wizard-section">
-            <h3 class="config-wizard-section-title">📄 Thông tin cơ bản</h3>
+            <h3 class="config-wizard-section-title">📄 Thông tin</h3>
             <div class="config-wizard-form">
               <div class="config-wizard-field">
-                <label for="templateName">Tên template:</label>
-                <input 
-                  type="text" 
-                  id="templateName" 
-                  class="config-wizard-input"
-                  placeholder="Nhập tên template"
-                  value="${this.templateEntry?.name || ''}"
-                />
+                <label for="templateName">Tên:</label>
+                <input type="text" id="templateName" class="config-wizard-input" placeholder="Nhập tên" value="${this.templateEntry?.name || ''}"/>
               </div>
               <div class="config-wizard-field">
                 <label for="templateDescription">Mô tả:</label>
-                <textarea 
-                  id="templateDescription" 
-                  class="config-wizard-textarea"
-                  placeholder="Nhập mô tả cho template"
-                  rows="3"
-                >${this.templateEntry?.description || ''}</textarea>
+                <textarea id="templateDescription" class="config-wizard-textarea" placeholder="Nhập mô tả" rows="2">${this.templateEntry?.description || ''}</textarea>
               </div>
             </div>
           </div>
 
           <div class="config-wizard-section">
-            <h3 class="config-wizard-section-title">🔖 Subgroups được tạo tự động</h3>
-            <div id="autoCreatedSubgroupsList" class="auto-created-subgroups-list">
-              <!-- Will be rendered by renderAutoCreatedSubgroups() -->
-            </div>
+            <h3 class="config-wizard-section-title">🔖 Subgroups phát hiện</h3>
+            <div id="autoCreatedSubgroupsList" class="auto-created-subgroups-list"></div>
           </div>
 
           <div class="config-wizard-section">
             <div class="config-wizard-section-header">
-              <h3 class="config-wizard-section-title">📋 Chọn Groups và gán Subgroups</h3>
-              <button id="createGroupBtn" class="config-wizard-btn-icon" title="Tạo Group mới">
-                ➕ Tạo Group
-              </button>
+              <h3 class="config-wizard-section-title">📋 Chọn Groups</h3>
+              <button id="createGroupBtn" class="config-wizard-btn-icon" title="Tạo Group">➕</button>
             </div>
-            <div id="groupsList" class="group-selector">
-              <!-- Will be rendered by renderGroupsList() -->
-            </div>
+            <div id="groupsList" class="group-selector"></div>
           </div>
 
           <div class="config-wizard-actions">
-            <button id="cancelBtn" class="config-wizard-btn config-wizard-btn-cancel">
-              ❌ Hủy
-            </button>
-            <button id="saveBtn" class="config-wizard-btn config-wizard-btn-save">
-              ✅ Lưu cấu hình
-            </button>
+            <button id="cancelBtn" class="config-wizard-btn config-wizard-btn-cancel">❌ Hủy</button>
+            <button id="saveBtn" class="config-wizard-btn config-wizard-btn-save">✅ Lưu</button>
           </div>
         </div>
       `;
@@ -149,54 +128,41 @@
     renderAutoCreatedSubgroups() {
       const container = this.querySelector('#autoCreatedSubgroupsList');
       if (!container) return;
+      
       const subgroupsMap = new Map();
       
-      if (this.templateEntry._metadata && this.templateEntry._metadata.placeholderToSubgroup) {
-        const placeholderToSubgroup = this.templateEntry._metadata.placeholderToSubgroup;
-        
-        for (const [placeholder, info] of Object.entries(placeholderToSubgroup)) {
-          const subgroupId = info.subgroup;
-          if (!subgroupsMap.has(subgroupId)) {
-            subgroupsMap.set(subgroupId, {
-              id: subgroupId,
-              count: 0,
-              groupId: info.group
-            });
+      if (this.templateEntry._metadata?.placeholderToSubgroup) {
+        for (const [placeholder, info] of Object.entries(this.templateEntry._metadata.placeholderToSubgroup)) {
+          const sgId = info.subgroup;
+          if (!subgroupsMap.has(sgId)) {
+            subgroupsMap.set(sgId, { id: sgId, count: 0, groupId: info.group });
           }
-          subgroupsMap.get(subgroupId).count++;
+          subgroupsMap.get(sgId).count++;
         }
       }
 
-      if (subgroupsMap.size === 0 && this.autoCreatedSubgroups && this.autoCreatedSubgroups.length > 0) {
+      if (subgroupsMap.size === 0 && this.autoCreatedSubgroups?.length > 0) {
         this.autoCreatedSubgroups.forEach(sg => {
-          subgroupsMap.set(sg.subgroupId || sg.id, {
-            id: sg.subgroupId || sg.id,
-            count: 0,
-            groupId: sg.groupId
-          });
+          const sgId = sg.subgroupId || sg.id;
+          subgroupsMap.set(sgId, { id: sgId, count: 0, groupId: sg.groupId });
         });
       }
 
       if (subgroupsMap.size === 0) {
-        container.innerHTML = `
-          <div class="auto-created-subgroups-empty">
-            <p>ℹ️ Không có subgroup nào được phát hiện</p>
-          </div>
-        `;
+        container.innerHTML = '<div class="auto-created-subgroups-empty"><p>ℹ️ Không phát hiện subgroup</p></div>';
         return;
       }
-      const html = `
+
+      container.innerHTML = `
         <div class="auto-created-subgroups-items">
-          ${Array.from(subgroupsMap.values()).map(sg => `
-            <div class="auto-created-subgroup-item">
+          ${Array.from(subgroupsMap.values()).map(sg => 
+            `<div class="auto-created-subgroup-item">
               <span class="subgroup-badge">${sg.id}</span>
               <span class="subgroup-count">${sg.count} field${sg.count !== 1 ? 's' : ''}</span>
-            </div>
-          `).join('')}
+            </div>`
+          ).join('')}
         </div>
       `;
-
-      container.innerHTML = html;
     }
 
     renderGroupsList() {
@@ -207,96 +173,54 @@
       const selectedGroups = this.templateEntry.groups || [];
 
       if (availableGroups.length === 0) {
-        container.innerHTML = `
-          <div class="group-empty">
-            <p>Không có group nào được định nghĩa</p>
-          </div>
-        `;
+        container.innerHTML = '<div class="group-empty"><p>Không có group nào</p></div>';
         return;
       }
 
+      const suggestedGroups = this.templateEntry._metadata?.suggestedGroups || [];
+      
       const html = availableGroups.map(group => {
         const isSelected = selectedGroups.includes(group.id);
+        const isSuggested = suggestedGroups.includes(group.id);
         const assignedSubgroupIds = this.templateEntry.placeholders[group.id] || [];
         const availableSubgroups = this._getAvailableSubgroupsForGroup(group.id);
 
         return `
-          <div class="group-item ${isSelected ? 'selected' : ''}">
+          <div class="group-item ${isSelected ? 'selected' : ''} ${isSuggested && !isSelected ? 'suggested' : ''}">
             <div class="group-header">
               <label class="group-label">
-                <input 
-                  type="checkbox" 
-                  class="group-checkbox"
-                  data-group-id="${group.id}"
-                  ${isSelected ? 'checked' : ''}
-                />
-                <span class="group-name">${group.label} (${group.id})</span>
+                <input type="checkbox" class="group-checkbox" data-group-id="${group.id}" ${isSelected ? 'checked' : ''}/>
+                <span class="group-name">${group.label} (${group.id})${isSuggested && !isSelected ? ' 💡' : ''}</span>
               </label>
-              <span class="group-description">${group.description || ''}</span>
             </div>
             ${isSelected ? `
               <div class="subgroup-management">
                 <div class="subgroup-add-section">
-                  <select 
-                    class="subgroup-dropdown" 
-                    data-group-id="${group.id}"
-                    ${availableSubgroups.length === 0 ? 'disabled' : ''}
-                  >
+                  <select class="subgroup-dropdown" data-group-id="${group.id}" ${availableSubgroups.length === 0 ? 'disabled' : ''}>
                     <option value="">-- Chọn subgroup --</option>
-                    ${availableSubgroups.map(sg => `
-                      <option value="${sg.id}">${sg.id}</option>
-                    `).join('')}
+                    ${availableSubgroups.map(sg => `<option value="${sg.id}">${sg.id}</option>`).join('')}
                   </select>
-                  <button 
-                    class="subgroup-add-btn" 
-                    data-group-id="${group.id}"
-                    ${availableSubgroups.length === 0 ? 'disabled' : ''}
-                  >
-                    ➕ Thêm subgroup
-                  </button>
+                  <button class="subgroup-add-btn" data-group-id="${group.id}" ${availableSubgroups.length === 0 ? 'disabled' : ''}>➕</button>
                 </div>
                 ${assignedSubgroupIds.length > 0 ? `
                   <div class="subgroup-list">
                     ${assignedSubgroupIds.map(subgroupId => {
-                      const subgroupInfo = this._getSubgroupInfo(group.id, subgroupId);
+                      const info = this._getSubgroupInfo(group.id, subgroupId);
                       return `
-                        <div class="subgroup-item" data-group-id="${group.id}" data-subgroup-id="${subgroupId}">
+                        <div class="subgroup-item">
                           <span class="subgroup-id-badge">${subgroupId}</span>
-                          <input 
-                            type="text" 
-                            class="subgroup-label-input" 
-                            value="${subgroupInfo.label || 'Thông tin'}"
-                            data-group-id="${group.id}"
-                            data-subgroup-id="${subgroupId}"
-                            style="display: none;"
-                          />
-                          <span class="subgroup-label-text">${subgroupInfo.label || 'Thông tin'}</span>
+                          <input type="text" class="subgroup-label-input" value="${info.label || 'Thông tin'}" data-group-id="${group.id}" data-subgroup-id="${subgroupId}" style="display:none;"/>
+                          <span class="subgroup-label-text">${info.label || 'Thông tin'}</span>
                           <div class="subgroup-actions">
-                            <button 
-                              class="subgroup-action-btn subgroup-edit-btn" 
-                              data-group-id="${group.id}"
-                              data-subgroup-id="${subgroupId}"
-                              title="Sửa label"
-                            >✏️</button>
-                            <button 
-                              class="subgroup-action-btn subgroup-visibility-btn" 
-                              data-group-id="${group.id}"
-                              data-subgroup-id="${subgroupId}"
-                              data-visible="${subgroupInfo.visible}"
-                              title="Toggle visibility"
-                            >${subgroupInfo.visible ? '👁️' : '🙈'}</button>
-                            <button 
-                              class="subgroup-action-btn subgroup-remove-btn" 
-                              data-group-id="${group.id}"
-                              data-subgroup-id="${subgroupId}"
-                              title="Xóa subgroup"
-                            >🗑️</button>
+                            <button class="subgroup-action-btn subgroup-edit-btn" data-group-id="${group.id}" data-subgroup-id="${subgroupId}" title="Sửa">✏️</button>
+                            <button class="subgroup-action-btn subgroup-visibility-btn" data-group-id="${group.id}" data-subgroup-id="${subgroupId}" data-visible="${info.visible}" title="${info.visible ? 'Ẩn' : 'Hiện'}">${info.visible ? '👁️' : '🙈'}</button>
+                            <button class="subgroup-action-btn subgroup-remove-btn" data-group-id="${group.id}" data-subgroup-id="${subgroupId}" title="Xóa">🗑️</button>
                           </div>
                         </div>
                       `;
                     }).join('')}
                   </div>
-                ` : '<p class="no-subgroups-message">Chưa có subgroup nào. Thêm subgroup từ danh sách bên trên.</p>'}
+                ` : '<p class="no-subgroups-message">Chưa có subgroup. Chọn từ dropdown bên trên.</p>'}
               </div>
             ` : ''}
           </div>
@@ -589,23 +513,23 @@
 
     _getAvailableSubgroupsForGroup(groupId) {
       const allSubgroupsSet = new Set();
-      if (this.templateEntry._metadata && this.templateEntry._metadata.placeholderToSubgroup) {
-        const placeholderToSubgroup = this.templateEntry._metadata.placeholderToSubgroup;
-        
-        for (const [placeholder, info] of Object.entries(placeholderToSubgroup)) {
+      
+      if (this.templateEntry._metadata?.placeholderToSubgroup) {
+        for (const [placeholder, info] of Object.entries(this.templateEntry._metadata.placeholderToSubgroup)) {
           if (info.group === groupId) {
             allSubgroupsSet.add(info.subgroup);
           }
         }
       }
       
-      if (this.autoCreatedSubgroups && this.autoCreatedSubgroups.length > 0) {
+      if (this.autoCreatedSubgroups?.length > 0) {
         this.autoCreatedSubgroups.forEach(sg => {
           if (sg.groupId === groupId) {
             allSubgroupsSet.add(sg.subgroupId || sg.id);
           }
         });
       }
+      
       const assignedSubgroupIds = this.templateEntry.placeholders[groupId] || [];
       const availableSubgroups = Array.from(allSubgroupsSet)
         .filter(sgId => !assignedSubgroupIds.includes(sgId))

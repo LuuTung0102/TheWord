@@ -10,16 +10,11 @@
     };
     
     Object.keys(data).forEach((key) => {
-      // Skip special land type fields
       if (key === 'Loai_Dat_F' && data.Loai_Dat_D) return;
       if (key === 'Loai_Dat' && (data.Loai_Dat_D || data.Loai_Dat_F)) return;
       
       let value = data[key];
-      
-      // Skip empty values - don't include them in normalized data
       if (isEmpty(value)) return;
-      
-      // Normalize formatting for comparison
       if (key.includes("CCCD") && typeof value === "string") {
         value = value.replace(/\./g, "");
       } else if (key.includes("Money") && typeof value === "string") {
@@ -44,8 +39,6 @@
     
     let hasModifications = false;
     let hasAdditions = false;
-    
-    // Lấy tất cả keys từ cả 2 bên
     const allKeys = new Set([
       ...Object.keys(sourceData || {}),
       ...Object.keys(currentData || {})
@@ -57,31 +50,21 @@
       const sourceEmpty = isEmpty(sourceValue);
       const currentEmpty = isEmpty(currentValue);
       
-      // Case 1: Cả 2 đều empty → Bỏ qua
       if (sourceEmpty && currentEmpty) {
         continue;
       }
       
-      // Case 2: Cả 2 đều có giá trị
       if (!sourceEmpty && !currentEmpty) {
-        // So sánh giá trị
         if (sourceValue !== currentValue) {
-          // Giá trị khác nhau → MODIFICATION
           hasModifications = true;
         }
-        // Giá trị giống nhau → OK, tiếp tục
       }
       
-      // Case 3: Source empty, Current có giá trị → ADDITION
       else if (sourceEmpty && !currentEmpty) {
         hasAdditions = true;
       }
       
-      // Case 4: Source có giá trị, Current empty
       else if (!sourceEmpty && currentEmpty) {
-        // KHÔNG coi là xóa/modification
-        // Vì có thể template mới không có placeholder này
-        // Bỏ qua
       }
     }
 
@@ -188,10 +171,6 @@
     if (!dataGroups || !existingData) return;
     const groupsToDelete = new Set();
 
-    console.log('[SessionStorage] === mergeDuplicateGroupsAcrossFiles ===');
-    console.log('[SessionStorage] Current file:', fileName);
-    console.log('[SessionStorage] dataGroups:', Object.keys(dataGroups));
-
     for (const [groupKey, groupData] of Object.entries(dataGroups)) {
       const normalizedCurrent = normalizeDataForComparison(groupData);
       const currentType = getGroupType(groupKey);
@@ -208,8 +187,6 @@
           const normalizedOther = normalizeDataForComparison(otherGroupData);
           const normalizedCurrent = normalizeDataForComparison(groupData);
           const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
-
-          // Chi tiết từng field khác nhau
           const differences = [];
           const allKeys = new Set([...Object.keys(normalizedOther), ...Object.keys(normalizedCurrent)]);
           const isEmpty = (v) => v === undefined || v === null || (typeof v === 'string' && v.trim() === '');
@@ -244,10 +221,9 @@
             break;
           } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
             console.log(`[SessionStorage] ONLY_ADDITIONS - merging ${groupKey} into ${otherFile}/${otherGroupKey}`);
-            // Merge ORIGINAL data, not normalized
             existingData[otherFile].dataGroups[otherGroupKey] = {
-              ...otherGroupData,  // Original data from other file
-              ...groupData        // Original data from current (with additions)
+              ...otherGroupData,
+              ...groupData 
             };
             groupsToDelete.add(groupKey);
             break;
@@ -321,22 +297,15 @@
           });
 
           if (changeAnalysis.type === "NO_CHANGE") {
-            // Data giống hệt nhau - không cần lưu duplicate
-            // Xóa data mới vì đã có trong file nguồn
             console.log(`[SessionStorage] NO_CHANGE - removing duplicate ${groupKey}`);
             groupsToRemove.push(groupKey);
           } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-            // Chỉ thêm fields mới - merge và LƯU VÀO FILE HIỆN TẠI
             console.log(`[SessionStorage] ONLY_ADDITIONS - merging into current file ${fileName}`);
-            // Merge data: giữ data cũ + thêm fields mới
             dataGroups[groupKey] = { 
-              ...sourceData,      // Data gốc từ file nguồn
-              ...dataGroups[groupKey]  // Data mới (có thêm fields)
+              ...sourceData,
+              ...dataGroups[groupKey]  
             };
-            // KHÔNG xóa khỏi dataGroups - để nó được lưu vào file hiện tại
           } else {
-            // HAS_MODIFICATIONS - có thay đổi giá trị
-            // Giữ nguyên data mới, sẽ tạo versioned key sau
             console.log(`[SessionStorage] HAS_MODIFICATIONS - will create versioned key later`);
           }
         });
@@ -403,21 +372,10 @@
               mergedDataGroups[versionedKey] = newData;
               return;
             }
-            
-            console.log(`[SessionStorage] ===== Comparing ${groupKey} =====`);
-            console.log('[SessionStorage] oldData (original):', oldData);
-            console.log('[SessionStorage] newData (original):', newData);
-            
             const normalizedOld = normalizeDataForComparison(oldData);
-            const normalizedNew = normalizeDataForComparison(newData);
-            
-            console.log('[SessionStorage] normalizedOld:', normalizedOld);
-            console.log('[SessionStorage] normalizedNew:', normalizedNew);
-            
+            const normalizedNew = normalizeDataForComparison(newData);          
             const changeAnalysis = analyzeChanges(normalizedOld, normalizedNew);
-            console.log('[SessionStorage] changeAnalysis:', changeAnalysis);
-            
-            // Debug logging - chi tiết từng field
+
             if (typeof console !== 'undefined' && console.log) {
               const differences = [];
               const allKeys = new Set([...Object.keys(normalizedOld), ...Object.keys(normalizedNew)]);
@@ -463,29 +421,15 @@
             }
             
             if (changeAnalysis.type === "NO_CHANGE") {
-              // Dữ liệu giống hệt nhau - giữ nguyên data cũ, không làm gì
-              // mergedDataGroups[groupKey] đã có oldData rồi
-              console.log(`[SessionStorage] NO_CHANGE for ${groupKey} - keeping old data`);
             } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-              // Chỉ thêm fields mới - merge vào data cũ
               const merged = {
-                ...oldData,  // Giữ nguyên data cũ (bao gồm cả empty fields)
-                ...newData   // Thêm/override fields mới
+                ...oldData,
+                ...newData
               };
               mergedDataGroups[groupKey] = merged;
-              console.log(`[SessionStorage] ONLY_ADDITIONS for ${groupKey} - merged:`, {
-                oldKeys: Object.keys(oldData),
-                newKeys: Object.keys(newData),
-                mergedKeys: Object.keys(merged),
-                oldData,
-                newData,
-                merged
-              });
             } else {
-              // HAS_MODIFICATIONS - có thay đổi giá trị - tạo version mới
               const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
               mergedDataGroups[versionedKey] = newData;
-              console.log(`[SessionStorage] HAS_MODIFICATIONS for ${groupKey} - created ${versionedKey}`);
             }
           } catch (error) {
             const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);

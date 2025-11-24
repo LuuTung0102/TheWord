@@ -103,14 +103,14 @@
   }
 
     findGroupFromFieldSchemas(baseName, fieldSchemas) {
-    for (const [schemaName, schema] of Object.entries(fieldSchemas)) {
-      const field = schema.fields.find(f => f.name === baseName);
-      if (field && schema.applicableTo && schema.applicableTo.length > 0) {
-        return schema.applicableTo[0];
+      for (const [schemaName, schema] of Object.entries(fieldSchemas)) {
+        const field = schema.fields.find(f => f.name === baseName);
+        if (field && schema.applicableTo && schema.applicableTo.length > 0) {
+          return schema.applicableTo;
+        }
       }
+      return null;
     }
-    return null;
-  }
 
     createNewSubgroup(group, suffix, fieldMapping) {
     const firstSubgroup = fieldMapping.subgroups[0];
@@ -125,64 +125,103 @@
   }
 
     suggestSubgroupMapping(placeholders, existingConfig) {
-    const fieldSchemas = existingConfig.fieldSchemas || {};
-    const fieldMappings = existingConfig.fieldMappings || [];
-    
-    const suggestedMapping = {};
-    const autoCreatedSubgroups = [];
-    const placeholderToSubgroup = {};
-    
-    for (const placeholder of placeholders) {
-      const { baseName, suffix } = this.parsePlaceholder(placeholder);
-      const group = this.findGroupFromFieldSchemas(baseName, fieldSchemas);
+      const fieldSchemas = existingConfig.fieldSchemas || {};
+      const fieldMappings = existingConfig.fieldMappings || [];
       
-      if (!group) {
-        continue;
-      }
+      const suggestedMapping = {};
+      const autoCreatedSubgroups = [];
+      const placeholderToSubgroup = {};
+      const groupSubgroupMap = new Map();
       
-      const fieldMapping = fieldMappings.find(fm => fm.group === group);
-      if (!fieldMapping) {
-        continue;
-      }
-      
-      let subgroup;
-      if (suffix && fieldMapping.suffixes) {
-        const suffixIndex = fieldMapping.suffixes.indexOf(suffix);
-        if (suffixIndex >= 0) {
-          subgroup = fieldMapping.subgroups[suffixIndex].id;
+      for (const placeholder of placeholders) {
+        const { baseName, suffix } = this.parsePlaceholder(placeholder);
+        const applicableGroups = this.findGroupFromFieldSchemas(baseName, fieldSchemas);
+        
+        if (!applicableGroups || applicableGroups.length === 0) {
+          continue;
+        }
+        
+        if (suffix) {
+          for (const group of applicableGroups) {
+            const fieldMapping = fieldMappings.find(fm => fm.group === group);
+            if (!fieldMapping || !fieldMapping.suffixes) continue;
+            
+            const suffixIndex = fieldMapping.suffixes.indexOf(suffix);
+            if (suffixIndex >= 0) {
+              const subgroupId = fieldMapping.subgroups[suffixIndex].id;
+              const key = `${group}:${subgroupId}`;
+              
+              if (!groupSubgroupMap.has(key)) {
+                groupSubgroupMap.set(key, {
+                  group,
+                  subgroupId,
+                  placeholders: []
+                });
+              }
+              groupSubgroupMap.get(key).placeholders.push(placeholder);
+              
+              placeholderToSubgroup[placeholder] = {
+                group,
+                subgroup: subgroupId
+              };
+            }
+          }
         } else {
-          const newSubgroup = this.createNewSubgroup(group, suffix, fieldMapping);
-          subgroup = newSubgroup.id;
+          for (const group of applicableGroups) {
+            const fieldMapping = fieldMappings.find(fm => fm.group === group);
+            if (!fieldMapping) continue;
+            
+            const subgroupId = fieldMapping.subgroups[0].id;
+            const key = `${group}:${subgroupId}`;
+            
+            if (!groupSubgroupMap.has(key)) {
+              groupSubgroupMap.set(key, {
+                group,
+                subgroupId,
+                placeholders: []
+              });
+            }
+            groupSubgroupMap.get(key).placeholders.push(placeholder);
+            
+            placeholderToSubgroup[placeholder] = {
+              group,
+              subgroup: subgroupId
+            };
+          }
+        }
+      }
+      
+      for (const [key, data] of groupSubgroupMap.entries()) {
+        if (!suggestedMapping[data.group]) {
+          suggestedMapping[data.group] = {};
+        }
+        if (!suggestedMapping[data.group][data.subgroupId]) {
+          suggestedMapping[data.group][data.subgroupId] = [];
+        }
+        suggestedMapping[data.group][data.subgroupId].push(...data.placeholders);
+        
+        const existingSubgroup = autoCreatedSubgroups.find(
+          sg => sg.groupId === data.group && sg.subgroupId === data.subgroupId
+        );
+        if (!existingSubgroup) {
+          const fieldMapping = fieldMappings.find(fm => fm.group === data.group);
+          const subgroup = fieldMapping?.subgroups?.find(sg => sg.id === data.subgroupId);
+          
           autoCreatedSubgroups.push({
-            groupId: group,
-            subgroupId: newSubgroup.id,
-            label: newSubgroup.label,
-            visible: newSubgroup.visible
+            groupId: data.group,
+            subgroupId: data.subgroupId,
+            label: subgroup?.label || 'Thông tin',
+            visible: subgroup?.visible !== undefined ? subgroup.visible : false
           });
         }
-      } else {
-        subgroup = fieldMapping.subgroups[0].id;
       }
       
-      if (!suggestedMapping[group]) {
-        suggestedMapping[group] = {};
-      }
-      if (!suggestedMapping[group][subgroup]) {
-        suggestedMapping[group][subgroup] = [];
-      }
-      suggestedMapping[group][subgroup].push(placeholder);
-      placeholderToSubgroup[placeholder] = {
-        group: group,
-        subgroup: subgroup
+      return {
+        suggestedMapping,
+        autoCreatedSubgroups,
+        placeholderToSubgroup
       };
     }
-    
-    return {
-      suggestedMapping,
-      autoCreatedSubgroups,
-      placeholderToSubgroup
-    };
-  }
 }
 
   if (typeof module !== 'undefined' && module.exports) {

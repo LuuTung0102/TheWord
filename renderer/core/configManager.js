@@ -387,24 +387,9 @@
       return {
         templates: [],
         groups: [
-          {
-            id: "BCN",
-            label: "Bên chuyển nhượng",
-            order: 1,
-            description: "Người chuyển nhượng tài sản"
-          },
-          {
-            id: "BNCN",
-            label: "Bên nhận chuyển nhượng",
-            order: 2,
-            description: "Người nhận chuyển nhượng tài sản"
-          },
-          {
-            id: "LAND",
-            label: "Thông tin đất đai",
-            order: 3,
-            description: "Thông tin về thửa đất"
-          }
+          { id: "BCN", label: "Bên chuyển nhượng", order: 1, description: "Người chuyển nhượng" },
+          { id: "BNCN", label: "Bên nhận chuyển nhượng", order: 2, description: "Người nhận chuyển nhượng" },
+          { id: "LAND", label: "Thông tin đất đai", order: 3, description: "Thông tin đất" }
         ],
         fieldSchemas: {
           PersonalInfo: {
@@ -415,8 +400,6 @@
               { name: "Gender", label: "Giới tính", type: "select", required: true },
               { name: "Date", label: "Ngày sinh", type: "date", required: true },
               { name: "CCCD", label: "Số CCCD", type: "text", required: true },
-              { name: "Noi_Cap", label: "Nơi cấp", type: "text", required: true },
-              { name: "Ngay_Cap", label: "Ngày cấp", type: "date", required: true },
               { name: "Address", label: "Địa chỉ", type: "text", required: true }
             ]
           },
@@ -424,7 +407,6 @@
             description: "Thông tin đất đai",
             applicableTo: ["LAND"],
             fields: [
-              { name: "Loai_Dat", label: "Loại đất", type: "text", required: true },
               { name: "S", label: "Diện tích", type: "number", required: true },
               { name: "Money", label: "Giá trị", type: "number", required: true }
             ]
