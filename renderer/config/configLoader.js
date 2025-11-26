@@ -72,7 +72,6 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
       subgroups.forEach((subgroupDef, subIndex) => {
         const subgroupId = typeof subgroupDef === 'string' ? subgroupDef : subgroupDef.id;
         const subgroupLabel = typeof subgroupDef === 'object' ? subgroupDef.label : subgroupDef;
-        
         const suffix = (suffixes && suffixes[subIndex]) ? suffixes[subIndex] : '';
         schemaDef.fields.forEach(fieldDef => {
           const placeholder = `${fieldDef.name}${suffix}`;
@@ -142,26 +141,20 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
       if (config.fieldMappings) {
         config.fieldMappings.forEach(mappingDef => {
           if (foundMatch) return;
-          
           const { group, subgroups, schema, suffixes } = mappingDef;
           const schemaDef = config.fieldSchemas?.[schema];
           if (!schemaDef || !schemaDef.fields) return;
-          
           subgroups.forEach((subgroupDef, subIndex) => {
             if (foundMatch) return;
-            
             const subgroupId = typeof subgroupDef === 'string' ? subgroupDef : subgroupDef.id;
             const subgroupLabel = typeof subgroupDef === 'object' ? subgroupDef.label : subgroupDef;
             const suffix = (suffixes && suffixes[subIndex]) ? suffixes[subIndex] : '';
-            
             schemaDef.fields.forEach(fieldDef => {
               if (foundMatch) return;
-              
               const expectedPlaceholder = `${fieldDef.name}${suffix}`;
               if (placeholder === expectedPlaceholder) {
                 const baseFieldName = fieldDef.name;
                 const baseField = basePlaceholders[baseFieldName] || {};
-                
                 const fieldConfig = {
                   ...baseField,
                   ...fieldDef,
@@ -208,7 +201,6 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
       if (!foundMatch) {
         const fieldName = placeholder.replace(/\d+$/, '');
         const schemaField = schemaFields[fieldName];
-        
         if (schemaField) {
           mapping[placeholder] = {
             ...schemaField,
@@ -288,7 +280,6 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
   if (config.customPlaceholders) {
     Object.keys(config.customPlaceholders).forEach(placeholder => {
       const customConfig = config.customPlaceholders[placeholder];
-      
       if (mapping[placeholder]) {
         mapping[placeholder] = {
           ...mapping[placeholder],
@@ -300,7 +291,6 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
           ...customConfig
         };
       }
-      
       const validatedDotPlaceholder = validateDotPlaceholder(mapping[placeholder], placeholder);
       if (validatedDotPlaceholder !== undefined) {
         mapping[placeholder].dotPlaceholder = validatedDotPlaceholder;
@@ -315,9 +305,7 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
 
 function getGroupLabels(config) {
   if (!config || !config.groups) return {};
-  
   const labels = {};
-  
   if (Array.isArray(config.groups)) {
     config.groups.forEach(group => {
       if (group.id && group.label) {

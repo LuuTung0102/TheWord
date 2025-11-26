@@ -41,17 +41,13 @@ ipcMain.handle("get-templates", async () => {
     if (!fs.existsSync(templatesDir)) {
       fs.mkdirSync(templatesDir);
     }
-    
     const items = fs.readdirSync(templatesDir);
     const folders = [];
-    
     for (const item of items) {
       const itemPath = path.join(templatesDir, item);
       const stat = fs.statSync(itemPath);
-      
       if (stat.isDirectory()) {
-        const filesInFolder = fs.readdirSync(itemPath).filter(f => f.endsWith(".docx"));
-        
+        const filesInFolder = fs.readdirSync(itemPath).filter(f => f.endsWith(".docx")); 
         folders.push({
           name: item,
           fileCount: filesInFolder.length,
@@ -145,7 +141,6 @@ ipcMain.handle("open-template-file", async (event, fileName) => {
     if (!fs.existsSync(filePath)) {
       throw new Error('File không tồn tại');
     }
-    
     await shell.openPath(filePath);
     return true;
   } catch (error) {
@@ -177,12 +172,10 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
         filters: [{ name: "Zip Files", extensions: ["zip"] }],
       });
       if (!filePath) return null;
-
       const zip = new AdmZip();
       for (const docPath of generatedPaths) zip.addLocalFile(docPath);
       zip.writeZip(filePath);
       generatedPaths.forEach((p) => fs.unlinkSync(p));
-
       return filePath;
     } else {
       const { filePaths } = await dialog.showOpenDialog({
@@ -190,7 +183,6 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
         properties: ["openDirectory"],
       });
       if (!filePaths || !filePaths[0]) return null;
-
       const saveDir = filePaths[0];
       for (const file of generatedPaths) {
         const dest = path.join(saveDir, path.basename(file));
@@ -211,11 +203,9 @@ ipcMain.handle("load-main-config", async () => {
     if (!fs.existsSync(configPath)) {
       return null;
     }
-    
     const configData = fs.readFileSync(configPath, 'utf8');
     const config = JSON.parse(configData);
     return config;
-    
   } catch (err) {
     return null;
   }
@@ -250,12 +240,10 @@ ipcMain.handle("get-file-placeholders", async (event, folderPath, fileName) => {
     if (!fs.existsSync(folderPath)) {
       return [];
     }
-    
     const filePath = path.join(folderPath, fileName);
     if (!fs.existsSync(filePath)) {
       return [];
     }
-    
     const placeholders = getPlaceholders(filePath);
     return placeholders;
   } catch (err) {
@@ -269,16 +257,13 @@ ipcMain.handle("get-template-placeholders", async (event, folderPath) => {
     if (!fs.existsSync(folderPath)) {
       return [];
     }
-    
     const files = fs.readdirSync(folderPath).filter(file => file.endsWith('.docx'));
     const allPlaceholders = new Set();
-    
     for (const file of files) {
       const filePath = path.join(folderPath, file);
       const placeholders = getPlaceholders(filePath);
       placeholders.forEach(ph => allPlaceholders.add(ph));
     }
-    
     const result = Array.from(allPlaceholders);
     return result;
   } catch (err) {
@@ -299,7 +284,6 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     }
     
     const defaultFolder = global.lastOutputFolder || app.getPath('downloads');
-    
     const result = await dialog.showOpenDialog({
       title: 'Chọn thư mục lưu văn bản',
       defaultPath: defaultFolder,
@@ -309,19 +293,15 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
       throw new Error('User canceled folder selection');
     }
-    
     const outputFolder = result.filePaths[0];
     global.lastOutputFolder = outputFolder;
     const outputFileName = fileName; 
     const outputPath = path.join(outputFolder, outputFileName);
-    
     const generateOptions = options ? {
       phMapping: options.phMapping || {},
       visibleSubgroups: options.visibleSubgroups ? new Set(options.visibleSubgroups) : new Set()
     } : {};
-    
     await generateDocx(filePath, formData, outputPath, generateOptions);
-    
     if (!fs.existsSync(outputPath)) {
       throw new Error('Document generation failed');
     }
@@ -331,8 +311,7 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
       outputPath: outputPath,
       generatedPath: outputPath, 
       fileName: path.basename(outputPath)
-    };
-    
+    };    
   } catch (err) {
     return {
       success: false,
@@ -349,13 +328,10 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
     if (!fs.existsSync(folderPath)) {
       throw new Error(`Template folder not found: ${templateName}`);
     }
-    
     const files = fs.readdirSync(folderPath).filter(file => file.endsWith('.docx'));
-    
     if (files.length === 0) {
       throw new Error(`No Word documents found in ${templateName}`);
     }
-    
     const generatedPaths = [];
     for (const file of files) {
       const filePath = path.join(folderPath, file);
@@ -364,17 +340,14 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
         generatedPaths.push(outputPath);
       }
     }
-    
     if (generatedPaths.length === 0) {
       throw new Error('No documents were generated');
     }
-    
     return {
       success: true,
       generatedPaths: generatedPaths,
       count: generatedPaths.length
     };
-    
   } catch (err) {
     return {
       success: false,
@@ -388,7 +361,6 @@ ipcMain.handle("write-local-storage", async (event, data) => {
   try {
     const localStoragePath = path.join(__dirname, "renderer", "config", "local_storage.json");
     fs.writeFileSync(localStoragePath, JSON.stringify(data, null, 2), 'utf8');
-  
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
@@ -405,7 +377,6 @@ ipcMain.handle("open-output-folder", async (event, filePath) => {
       }
       return { success: false, error: 'Output folder not found' };
     }
-    
     const folderPath = path.dirname(filePath);
     if (fs.existsSync(folderPath)) {
       await shell.openPath(folderPath);
@@ -423,15 +394,12 @@ ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, 
     if (!fs.existsSync(sourcePath)) {
       throw new Error('Source file not found');
     }
-    
     if (!fs.existsSync(targetFolder)) {
       fs.mkdirSync(targetFolder, { recursive: true });
     }
-    
     let targetPath = path.join(targetFolder, fileName);
     let finalFileName = fileName;
     let counter = 1;
-    
     while (fs.existsSync(targetPath)) {
       const ext = path.extname(fileName);
       const name = path.basename(fileName, ext);
@@ -439,14 +407,11 @@ ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, 
       targetPath = path.join(targetFolder, finalFileName);
       counter++;
     }
-    
-    fs.copyFileSync(sourcePath, targetPath);
-    
+    fs.copyFileSync(sourcePath, targetPath); 
     try {
       fs.unlinkSync(sourcePath);
     } catch (cleanupError) {
-    }
-    
+    } 
     return finalFileName;
   } catch (err) {
     throw err;
@@ -458,7 +423,6 @@ ipcMain.handle("open-file-path", async (event, filePath) => {
     if (!fs.existsSync(filePath)) {
       throw new Error('File not found');
     }
-    
     await shell.openPath(filePath);
     return { success: true };
   } catch (err) {
