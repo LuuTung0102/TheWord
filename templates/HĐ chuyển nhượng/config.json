@@ -389,30 +389,6 @@
       ]
     },
     {
-      "group": "BCT",
-      "schema": "PersonalInfo",
-      "subgroups": [
-        {
-          "id": "MEN1",
-          "label": "Thông tin cá nhân",
-          "visible": true
-        },
-        {
-          "id": "MEN2",
-          "label": "Thông tin cá nhân",
-          "visible": false
-        }
-      ],
-      "suffixes": [
-        "1",
-        "2"
-      ],
-      "defaultGenders": [
-        "Ông",
-        "Bà"
-      ]
-    },
-    {
       "group": "BNCN",
       "schema": "PersonalInfo",
       "subgroups": [

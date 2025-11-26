@@ -70,7 +70,7 @@
           <div class="config-wizard-section">
             <div class="config-wizard-section-header">
               <h3 class="config-wizard-section-title">📋 Chọn Groups</h3>
-              <button id="createGroupBtn" class="config-wizard-btn-icon" title="Tạo Group">➕</button>
+          
             </div>
             <div id="groupsList" class="group-selector"></div>
           </div>
@@ -96,11 +96,6 @@
       const cancelBtn = this.querySelector('#cancelBtn');
       if (cancelBtn) {
         this.addEventListener(cancelBtn, 'click', () => this.handleCancel());
-      }
-
-      const createGroupBtn = this.querySelector('#createGroupBtn');
-      if (createGroupBtn) {
-        this.addEventListener(createGroupBtn, 'click', () => this.handleCreateNewGroup());
       }
 
       const groupsList = this.querySelector('#groupsList');
@@ -643,56 +638,6 @@
         }
       } else {
       }
-    }
-
-    handleCreateNewGroup() {
-      showWarning('Tính năng tạo Group mới tạm thời chưa khả dụng\n\nVui lòng sử dụng các groups có sẵn trong config.json.\n\nĐể thêm group mới, vui lòng chỉnh sửa trực tiếp file config.json.');
-      return;
-      
-      /*
-      const groupId = prompt('Nhập Group ID (ví dụ: BCT, NCN):');
-      if (!groupId) return;
-
-      if (!/^[A-Z]+$/.test(groupId)) {
-        alert('❌ Group ID chỉ được chứa chữ cái in hoa (A-Z)');
-        return;
-      }
-
-      const existingGroup = this.existingConfig?.groups?.find(g => g.id === groupId);
-      if (existingGroup) {
-        alert(`❌ Group ID "${groupId}" đã tồn tại`);
-        return;
-      }
-
-      const groupLabel = prompt('Nhập tên hiển thị của Group:');
-      if (!groupLabel) {
-        alert('❌ Tên hiển thị không được để trống');
-        return;
-      }
-
-      const groupDescription = prompt('Nhập mô tả cho Group (có thể để trống):') || '';
-      const maxOrder = Math.max(0, ...(this.existingConfig?.groups?.map(g => g.order || 0) || []));
-      const newOrder = maxOrder + 1;
-
-      const newGroup = {
-        id: groupId,
-        label: groupLabel,
-        description: groupDescription,
-        order: newOrder
-      };
-      if (!this.existingConfig.groups) {
-        this.existingConfig.groups = [];
-      }
-      this.existingConfig.groups.push(newGroup);
-      if (!this.templateEntry.groups.includes(groupId)) {
-        this.templateEntry.groups.push(groupId);
-        this.templateEntry.placeholders[groupId] = [];
-      }
-
-      this.renderGroupsList();
-
-      alert(`✅ Đã tạo group "${groupLabel}" (${groupId}) thành công`);
-      */
     }
 
     onCleanup() {
