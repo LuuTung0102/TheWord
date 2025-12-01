@@ -32,6 +32,20 @@
           "MEN1"
         ]
       }
+    },
+    {
+      "id": "bi-n",
+      "filename": "Biến.docx",
+      "name": "Biến",
+      "description": "",
+      "groups": [
+        "BD"
+      ],
+      "placeholders": {
+        "BD": [
+          "MEN1"
+        ]
+      }
     }
   ],
   "groups": [

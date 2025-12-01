@@ -1,7 +1,7 @@
 
 function setupNumericInput(el, maxLength) {
   el.addEventListener("input", (e) => {
-    const v = e.target.value.replace(/\D/g, "").slice(0, maxLength);
+    const v = window.REGEX_HELPERS.removeNonDigits(e.target.value).slice(0, maxLength);
     if (e.target.value !== v) {
       const pos = e.target.selectionStart - (e.target.value.length - v.length);
       e.target.value = v;
@@ -10,10 +10,9 @@ function setupNumericInput(el, maxLength) {
   });
   el.addEventListener("paste", (e) => {
     e.preventDefault();
-    const text = (e.clipboardData || window.clipboardData)
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, maxLength);
+    const text = window.REGEX_HELPERS.removeNonDigits(
+      (e.clipboardData || window.clipboardData).getData("text")
+    ).slice(0, maxLength);
     document.execCommand("insertText", false, text);
   });
 }

@@ -57,7 +57,7 @@
       this.hide();
       if (window.personManager) {
         await window.personManager.init(async () => {
-          const personButtonsContainers = document.querySelectorAll('[id^="person-buttons-"]');
+          const personButtonsContainers = window.stateManager.querySelectorAll('[id^="person-buttons-"]');
           for (const container of personButtonsContainers) {
             const groupKey = container.getAttribute('data-group');
             if (groupKey && typeof window.refreshPersonButtons === 'function') {

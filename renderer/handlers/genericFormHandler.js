@@ -218,7 +218,7 @@ function renderDropdownOptions(dropdown, options, filterText) {
   
   dropdown.querySelectorAll('.dropdown-option').forEach(optEl => {
     optEl.addEventListener('click', () => {
-      const input = document.getElementById(dropdown.id.replace('dropdown-', ''));
+      const input = window.stateManager.getElement(dropdown.id.replace('dropdown-', ''));
       if (input) {
         input.value = optEl.getAttribute('data-value');
         input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -229,7 +229,7 @@ function renderDropdownOptions(dropdown, options, filterText) {
 }
 
 function setupEditableSelectInput(input) {
-  const dropdown = document.getElementById(`dropdown-${input.id}`);
+  const dropdown = window.stateManager.getElement(`dropdown-${input.id}`);
   
   if (!dropdown) {
     return;
@@ -274,7 +274,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
     await window.personDataService.loadPeople();
   }
   
-  window.__renderParams = { placeholders, config, folderPath };
+  window.stateManager.setRenderParams({ placeholders, config, folderPath });
   const phMapping = window.buildPlaceholderMapping(config, placeholders);
   const groupLabels = window.getGroupLabels(config);
   const subgroupLabels = window.getSubgroupLabels(config);
@@ -296,12 +296,10 @@ async function renderGenericForm(placeholders, config, folderPath) {
   
   const skipLandFields = getLandFieldsToSkip(placeholders);
   
-  window.__renderDataStructures = { phMapping, grouped, groupLabels, subgroupLabels, skipLandFields };
-  window.__formDataReused = false;
-  window.__reusedGroups = new Set(); 
-  window.__reusedGroupSources = new Map();
+  window.stateManager.setRenderDataStructures({ phMapping, grouped, groupLabels, subgroupLabels, skipLandFields });
+  window.stateManager.resetReuse();
   
-  document.querySelectorAll('input[data-ph], select[data-ph], textarea[data-ph]').forEach(el => {
+  window.stateManager.querySelectorAll('input[data-ph], select[data-ph], textarea[data-ph]').forEach(el => {
     el.value = '';
   });
   
@@ -309,8 +307,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
     window.cleanupAllEventListeners();
   }
   
-  const area = document.getElementById("formArea");
+  const area = window.stateManager.getElement("formArea");
   area.innerHTML = "";
+  window.stateManager.invalidateDOMCache();
   idToPhGeneric = {};
   window.idToPhGeneric = idToPhGeneric;
 
@@ -368,7 +367,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
   `;
   area.insertAdjacentHTML('beforeend', taskbarHtml);
   
-  const footerActions = document.querySelector('.footer-actions');
+  const footerActions = window.stateManager.querySelector('.footer-actions');
   if (footerActions) {
     const existingClearBtn = footerActions.querySelector('.clear-all-session-btn');
     if (existingClearBtn) {
@@ -616,13 +615,13 @@ async function renderGenericForm(placeholders, config, folderPath) {
     area.appendChild(sectionDiv);
   } 
 
-  const addButtons = document.querySelectorAll('.add-subgroup-btn');
+  const addButtons = window.stateManager.querySelectorAll('.add-subgroup-btn');
   addButtons.forEach(btn => {
     btn.addEventListener('click', async () => {
       const groupKey = btn.dataset.group;
       
-      const renderParams = window.__renderParams;
-      const renderData = window.__renderDataStructures;
+      const renderParams = window.stateManager.getRenderParams();
+      const renderData = window.stateManager.getRenderDataStructures();
       if (!renderParams || !renderData) {
         return;
       }
@@ -641,7 +640,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
           const subgroupId = typeof nextHidden === 'string' ? nextHidden : nextHidden.id;
           window.visibleSubgroups.add(subgroupId);
           const newSubgroupDiv = renderSingleSubgroup(groupKey, subgroupId, config, phMapping, grouped, groupLabels, subgroupLabels);
-          const sectionDiv = document.querySelector(`#section-${groupKey}`);
+          const sectionDiv = window.stateManager.querySelector(`#section-${groupKey}`);
           if (sectionDiv) {
             const groupDiv = sectionDiv.querySelector('.form-group');
             if (groupDiv) {
@@ -677,7 +676,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
     });
   });
 
-  const removeButtons = document.querySelectorAll('.remove-subgroup-btn');
+  const removeButtons = window.stateManager.querySelectorAll('.remove-subgroup-btn');
   removeButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const groupKey = btn.dataset.group;
@@ -693,7 +692,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
       }
       window.visibleSubgroups.delete(subgroupId);
       
-      const subgroupElement = document.querySelector(`[data-subgroup-id="${subgroupId}"]`);
+      const subgroupElement = window.stateManager.querySelector(`[data-subgroup-id="${subgroupId}"]`);
       if (subgroupElement && subgroupElement.parentNode) {
         subgroupElement.parentNode.removeChild(subgroupElement);
        
@@ -704,12 +703,12 @@ async function renderGenericForm(placeholders, config, folderPath) {
   });
 
 
-  document.querySelectorAll('.taskbar-btn').forEach(btn => {
+  window.stateManager.querySelectorAll('.taskbar-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const targetSection = btn.dataset.section;
-      document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
+      window.stateManager.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');  
-      document.querySelectorAll('.form-section').forEach(section => {
+      window.stateManager.querySelectorAll('.form-section').forEach(section => {
         if (section.id === `section-${targetSection}`) {
           section.classList.add('active');
         } else {
@@ -763,7 +762,7 @@ function setupLandTypeSync() {
   let loaiDatFInput = document.querySelector('input[data-ph="Loai_Dat_F"]');
   let loaiDatInput = document.querySelector('input[data-ph="Loai_Dat"]');
   
-  const skipLandFields = window.__renderDataStructures?.skipLandFields || new Set();
+  const skipLandFields = window.stateManager.getRenderDataStructures()?.skipLandFields || new Set();
   
   if (loaiDatDInput && !loaiDatFInput && skipLandFields.has('Loai_Dat_F')) {
     loaiDatFInput = document.createElement('input');
@@ -893,7 +892,7 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
   const items = (grouped[groupKey] && grouped[groupKey][subKey]) ? grouped[groupKey][subKey] : [];
   const sortedItems = sortGenericFields(items);
   
-  const skipLandFields = window.__renderDataStructures?.skipLandFields || new Set();
+  const skipLandFields = window.stateManager.getRenderDataStructures()?.skipLandFields || new Set();
   const filteredItems = sortedItems.filter(({ ph }) => !skipLandFields.has(ph));
   
   let i = 0;
@@ -1017,7 +1016,85 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
 }
 
 
+/**
+ * Xử lý click event cho person button
+ * @param {HTMLElement} clickedButton - Button được click
+ * @param {NodeList} allButtons - Tất cả buttons trong group
+ * @param {string} groupKey - Key của group
+ */
+function handlePersonButtonClick(clickedButton, allButtons, groupKey) {
+  const personId = clickedButton.getAttribute('data-person-id');
+  const previewDiv = document.getElementById(`preview-${groupKey}`);
+  const previewContent = document.getElementById(`preview-content-${groupKey}`);
+  
+  // Reset tất cả buttons
+  allButtons.forEach(btn => {
+    btn.classList.remove('active');
+    btn.style.fontWeight = 'normal';
+    btn.style.borderColor = '#ddd';
+    btn.style.background = 'white';
+    btn.style.color = '#333';
+  });
+  
+  // Highlight button được chọn
+  clickedButton.classList.add('active');
+  clickedButton.style.fontWeight = 'bold';
+  clickedButton.style.borderColor = '#4CAF50';
+  clickedButton.style.background = '#4CAF50';
+  clickedButton.style.color = 'white';
+  
+  // Mark group as reused
+  window.stateManager.addReusedGroup(`localStorage:${groupKey}`);
+  
+  // Lấy thông tin person
+  const person = window.getPersonById ? window.getPersonById(personId) : null;
+  
+  if (!person) {
+    if (previewDiv) previewDiv.style.display = 'none';
+    return;
+  }
+  
+  // Render preview
+  let html = `<p style="margin-bottom: 10px; font-size: 16px;"><strong>📋 ${person.name}</strong></p>`;
+  html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">';
+  
+  Object.keys(person.data).forEach(key => {
+    const value = person.data[key];
+    if (value) {
+      const label = window.personDataService ? window.personDataService.getLabel(key) : key;
+      html += `<div style="padding: 8px; background: white; border-radius: 4px;"><strong>${label}:</strong> ${value}</div>`;
+    }
+  });
+  
+  html += '</div>';
+  
+  if (previewContent) previewContent.innerHTML = html;
+  if (previewDiv) previewDiv.style.display = 'block';
+}
+
+/**
+ * Setup event listeners cho person buttons trong một group
+ * @param {string} groupKey - Key của group
+ */
+function setupPersonButtonListeners(groupKey) {
+  const buttonsContainer = document.getElementById(`person-buttons-${groupKey}`);
+  if (!buttonsContainer) return;
+  
+  const buttons = buttonsContainer.querySelectorAll('.person-btn');
+  
+  buttons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      handlePersonButtonClick(e.currentTarget, buttons, groupKey);
+    });
+  });
+}
+
+/**
+ * Refresh person buttons - reload danh sách và setup lại listeners
+ * @param {string} groupKey - Key của group cần refresh
+ */
 async function refreshPersonButtons(groupKey) {
+  // Clear cache
   if (typeof window.savedPeopleCache !== 'undefined') {
     window.savedPeopleCache = null;
   }
@@ -1026,6 +1103,7 @@ async function refreshPersonButtons(groupKey) {
   const buttonsContainer = document.getElementById(`person-buttons-${groupKey}`);
   if (!buttonsContainer) return;
   
+  // Render buttons
   buttonsContainer.innerHTML = savedPeople.map(person => `
     <button type="button" 
       class="person-btn" 
@@ -1051,124 +1129,29 @@ async function refreshPersonButtons(groupKey) {
     </button>
   `).join('');
   
-  const buttons = buttonsContainer.querySelectorAll('.person-btn');
-  buttons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      const clickedButton = e.currentTarget;
-      const personId = clickedButton.getAttribute('data-person-id');
-      const previewDiv = document.getElementById(`preview-${groupKey}`);
-      const previewContent = document.getElementById(`preview-content-${groupKey}`);
-      
-      buttons.forEach(btn => {
-        btn.classList.remove('active');
-        btn.style.fontWeight = 'normal';
-        btn.style.borderColor = '#ddd';
-        btn.style.background = 'white';
-        btn.style.color = '#333';
-      });
-      
-      clickedButton.classList.add('active');
-      clickedButton.style.fontWeight = 'bold';
-      clickedButton.style.borderColor = '#4CAF50';
-      clickedButton.style.background = '#4CAF50';
-      clickedButton.style.color = 'white';
-      
-      if (!window.__reusedGroups) window.__reusedGroups = new Set();
-      window.__reusedGroups.add(`localStorage:${groupKey}`);
-      
-      const person = window.getPersonById ? window.getPersonById(personId) : null;
-      
-      if (!person) {
-        previewDiv.style.display = 'none';
-        return;
-      }
-      
-      let html = `<p style="margin-bottom: 10px; font-size: 16px;"><strong>📋 ${person.name}</strong></p>`;
-      html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">';
-      
-      Object.keys(person.data).forEach(key => {
-        const value = person.data[key];
-        if (value) {
-          const label = window.personDataService ? window.personDataService.getLabel(key) : key;
-          html += `<div style="padding: 8px; background: white; border-radius: 4px;"><strong>${label}:</strong> ${value}</div>`;
-        }
-      });
-      
-      html += '</div>';
-      previewContent.innerHTML = html;
-      previewDiv.style.display = 'block';
-    });
+  // Setup listeners
+  setupPersonButtonListeners(groupKey);
+}
+
+/**
+ * Setup person selection listeners cho tất cả groups
+ * @param {Object} groupSources - Map của group sources
+ * @param {Object} grouped - Grouped data
+ */
+function setupPersonSelectionListeners(groupSources, grouped) {
+  Object.keys(groupSources).forEach(groupKey => {
+    if (groupSources[groupKey] !== "localStorage") return;
+    setupPersonButtonListeners(groupKey);
   });
-  
 }
 
 if (typeof window !== 'undefined') {
   window.refreshPersonButtons = refreshPersonButtons;
 }
 
-function setupPersonSelectionListeners(groupSources, grouped) {
-  Object.keys(groupSources).forEach(groupKey => {
-    if (groupSources[groupKey] !== "localStorage") return;
-    
-    const buttonsContainer = document.getElementById(`person-buttons-${groupKey}`);
-    if (!buttonsContainer) return;
-    
-    const buttons = buttonsContainer.querySelectorAll('.person-btn');
-    
-    buttons.forEach(button => {
-      button.addEventListener('click', (e) => {
-        const clickedButton = e.currentTarget;
-        const personId = clickedButton.getAttribute('data-person-id');
-        const previewDiv = document.getElementById(`preview-${groupKey}`);
-        const previewContent = document.getElementById(`preview-content-${groupKey}`);
-        
-        buttons.forEach(btn => {
-          btn.classList.remove('active');
-          btn.style.fontWeight = 'normal';
-          btn.style.borderColor = '#ddd';
-          btn.style.background = 'white';
-          btn.style.color = '#333';
-        });
-        
-        clickedButton.classList.add('active');
-        clickedButton.style.fontWeight = 'bold';
-        clickedButton.style.borderColor = '#4CAF50';
-        clickedButton.style.background = '#4CAF50';
-        clickedButton.style.color = 'white';
-        
-        if (!window.__reusedGroups) window.__reusedGroups = new Set();
-        window.__reusedGroups.add(`localStorage:${groupKey}`); 
-        
-        const person = window.getPersonById ? window.getPersonById(personId) : null;
-        
-        if (!person) {
-          previewDiv.style.display = 'none';
-          return;
-        }
-        
-        let html = `<p style="margin-bottom: 10px; font-size: 16px;"><strong>📋 ${person.name}</strong></p>`;
-        html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">';
-        
-        Object.keys(person.data).forEach(key => {
-          const value = person.data[key];
-          if (value) {
-            const label = window.personDataService ? window.personDataService.getLabel(key) : key;
-            html += `<div style="padding: 8px; background: white; border-radius: 4px;"><strong>${label}:</strong> ${value}</div>`;
-          }
-        });
-        
-        html += '</div>';
-        previewContent.innerHTML = html;
-        previewDiv.style.display = 'block';
-
-      });
-    });
-  });
-}
-
 
 function setupReuseDataListeners() {
-  document.querySelectorAll('.reuse-data-select').forEach(select => {
+  window.stateManager.querySelectorAll('.reuse-data-select').forEach(select => {
     select.addEventListener('change', (e) => {
       const value = e.target.value;
       const targetGroup = e.target.getAttribute('data-target-group');
@@ -1176,7 +1159,7 @@ function setupReuseDataListeners() {
       const targetSuffix = e.target.getAttribute('data-target-suffix');
       
       if (!value) {
-        window.__formDataReused = false;
+        window.stateManager.setFormDataReused(false);
         return;
       }
       
@@ -1192,11 +1175,8 @@ function setupReuseDataListeners() {
         return;
       }
       
-      if (!window.__reusedGroups) window.__reusedGroups = new Set();
-      window.__reusedGroups.add(targetSubgroup); 
-      
-      if (!window.__reusedGroupSources) window.__reusedGroupSources = new Map();
-      window.__reusedGroupSources.set(targetSubgroup, { 
+      window.stateManager.addReusedGroup(targetSubgroup);
+      window.stateManager.setReusedGroupSource(targetSubgroup, { 
         sourceFileName: fileName, 
         sourceGroupKey: sourceGroupKey,  
         sourceData: sourceData 

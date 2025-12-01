@@ -145,7 +145,7 @@
 
     cancelEdit() {
       this.currentEditId = null;
-      const formContainer = document.querySelector('.person-form-container');
+      const formContainer = window.stateManager.querySelector('.person-form-container');
       if (formContainer) {
         formContainer.remove();
       }
@@ -214,7 +214,7 @@
     }
 
     cancelAdd() {
-      const formContainer = document.querySelector('.person-form-container');
+      const formContainer = window.stateManager.querySelector('.person-form-container');
       if (formContainer) {
         formContainer.remove();
       }

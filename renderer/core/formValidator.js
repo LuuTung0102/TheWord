@@ -31,7 +31,7 @@ function validateForm() {
 function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups) {
   const errors = [];
   const visibleSubgroups = window.visibleSubgroups || new Set();
-  const phMapping = window.__renderDataStructures?.phMapping || {};
+  const phMapping = window.stateManager.getRenderDataStructures()?.phMapping || {};
   const allPlaceholders = new Set(Object.keys(phMapping));
 
   for (const mapping of fieldMappings) {

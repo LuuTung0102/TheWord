@@ -9,7 +9,7 @@ async function loadTemplates() {
     selectedTemplates = [];
     window.selectedTemplates = selectedTemplates;
     renderRightTable([]);
-    document.getElementById("formArea").innerHTML = "";
+    window.stateManager.getElement("formArea").innerHTML = "";
     updateTemplateCounts();
     setupTemplateEventListeners();
   } catch (err) {
@@ -46,7 +46,7 @@ function renderTemplateItem(folder, actionType) {
 }
 
 function renderLeftTable(templates) {
-  const container = document.querySelector("#leftTable");
+  const container = window.stateManager.querySelector("#leftTable");
   if (!container) {
     return;
   }
@@ -58,7 +58,7 @@ function renderLeftTable(templates) {
 }
 
 function renderRightTable(templates) {
-  const container = document.querySelector("#rightTable");
+  const container = window.stateManager.querySelector("#rightTable");
   if (!container) {
     return;
   }
@@ -125,7 +125,7 @@ function setupTemplateEventListeners() {
 
 async function updateForm() {
   if (!selectedTemplates.length) {
-    document.getElementById("formArea").innerHTML = "";
+    window.stateManager.getElement("formArea").innerHTML = "";
     return;
   }
 
@@ -151,18 +151,18 @@ async function updateForm() {
   if (folderConfig && typeof window.renderGenericForm === 'function') {
     await window.renderGenericForm([...phSet], folderConfig, folderPath);
   } else {
-    document.getElementById("formArea").innerHTML = "<p style='padding: 20px; color: #dc3545;'>⚠️ Vui lòng thêm config.json vào folder template</p>";
+    window.stateManager.getElement("formArea").innerHTML = "<p style='padding: 20px; color: #dc3545;'>⚠️ Vui lòng thêm config.json vào folder template</p>";
   }
 }
 
 function setupSearch() {
-  document.getElementById("searchLeft").addEventListener("input", (e) => {
+  window.stateManager.getElement("searchLeft").addEventListener("input", (e) => {
     const query = e.target.value.toLowerCase();
     const filtered = allTemplates.filter((t) => t.toLowerCase().includes(query));
     renderLeftTable(filtered);
   });
 
-  document.getElementById("searchRight").addEventListener("input", (e) => {
+  window.stateManager.getElement("searchRight").addEventListener("input", (e) => {
     const query = e.target.value.toLowerCase();
     const filtered = selectedTemplates.filter((t) =>
       t.toLowerCase().includes(query)
@@ -172,14 +172,14 @@ function setupSearch() {
 }
 
 function setupTemplatePopovers() {
-  const leftBtn = document.getElementById('btnOpenLeft');
-  const rightBtn = document.getElementById('btnOpenRight');
-  const leftPop = document.querySelector('.left-popover');
-  const rightPop = document.querySelector('.right-popover');
+  const leftBtn = window.stateManager.getElement('btnOpenLeft');
+  const rightBtn = window.stateManager.getElement('btnOpenRight');
+  const leftPop = window.stateManager.querySelector('.left-popover');
+  const rightPop = window.stateManager.querySelector('.right-popover');
   if (!leftBtn || !rightBtn || !leftPop || !rightPop) return;
 
   const placePopovers = () => {
-    const controls = document.querySelector('.template-controls');
+    const controls = window.stateManager.querySelector('.template-controls');
     if (!controls) return;
     const rect = controls.getBoundingClientRect();
     const baseLeft = rect.left + rect.width / 2;
@@ -228,8 +228,8 @@ window.getAllTemplates = () => allTemplates;
 
 function updateTemplateCounts() {
   try {
-    const rightBtn = document.getElementById('btnOpenRight');
-    const leftBtn = document.getElementById('btnOpenLeft');
+    const rightBtn = window.stateManager.getElement('btnOpenRight');
+    const leftBtn = window.stateManager.getElement('btnOpenLeft');
     const selCount = (window.selectedTemplates || []).length;
     const allCount = (window.allTemplates || []).length;
     if (rightBtn) rightBtn.textContent = `✅ Đã chọn (${selCount})`;

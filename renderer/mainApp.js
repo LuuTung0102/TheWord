@@ -86,7 +86,7 @@ class MainApp {
   }
 
   setupEventListeners() {
-    const exportBtn = document.getElementById('exportBtn');
+    const exportBtn = window.stateManager.getElement('exportBtn');
     if (exportBtn) {
       exportBtn.addEventListener('click', () => this.handleExport());
     }
@@ -95,7 +95,7 @@ class MainApp {
   }
 
   setupTemplateListeners() {
-    const templateList = document.getElementById('templateList');
+    const templateList = window.stateManager.getElement('templateList');
     if (!templateList) return;
 
     templateList.removeEventListener('click', this.handleTemplateClick);
@@ -290,17 +290,15 @@ class MainApp {
         const saved = window.sessionStorageManager.saveFormData(
           this.selectedFile, 
           formData, 
-          window.__reusedGroups,
-          window.__reusedGroupSources,
+          window.stateManager.getReusedGroups(),
+          window.stateManager.getReusedGroupSources(),
           this.currentConfig 
         );
         
         if (saved) {
         }
 
-        window.__formDataReused = false;
-        if (window.__reusedGroups) window.__reusedGroups.clear();
-        if (window.__reusedGroupSources) window.__reusedGroupSources.clear();
+        window.stateManager.resetReuse();
       }
       const selectedTemplate = this.templates.find(t => t.name === this.selectedFolder);
       if (!selectedTemplate) {
@@ -308,7 +306,7 @@ class MainApp {
       }
       
       if (window.ipcRenderer) {
-        const phMapping = window.__renderDataStructures?.phMapping || {};
+        const phMapping = window.stateManager.getRenderDataStructures()?.phMapping || {};
         const visibleSubgroups = window.visibleSubgroups ? Array.from(window.visibleSubgroups) : [];
         const result = await window.ipcRenderer.invoke("export-single-document", {
           folderPath: selectedTemplate.path,
@@ -366,8 +364,8 @@ class MainApp {
 
 
   renderFiles() {
-    const fileList = document.getElementById('fileList');
-    const fileCount = document.getElementById('fileCount');
+    const fileList = window.stateManager.getElement('fileList');
+    const fileCount = window.stateManager.getElement('fileCount');
     if (!fileList) return;
     if (this.files.length === 0) {
       fileList.innerHTML = `
@@ -404,7 +402,7 @@ class MainApp {
   }
 
   renderTemplates() {
-    const templateList = document.getElementById('templateList');
+    const templateList = window.stateManager.getElement('templateList');
     if (!templateList) return;
     if (this.templates.length === 0) {
       templateList.innerHTML = `
@@ -467,7 +465,7 @@ class MainApp {
 
 
   updateTemplateCount() {
-    const templateCount = document.getElementById('templateCount');
+    const templateCount = window.stateManager.getElement('templateCount');
     if (templateCount) {
       templateCount.textContent = this.templates.length;
     }
@@ -475,7 +473,7 @@ class MainApp {
 
 
   updateFolderSelection() {
-    const folderItems = document.querySelectorAll('.folder-item[data-template-name]');
+    const folderItems = window.stateManager.querySelectorAll('.folder-item[data-template-name]');
     folderItems.forEach(item => {
       const templateName = item.dataset.templateName;
       if (templateName === this.selectedFolder) {
@@ -488,7 +486,7 @@ class MainApp {
 
 
   updateFileSelection() {
-    const fileItems = document.querySelectorAll('.file-item[data-file-name]');
+    const fileItems = window.stateManager.querySelectorAll('.file-item[data-file-name]');
     fileItems.forEach(item => {
       const fileName = item.dataset.fileName;
       if (fileName === this.selectedFile) {
@@ -501,7 +499,7 @@ class MainApp {
 
 
   clearFormArea() {
-    const formArea = document.getElementById('formArea');
+    const formArea = window.stateManager.getElement('formArea');
     if (formArea) {
       formArea.innerHTML = `
         <div class="empty-state">
@@ -515,7 +513,7 @@ class MainApp {
 
 
   updateFormStatus() {
-    const formStatus = document.getElementById('formStatus');
+    const formStatus = window.stateManager.getElement('formStatus');
     if (formStatus) {
       if (this.selectedFolder && this.selectedFile) {
         formStatus.textContent = `Đã chọn: ${this.selectedFile}`;
@@ -532,7 +530,7 @@ class MainApp {
 
 
   updateExportButton() {
-    const exportBtn = document.getElementById('exportBtn');
+    const exportBtn = window.stateManager.getElement('exportBtn');
     if (exportBtn) {
       exportBtn.disabled = !this.selectedFolder || !this.selectedFile || this.isLoading;
     }
@@ -540,7 +538,7 @@ class MainApp {
 
 
   showFormLoading() {
-    const formArea = document.getElementById('formArea');
+    const formArea = window.stateManager.getElement('formArea');
     if (formArea) {
       formArea.innerHTML = `
         <div class="empty-state">
@@ -554,7 +552,7 @@ class MainApp {
 
 
   showFormError(message) {
-    const formArea = document.getElementById('formArea');
+    const formArea = window.stateManager.getElement('formArea');
     if (formArea) {
       formArea.innerHTML = `
         <div class="empty-state">
@@ -569,7 +567,7 @@ class MainApp {
 
   showLoading() {
     this.isLoading = true;
-    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingOverlay = window.stateManager.getElement('loadingOverlay');
     if (loadingOverlay) {
       loadingOverlay.style.display = 'flex';
     }
@@ -579,7 +577,7 @@ class MainApp {
 
   hideLoading() {
     this.isLoading = false;
-    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingOverlay = window.stateManager.getElement('loadingOverlay');
     if (loadingOverlay) {
       loadingOverlay.style.display = 'none';
     }
@@ -588,7 +586,7 @@ class MainApp {
 
 
   showSuccess(message) {
-    const successModal = document.getElementById('successModal');
+    const successModal = window.stateManager.getElement('successModal');
     if (successModal) {
       successModal.style.display = 'flex';
     }
@@ -596,8 +594,8 @@ class MainApp {
 
 
   showError(message) {
-    const errorModal = document.getElementById('errorModal');
-    const errorMessage = document.getElementById('errorMessage');
+    const errorModal = window.stateManager.getElement('errorModal');
+    const errorMessage = window.stateManager.getElement('errorMessage');
     if (errorModal) {
       if (errorMessage) {
         errorMessage.textContent = message;
