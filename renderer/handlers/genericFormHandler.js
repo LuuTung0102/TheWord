@@ -1015,19 +1015,11 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
   `;
 }
 
-
-/**
- * Xử lý click event cho person button
- * @param {HTMLElement} clickedButton - Button được click
- * @param {NodeList} allButtons - Tất cả buttons trong group
- * @param {string} groupKey - Key của group
- */
 function handlePersonButtonClick(clickedButton, allButtons, groupKey) {
   const personId = clickedButton.getAttribute('data-person-id');
   const previewDiv = document.getElementById(`preview-${groupKey}`);
   const previewContent = document.getElementById(`preview-content-${groupKey}`);
   
-  // Reset tất cả buttons
   allButtons.forEach(btn => {
     btn.classList.remove('active');
     btn.style.fontWeight = 'normal';
@@ -1036,17 +1028,14 @@ function handlePersonButtonClick(clickedButton, allButtons, groupKey) {
     btn.style.color = '#333';
   });
   
-  // Highlight button được chọn
   clickedButton.classList.add('active');
   clickedButton.style.fontWeight = 'bold';
   clickedButton.style.borderColor = '#4CAF50';
   clickedButton.style.background = '#4CAF50';
   clickedButton.style.color = 'white';
   
-  // Mark group as reused
   window.stateManager.addReusedGroup(`localStorage:${groupKey}`);
   
-  // Lấy thông tin person
   const person = window.getPersonById ? window.getPersonById(personId) : null;
   
   if (!person) {
@@ -1054,7 +1043,6 @@ function handlePersonButtonClick(clickedButton, allButtons, groupKey) {
     return;
   }
   
-  // Render preview
   let html = `<p style="margin-bottom: 10px; font-size: 16px;"><strong>📋 ${person.name}</strong></p>`;
   html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">';
   
@@ -1072,10 +1060,6 @@ function handlePersonButtonClick(clickedButton, allButtons, groupKey) {
   if (previewDiv) previewDiv.style.display = 'block';
 }
 
-/**
- * Setup event listeners cho person buttons trong một group
- * @param {string} groupKey - Key của group
- */
 function setupPersonButtonListeners(groupKey) {
   const buttonsContainer = document.getElementById(`person-buttons-${groupKey}`);
   if (!buttonsContainer) return;
@@ -1089,12 +1073,7 @@ function setupPersonButtonListeners(groupKey) {
   });
 }
 
-/**
- * Refresh person buttons - reload danh sách và setup lại listeners
- * @param {string} groupKey - Key của group cần refresh
- */
 async function refreshPersonButtons(groupKey) {
-  // Clear cache
   if (typeof window.savedPeopleCache !== 'undefined') {
     window.savedPeopleCache = null;
   }
@@ -1103,7 +1082,6 @@ async function refreshPersonButtons(groupKey) {
   const buttonsContainer = document.getElementById(`person-buttons-${groupKey}`);
   if (!buttonsContainer) return;
   
-  // Render buttons
   buttonsContainer.innerHTML = savedPeople.map(person => `
     <button type="button" 
       class="person-btn" 
@@ -1129,15 +1107,9 @@ async function refreshPersonButtons(groupKey) {
     </button>
   `).join('');
   
-  // Setup listeners
   setupPersonButtonListeners(groupKey);
 }
 
-/**
- * Setup person selection listeners cho tất cả groups
- * @param {Object} groupSources - Map của group sources
- * @param {Object} grouped - Grouped data
- */
 function setupPersonSelectionListeners(groupSources, grouped) {
   Object.keys(groupSources).forEach(groupKey => {
     if (groupSources[groupKey] !== "localStorage") return;

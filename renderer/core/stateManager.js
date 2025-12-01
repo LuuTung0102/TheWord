@@ -1,14 +1,3 @@
-/**
- * StateManager - Quản lý state tập trung thay thế window.__* globals
- * 
- * Quản lý các state:
- * - renderParams: Tham số render (placeholders, config, folderPath)
- * - renderDataStructures: Cấu trúc dữ liệu render (phMapping, grouped, groupLabels, etc.)
- * - formDataReused: Trạng thái reuse form data
- * - reusedGroups: Set các group đã được reuse
- * - reusedGroupSources: Map nguồn của các group đã reuse
- * - domCache: Cache các DOM elements thường dùng
- */
 class StateManager {
   constructor() {
     this.state = {
@@ -19,12 +8,10 @@ class StateManager {
       reusedGroupSources: new Map()
     };
     
-    // DOM Cache
     this.domCache = new Map();
     this.domCacheEnabled = true;
   }
   
-  // DOM Caching Methods
   getElement(id) {
     if (!this.domCacheEnabled) {
       return document.getElementById(id);
@@ -57,7 +44,6 @@ class StateManager {
   }
   
   querySelectorAll(selector) {
-    // querySelectorAll không cache vì kết quả có thể thay đổi động
     return document.querySelectorAll(selector);
   }
   
@@ -83,7 +69,6 @@ class StateManager {
     this.domCache.clear();
   }
 
-  // Render Params
   setRenderParams(params) {
     this.state.renderParams = params;
   }
@@ -92,7 +77,6 @@ class StateManager {
     return this.state.renderParams;
   }
 
-  // Render Data Structures
   setRenderDataStructures(data) {
     this.state.renderDataStructures = data;
   }
@@ -101,7 +85,6 @@ class StateManager {
     return this.state.renderDataStructures;
   }
 
-  // Form Data Reused
   setFormDataReused(value) {
     this.state.formDataReused = value;
   }
@@ -110,7 +93,6 @@ class StateManager {
     return this.state.formDataReused;
   }
 
-  // Reused Groups
   addReusedGroup(groupKey) {
     this.state.reusedGroups.add(groupKey);
   }
@@ -127,7 +109,6 @@ class StateManager {
     this.state.reusedGroups.clear();
   }
 
-  // Reused Group Sources
   setReusedGroupSource(groupKey, source) {
     this.state.reusedGroupSources.set(groupKey, source);
   }
@@ -144,7 +125,6 @@ class StateManager {
     this.state.reusedGroupSources.clear();
   }
 
-  // Reset toàn bộ state
   reset() {
     this.state.renderParams = null;
     this.state.renderDataStructures = null;
@@ -154,7 +134,6 @@ class StateManager {
     this.clearDOMCache();
   }
 
-  // Reset chỉ reuse state
   resetReuse() {
     this.state.formDataReused = false;
     this.state.reusedGroups.clear();
@@ -162,7 +141,6 @@ class StateManager {
   }
 }
 
-// Export singleton instance
 const stateManager = new StateManager();
 
 if (typeof window !== 'undefined') {

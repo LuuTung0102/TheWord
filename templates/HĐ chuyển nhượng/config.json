@@ -85,19 +85,7 @@
       "description": "Người chuyển nhượng tài sản"
     },
     {
-      "id": "BCT",
-      "label": "Bên công trình",
-      "order": 1,
-      "description": "Người chuyển nhượng công trình"
-    },
-    {
       "id": "BNCN",
-      "label": "Bên nhận chuyển nhượng",
-      "order": 2,
-      "description": "Người nhận chuyển nhượng tài sản"
-    },
-    {
-      "id": "NCN",
       "label": "Bên nhận chuyển nhượng",
       "order": 2,
       "description": "Người nhận chuyển nhượng tài sản"
@@ -113,9 +101,7 @@
     "PersonalInfo": {
       "description": "Thông tin cá nhân của các bên",
       "applicableTo": [
-        "BCN",
-        "BCT",
-        "NCN",
+        "BCN", 
         "BNCN"
       ],
       "fields": [
@@ -400,8 +386,9 @@
         {
           "id": "MEN8",
           "label": "Thông tin cá nhân",
-          "visible": false
+          "visible": true
         }
+
       ],
       "suffixes": [
         "7",
@@ -410,23 +397,6 @@
       "defaultGenders": [
         "Ông",
         "Bà"
-      ]
-    },
-    {
-      "group": "NCN",
-      "schema": "PersonalInfo",
-      "subgroups": [
-        {
-          "id": "MEN7",
-          "label": "Thông tin cá nhân",
-          "visible": true
-        }
-      ],
-      "suffixes": [
-        "7"
-      ],
-      "defaultGenders": [
-        "Ông"
       ]
     },
     {

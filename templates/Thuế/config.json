@@ -103,13 +103,15 @@
           {
             "name": "SDT",
             "label": "Số điện thoại",
-            "type": "tel",
+            "type": "text-or-dots",
+            "dotPlaceholder": "........................",
             "required": false
           },
           {
             "name": "Email",
             "label": "Địa chỉ email",
-            "type": "email",
+            "type": "text-or-dots",
+            "dotPlaceholder": "........................",
             "required": false
           }
         ]
