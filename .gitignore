@@ -1,9 +1,26 @@
 node_modules/
 *.zip
 *.exe
-*.docx
 *.pdf
 *.tmp
-node_modules/
 .claude/
 .kiro/
+
+# Build output
+dist/
+out/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Keep template .docx files
+!templates/**/*.docx

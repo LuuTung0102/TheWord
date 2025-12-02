@@ -1,22 +1,96 @@
 {
-  "name": "Theword",
-  "version": "1.0.0",
-  "description": "",
+  "name": "TheWord",
+  "version": "5.3.2",
+  "description": "Hệ thống tự động hóa văn bản Word",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "word",
+    "automation",
+    "document",
+    "template"
+  ],
+  "author": "LuuTung0102",
   "license": "ISC",
   "dependencies": {
     "adm-zip": "^0.5.16",
     "angular-expressions": "^1.5.1",
     "docxtemplater": "^3.66.7",
-    "electron": "^38.2.2",
     "flatpickr": "^4.6.13",
     "pizzip": "^3.2.0",
     "sax": "^1.4.3",
     "xmldom": "^0.6.0"
+  },
+  "devDependencies": {
+    "electron": "^38.2.2",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.theword.app",
+    "productName": "TheWord",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!**/*.md",
+      "!dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "templates",
+        "to": "templates",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "renderer/config",
+        "to": "renderer/config",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "requestedExecutionLevel": "highestAvailable"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TheWord",
+      "license": "LICENSE.txt"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "icon.icns",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "icon.png",
+      "category": "Office"
+    }
   }
 }

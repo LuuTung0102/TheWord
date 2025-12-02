@@ -6,6 +6,88 @@ const AdmZip = require("adm-zip");
 const { generateDocx } = require("./logic/generate");
 const { getPlaceholders } = require("./logic/placeholder");
 
+
+function getTemplatesDir() {
+  if (app.isPackaged) {
+    return path.join(path.dirname(app.getPath('exe')), 'templates');
+  } else {
+    return path.join(__dirname, 'templates');
+  }
+}
+
+function getConfigDir() {
+  if (app.isPackaged) {
+    return path.join(path.dirname(app.getPath('exe')), 'renderer', 'config');
+  } else {
+    return path.join(__dirname, 'renderer', 'config');
+  }
+}
+
+function ensureTemplatesDir() {
+  const templatesDir = getTemplatesDir();
+  
+  const needsCopy = !fs.existsSync(templatesDir) || 
+                    fs.readdirSync(templatesDir).length === 0;
+  
+  if (needsCopy && app.isPackaged) {
+    const resourceTemplatesDir = path.join(process.resourcesPath, 'templates');
+    
+    if (fs.existsSync(resourceTemplatesDir)) {
+      console.log('Copying templates from resources to:', templatesDir);
+      
+      if (!fs.existsSync(templatesDir)) {
+        fs.mkdirSync(templatesDir, { recursive: true });
+      }
+      
+      copyFolderRecursive(resourceTemplatesDir, templatesDir);
+      console.log('Templates copied successfully');
+    } else {
+      console.warn('Resource templates directory not found:', resourceTemplatesDir);
+    }
+  } else if (!fs.existsSync(templatesDir)) {
+    fs.mkdirSync(templatesDir, { recursive: true });
+  }
+  
+  return templatesDir;
+}
+
+function ensureConfigDir() {
+  const configDir = getConfigDir();
+  
+  if (!fs.existsSync(configDir) && app.isPackaged) {
+    const resourceConfigDir = path.join(process.resourcesPath, 'renderer', 'config');
+    
+    if (fs.existsSync(resourceConfigDir)) {
+      console.log('Copying config from resources to:', configDir);
+      fs.mkdirSync(configDir, { recursive: true });
+      copyFolderRecursive(resourceConfigDir, configDir);
+      console.log('Config copied successfully');
+    }
+  } else if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+  }
+  
+  return configDir;
+}
+
+function copyFolderRecursive(source, target) {
+  if (!fs.existsSync(target)) {
+    fs.mkdirSync(target, { recursive: true });
+  }
+  
+  const files = fs.readdirSync(source);
+  files.forEach(file => {
+    const sourcePath = path.join(source, file);
+    const targetPath = path.join(target, file);
+    
+    if (fs.statSync(sourcePath).isDirectory()) {
+      copyFolderRecursive(sourcePath, targetPath);
+    } else {
+      fs.copyFileSync(sourcePath, targetPath);
+    }
+  });
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1000,
@@ -16,13 +98,20 @@ function createWindow() {
   win.webContents.session.webSecurity = false;
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // Initialize directories on first run
+  ensureTemplatesDir();
+  ensureConfigDir();
+  
+  createWindow();
+});
 
 ipcMain.handle("load-placeholders", async (event, fileNames) => {
   try {
     const placeholders = {};
+    const templatesDir = getTemplatesDir();
     for (const fileName of fileNames) {
-      const filePath = path.join(__dirname, "templates", fileName);
+      const filePath = path.join(templatesDir, fileName);
       placeholders[fileName] = getPlaceholders(filePath);
     }
     return placeholders;
@@ -32,15 +121,12 @@ ipcMain.handle("load-placeholders", async (event, fileNames) => {
 });
 
 ipcMain.handle("get-templates-root", async () => {
-  return __dirname;
+  return path.dirname(getTemplatesDir());
 });
 
 ipcMain.handle("get-templates", async () => {
   try {
-    const templatesDir = path.join(__dirname, "templates");
-    if (!fs.existsSync(templatesDir)) {
-      fs.mkdirSync(templatesDir);
-    }
+    const templatesDir = ensureTemplatesDir();
     const items = fs.readdirSync(templatesDir);
     const folders = [];
     for (const item of items) {
@@ -80,7 +166,7 @@ ipcMain.handle("add-template", async () => {
     properties: ["openFile", "multiSelections"],
   });
   if (canceled || !filePaths.length) return null;
-  const destDir = path.join(__dirname, "templates");
+  const destDir = getTemplatesDir();
   filePaths.forEach((fp) => {
     const dest = path.join(destDir, path.basename(fp));
     fs.copyFileSync(fp, dest);
@@ -102,10 +188,7 @@ ipcMain.handle("save-temp-file", async (event, { buffer, fileName }) => {
 
 ipcMain.handle("upload-template", async (event, filePath) => {
   try {
-    const destDir = path.join(__dirname, "templates");
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
+    const destDir = ensureTemplatesDir();
     const fileName = path.basename(filePath);
     const dest = path.join(destDir, fileName);
     let finalDest = dest;
@@ -128,7 +211,8 @@ ipcMain.handle("upload-template", async (event, filePath) => {
 });
 
 ipcMain.handle("delete-template", async (event, fileName) => {
-  const filePath = path.join(__dirname, "templates", fileName);
+  const templatesDir = getTemplatesDir();
+  const filePath = path.join(templatesDir, fileName);
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
   }
@@ -137,7 +221,8 @@ ipcMain.handle("delete-template", async (event, fileName) => {
 
 ipcMain.handle("open-template-file", async (event, fileName) => {
   try {
-    const filePath = path.join(__dirname, "templates", fileName);
+    const templatesDir = getTemplatesDir();
+    const filePath = path.join(templatesDir, fileName);
     if (!fs.existsSync(filePath)) {
       throw new Error('File không tồn tại');
     }
@@ -153,7 +238,8 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
     const tempDir = path.join(app.getPath("temp"), "word_exports");
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
     const generatedPaths = [];
-    const folderPath = path.join(__dirname, "templates", folderName);
+    const templatesDir = getTemplatesDir();
+    const folderPath = path.join(templatesDir, folderName);
     const files = fs.readdirSync(folderPath).filter(f => f.endsWith(".docx"));
     for (const file of files) {
       const inputPath = path.join(folderPath, file);
@@ -199,7 +285,8 @@ ipcMain.handle("export-word", async (event, { folderName, data, exportType }) =>
 
 ipcMain.handle("load-main-config", async () => {
   try {
-    const configPath = path.join(__dirname, "renderer", "config", "config.json");
+    const configDir = getConfigDir();
+    const configPath = path.join(configDir, "config.json");
     if (!fs.existsSync(configPath)) {
       return null;
     }
@@ -275,7 +362,7 @@ ipcMain.handle("get-template-placeholders", async (event, folderPath) => {
 ipcMain.handle("export-single-document", async (event, { folderPath, fileName, formData, options }) => {
   try {
     
-    const projectRoot = __dirname;
+    const projectRoot = path.dirname(getTemplatesDir());
     const fullFolderPath = path.join(projectRoot, folderPath);
     const filePath = path.join(fullFolderPath, fileName);
     
@@ -322,7 +409,7 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
 
 ipcMain.handle("export-documents", async (event, { templateName, formData }) => {
   try {
-    const templatesRoot = path.join(__dirname, "templates");
+    const templatesRoot = getTemplatesDir();
     const folderPath = path.join(templatesRoot, templateName);
     
     if (!fs.existsSync(folderPath)) {
@@ -359,7 +446,11 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
 
 ipcMain.handle("write-local-storage", async (event, data) => {
   try {
-    const localStoragePath = path.join(__dirname, "renderer", "config", "local_storage.json");
+    const configDir = getConfigDir();
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    const localStoragePath = path.join(configDir, "local_storage.json");
     fs.writeFileSync(localStoragePath, JSON.stringify(data, null, 2), 'utf8');
     return { success: true };
   } catch (err) {

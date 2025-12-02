@@ -102,13 +102,13 @@ const BASE_PLACEHOLDERS = {
     order: 2
   },
 
-  Noi_CapD: {
-    type: "text",
-    order: 3
-  },
-
   Ngay_CapD: {
     type: "date",
+    order: 3
+  },
+  
+  Noi_CapD: {
+    type: "text",
     order: 4
   },
 

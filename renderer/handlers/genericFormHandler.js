@@ -399,20 +399,26 @@ async function renderGenericForm(placeholders, config, folderPath) {
       footerActions.appendChild(clearBtn);
       
       clearBtn.addEventListener('click', async () => {
-        if (!confirm('⚠️ Bạn có chắc muốn xóa TẤT CẢ dữ liệu đã lưu?\n\nTất cả dữ liệu "Tái sử dụng" sẽ bị xóa và không thể khôi phục.')) {
-          return;
-        }
+        const confirmed = await new Promise((resolve) => {
+          showConfirm(
+            'Xóa tất cả dữ liệu đã lưu?',
+            () => resolve(true),
+            () => resolve(false)
+          );
+        });
+        
+        if (!confirmed) return;
         
         if (window.sessionStorageManager && window.sessionStorageManager.clearAllSessionData) {
           window.sessionStorageManager.clearAllSessionData();
         } else {
-          showError('Không thể xóa session data. Vui lòng thử lại.');
+          showError('Không thể xóa dữ liệu');
           return;
         }
         
         clearBtn.remove();
         await renderGenericForm(placeholders, config, folderPath);
-        showSuccess('Đã xóa tất cả session data thành công!');
+        showSuccess('Đã xóa dữ liệu thành công');
       });
     }
   }

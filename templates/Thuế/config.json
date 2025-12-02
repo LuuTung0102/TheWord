@@ -61,6 +61,7 @@
             "name": "Name",
             "label": "Họ và tên",
             "type": "text",
+            "placeholder": "Họ và tên",
             "required": true
           },
           {
@@ -79,6 +80,7 @@
             "name": "CCCD",
             "label": "CCCD",
             "type": "number",
+            "placeholder": "Nhập CCCD",
             "required": true
           },
           {
@@ -133,7 +135,7 @@
         { "name": "Noi_CapD", "label": "Nơi cấp", "type": "textarea", "required": true },
         { "name": "SV", "label": "Diện tích đất trồng", "type": "editable-select", "options": [], "required": true},
         { "name": "NG", "label": "Nguồn gốc", "type": "textarea", "required": true },
-        { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "required": true },
+        { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "placeholder": "VD: XXX+XXX", "required": true },
         { "name": "Loai_Dat_F", "label": "Loại đất (có diện tích)", "type": "land_type_size", "required": true},
         { "name": "Loai_Dat_D", "label": "Loại đất chi tiết", "type": "land_type_detail", "required": true },
         { "name": "VTTD", "label": "Vị trí thửa đất", "type": "textarea", "required": true },
@@ -142,8 +144,8 @@
         { "name": "HTSD", "label": "Hình thức sử dụng", "type": "select", "options": ["Sử dụng chung", "Sử dụng riêng"], "required": true },
         { "name": "THSD", "label": "Thời hạn sử dụng", "type": "textarea", "required": true },
         { "name": "AddressD", "label": "Địa chỉ thửa đất", "type": "address-select", "required": true },
-        { "name": "TTGLVD", "label": "TT tài sản gắn liền", "type": "textarea" },
-        { "name": "Money", "label": "Giá chuyển nhượng", "type": "currency", "required": true },
+        { "name": "TTGLVD", "label": "TT tài sản gắn liền", "type": "textarea", "placeholder": "Thông tin tài sản gắn liền"},
+        { "name": "Money", "label": "Giá chuyển nhượng", "type": "currency", "placeholder": "Giá chuyển nhượng","required": true },
         { "name": "MoneyText", "label": "Giá chuyển nhượng (chữ)", "type": "text", "hidden": true },
         { "name": "Responsibility", "label": "Trách nhiệm thuế phí", "type": "select", "options": ["A", "B"], "required": true },
         { "name": "Sum_A", "label": "Tổng số loại cây A", "type": "text-or-dots", "required": false, "placeholder": "VD: 150 cây", "dotPlaceholder": "........................"},
