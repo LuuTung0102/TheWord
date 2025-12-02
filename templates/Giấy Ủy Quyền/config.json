@@ -11,17 +11,6 @@
           "BNUQ": ["MEN7"],
           "LAND": ["INFO"]
         }
-      },
-      {
-        "id": "hd-cn",
-        "filename": "Chứng thực.docx",
-        "name": "Giấy chứng thực",
-        "description": "Giấy chứng thực",
-        "groups": ["BCN", "BNCN"],
-        "placeholders": {
-          "BCN": ["MEN1", "MEN2"],
-          "BNCN": ["MEN3", "MEN4"]
-        }
       }
     ],
   
@@ -31,18 +20,6 @@
         "label": "Bên ủy quyền ",
         "order": 1,
         "description": "Người ủy quyền"
-      },
-      {
-        "id": "BCN",
-        "label": "Bên chuyển nhượng ",
-        "order": 1,
-        "description": "Bên chuyển nhượng"
-      },
-      {
-        "id": "BNCN",
-        "label": "Bên nhận chuyển nhượng ",
-        "order": 1,
-        "description": "Bên nhận chuyển nhượng"
       },
       {
         "id": "BNUQ",
@@ -61,7 +38,7 @@
     "fieldSchemas": {
       "PersonalInfo": {
         "description": "Thông tin hai bên ủy quyền",
-        "applicableTo": ["BUQ", "BNUQ", "BCN","BNCN"],
+        "applicableTo": ["BUQ", "BNUQ"],
         "fields": [
           {
             "name": "Gender",
@@ -97,20 +74,20 @@
           },
           {
             "name": "Noi_Cap",
-            "label": "Nơi cấp",
+            "label": "Nơi cấp CCCD",
             "type": "select",
             "options": ["Cục Cảnh sát QLHC về TTXH", "Công an T. Đắk Lắk"],
             "required": true
           },
           {
             "name": "Ngay_Cap",
-            "label": "Ngày cấp",
+            "label": "Ngày cấp CCCD",
             "type": "date",
             "required": true
           },
           {
             "name": "Address",
-            "label": "Địa chỉ thường trú",
+            "label": "Hộ khẩu thường trú",
             "type": "address-select",
             "required": true
           }
@@ -226,26 +203,6 @@
         ],
         "suffixes": ["1","2"],
         "defaultGenders": ["Ông","Bà"]
-      },
-      {
-        "group": "BCN",
-        "schema": "PersonalInfo",
-        "subgroups": [
-          {"id": "MEN1", "label": "Thông tin cá nhân","visible": true},
-          {"id": "MEN2", "label": "Thông tin cá nhân","visible": false}
-        ],
-        "suffixes": ["1", "2"],
-        "defaultGenders": ["Ông", "Bà"]
-      },
-      {
-        "group": "BNCN",
-        "schema": "PersonalInfo",
-        "subgroups": [
-          {"id": "MEN3", "label": "Thông tin cá nhân","visible": true},
-          {"id": "MEN4", "label": "Thông tin cá nhân","visible": false}
-        ],
-        "suffixes": ["3", "4"],
-        "defaultGenders": ["Ông", "Bà"]
       },
       {
       "group": "BNUQ",

@@ -71,25 +71,18 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
                        (Array.isArray(fieldValue) && fieldValue.length === 0);
         
         if (isEmpty) {
-          const groupInfo = mapping.group;
           errors.push({
-            subgroup: subgroupId,
-            subgroupLabel: subgroupLabel,
-            group: groupInfo,
+            subgroupLabel: subgroupLabel || subgroupId,
             field: fieldName,
-            fieldLabel: field.label,
-            message: `"${field.label}" là bắt buộc (${subgroupLabel || subgroupId})`
+            fieldLabel: field.label
           });
         } else if (field.type === 'number' && field.name === 'CCCD' && fieldValue) {
-          const cccdValue = fieldValue.toString().trim().replace(/\D/g, '');
-          if (!/^\d{9}$|^\d{12}$/.test(cccdValue)) {
+          const cccdValue = window.REGEX_HELPERS.removeNonDigits(fieldValue.toString().trim());
+          if (!window.REGEX.CCCD_PATTERN.test(cccdValue)) {
             errors.push({
-              subgroup: subgroupId,
-              subgroupLabel: subgroupLabel,
-              group: mapping.group,
+              subgroupLabel: subgroupLabel || subgroupId,
               field: fieldName,
-              fieldLabel: field.label,
-              message: `"${field.label}" phải là 9 hoặc 12 số (${subgroupLabel || subgroupId})`
+              fieldLabel: field.label
             });
           }
         }
@@ -102,44 +95,164 @@ function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups)
 
 function displayValidationErrors(errors) {
   if (errors.length === 0) return;
+  highlightErrorFields(errors);
+  showValidationNotification(errors);
   scrollToFirstError(errors);
 }
 
-
-function scrollToFirstError(errors) {
-  if (errors.length === 0) return;
-
+function highlightErrorFields(errors) {
+  document.querySelectorAll('.validation-error').forEach(el => {
+    el.style.borderColor = '';
+    el.style.borderWidth = '';
+    el.style.backgroundColor = '';
+    el.classList.remove('validation-error');
+  });
+  
   errors.forEach(error => {
     const fieldName = error.field;
-    const inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
+    let inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
+  
+    if (!inputElement && fieldName.includes('Address')) {
+      const allAddressGroups = document.querySelectorAll('.address-group');
+      allAddressGroups.forEach(group => {
+        const provinceSelect = group.querySelector('select[data-level="province"]');
+        if (provinceSelect && provinceSelect.id && provinceSelect.id.includes(fieldName)) {
+          highlightAddressGroup(group);
+        }
+      });
+      return;
+    }
     
     if (inputElement) {
-      inputElement.style.borderColor = '#dc3545';
-      inputElement.style.borderWidth = '2px';
-      inputElement.style.backgroundColor = '#fff5f5';
-      inputElement.classList.add('validation-error');
-      
-      const removeErrorStyle = () => {
-        inputElement.style.borderColor = '';
-        inputElement.style.borderWidth = '';
-        inputElement.style.backgroundColor = '';
-        inputElement.classList.remove('validation-error');
-        inputElement.removeEventListener('input', removeErrorStyle);
-        inputElement.removeEventListener('change', removeErrorStyle);
-      };
-      
-      inputElement.addEventListener('input', removeErrorStyle);
-      inputElement.addEventListener('change', removeErrorStyle);
+      highlightElement(inputElement);
     }
   });
+}
 
+function highlightElement(element) {
+  element.style.borderColor = '#dc3545';
+  element.style.borderWidth = '2px';
+  element.style.backgroundColor = '#fff5f5';
+  element.classList.add('validation-error');
+  
+  const removeErrorStyle = () => {
+    element.style.borderColor = '';
+    element.style.borderWidth = '';
+    element.style.backgroundColor = '';
+    element.classList.remove('validation-error');
+    element.removeEventListener('input', removeErrorStyle);
+    element.removeEventListener('change', removeErrorStyle);
+  };
+  
+  element.addEventListener('input', removeErrorStyle, { once: true });
+  element.addEventListener('change', removeErrorStyle, { once: true });
+}
+
+function highlightAddressGroup(addressGroup) {
+  const selects = addressGroup.querySelectorAll('select.address-select');
+  selects.forEach(select => {
+    select.style.borderColor = '#dc3545';
+    select.style.borderWidth = '2px';
+    select.style.backgroundColor = '#fff5f5';
+    select.classList.add('validation-error');
+  });
+  
+  const removeErrorStyle = () => {
+    selects.forEach(s => {
+      s.style.borderColor = '';
+      s.style.borderWidth = '';
+      s.style.backgroundColor = '';
+      s.classList.remove('validation-error');
+      s.removeEventListener('change', removeErrorStyle);
+    });
+  };
+  
+  selects.forEach(select => {
+    select.addEventListener('change', removeErrorStyle, { once: true });
+  });
+}
+
+function showValidationNotification(errors) {
+  if (!window.showError) {
+    alert(`Vui lòng điền đầy đủ thông tin:\n\n${errors.map(e => `• ${e.message}`).join('\n')}`);
+    return;
+  }
+  
+  const errorsBySubgroup = {};
+  errors.forEach(error => {
+    const key = error.subgroupLabel || error.subgroup;
+    if (!errorsBySubgroup[key]) {
+      errorsBySubgroup[key] = [];
+    }
+    errorsBySubgroup[key].push(error);
+  });
+  
+  let message = '';
+  
+  Object.keys(errorsBySubgroup).forEach((subgroup, index) => {
+    const subgroupErrors = errorsBySubgroup[subgroup];
+    message += `${subgroup}:\n`;
+    subgroupErrors.forEach(error => {
+      message += `• ${error.fieldLabel}\n`;
+    });
+    if (index < Object.keys(errorsBySubgroup).length - 1) {
+      message += `\n`;
+    }
+  });
+  
+  window.showError(message, 5000); 
+}
+function scrollToFirstError(errors) {
+  if (errors.length === 0) return;
   const firstError = errors[0];
   const fieldName = firstError.field;
-  const inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
+  let inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
+  
+  if (!inputElement && fieldName.includes('Address')) {
+    const allAddressGroups = document.querySelectorAll('.address-group');
+    for (const group of allAddressGroups) {
+      const provinceSelect = group.querySelector('select[data-level="province"]');
+      if (provinceSelect && provinceSelect.id && provinceSelect.id.includes(fieldName)) {
+        inputElement = provinceSelect;
+        break;
+      }
+    }
+  }
   
   if (inputElement) {
-    inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    inputElement.focus();
+    const section = inputElement.closest('.form-section');
+    if (section) {
+      const sectionId = section.id;
+      const groupKey = sectionId.replace('section-', '');
+      switchToTab(groupKey);
+    }
+    
+    setTimeout(() => {
+      inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        inputElement.focus();
+      }, 300);
+    }, 100);
+  }
+}
+
+function switchToTab(groupKey) {
+  document.querySelectorAll('.taskbar-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  const targetBtn = document.querySelector(`.taskbar-btn[data-section="${groupKey}"]`);
+  if (targetBtn) {
+    targetBtn.classList.add('active');
+  }
+  
+  document.querySelectorAll('.form-section').forEach(section => {
+    section.classList.remove('active');
+  });
+  
+  const targetSection = document.getElementById(`section-${groupKey}`);
+  if (targetSection) {
+    targetSection.classList.add('active');
   }
 }
 

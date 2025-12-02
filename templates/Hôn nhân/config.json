@@ -19,17 +19,9 @@
       "filename": "Ly Hôn.docx",
       "name": "Chưa kết hôn",
       "description": "",
-      "groups": [
-        "TTHN",
-        "PAGE"
-      ],
+      "groups": ["TTHN"],
       "placeholders": {
-        "TTHN": [
-          "MEN1"
-        ],
-        "PAGE": [
-          "HN"
-        ]
+        "TTHN": ["MEN1"]
       }
     }
   ],
@@ -39,20 +31,12 @@
       "label": "Thông tin cá nhân",
       "order": 1,
       "description": "Thông tin người xin xác nhận"
-    },
-    {
-      "id": "PAGE",
-      "label": "Thông tin giấy xác nhận",
-      "order": 2,
-      "description": "Thông tin về giấy xác nhận hôn nhân"
     }
   ],
   "fieldSchemas": {
     "PersonalInfo": {
       "description": "Thông tin cá nhân",
-      "applicableTo": [
-        "TTHN"
-      ],
+      "applicableTo": ["TTHN"],
       "fields": [
         {
           "name": "Gender",
@@ -97,7 +81,7 @@
         },
         {
           "name": "Noi_Cap",
-          "label": "Nơi cấp",
+          "label": "Nơi cấp CCCD",
           "type": "select",
           "options": [
             "Cục Cảnh sát QLHC về TTXH",
@@ -107,39 +91,33 @@
         },
         {
           "name": "Ngay_Cap",
-          "label": "Ngày cấp",
+          "label": "Ngày cấp CCCD",
           "type": "date",
           "required": true
         },
         {
           "name": "Address",
-          "label": "Địa chỉ thường trú",
+          "label": "Hộ khẩu thường trú",
           "type": "address-select",
           "required": true
-        }
-      ]
-    },
-    "PageInfo": {
-      "description": "Thông tin giấy xác nhận",
-      "applicableTo": [
-        "PAGE"
-      ],
-      "fields": [
+        },
         {
           "name": "QDLHS",
           "label": "Quyết định ly hôn số",
-          "type": "textarea",
+          "placeholder": "  ",
+          "type": "text",
           "required": true
         },
         {
-          "name": "Noi_Cap_LH",
-          "label": "Nơi cấp giấy xác nhận",
+          "name": "Noi_CapHN",
+          "label": "Nơi cấp giấy HN",
           "type": "textarea",
+          "placeholder": "  ",
           "required": true
         },
         {
-          "name": "Ngay_Cap_LH",
-          "label": "Ngày cấp giấy xác nhận",
+          "name": "Ngay_CapHN",
+          "label": "Ngày cấp giấy HN",
           "type": "date",
           "required": true
         }
@@ -162,17 +140,6 @@
       ],
       "defaultGenders": [
         "Ông"
-      ]
-    },
-    {
-      "group": "PAGE",
-      "schema": "PageInfo",
-      "subgroups": [
-        {
-          "id": "HN",
-          "label": "Thông tin giấy xác nhận",
-          "visible": true
-        }
       ]
     }
   ]

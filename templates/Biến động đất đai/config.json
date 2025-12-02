@@ -106,7 +106,7 @@
         },
         {
           "name": "Noi_Cap",
-          "label": "Nơi cấp",
+          "label": "Nơi cấp CCCD",
           "type": "select",
           "options": [
             "Cục Cảnh sát QLHC về TTXH",
@@ -116,13 +116,13 @@
         },
         {
           "name": "Ngay_Cap",
-          "label": "Ngày cấp",
+          "label": "Ngày cấp CCCD",
           "type": "date",
           "required": true
         },
         {
           "name": "Address",
-          "label": "Địa chỉ thường trú",
+          "label": "Hộ khẩu thường trú",
           "type": "address-select",
           "required": true
         },

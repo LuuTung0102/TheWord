@@ -114,7 +114,7 @@
           id: `${prefix}Address`,
           label: addressLabel,
           value: data.Address || '',
-          placeholder: 'Nhập địa chỉ thường trú',
+          placeholder: 'Nhập hộ khẩu thường trú',
           required: true,
           fullWidth: true
         }

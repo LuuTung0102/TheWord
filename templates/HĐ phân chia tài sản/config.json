@@ -1,18 +1,5 @@
 {
   "templates": [
-    {
-      "id": "hd-pc-test",
-      "filename": "test.docx",
-      "name": "Hợp đồng phân chia tài sản thừa kế",
-      "description": "Phân chia tài sản thừa kế",
-      "groups": ["NTK", "NM", "MP", "LAND"],
-      "placeholders": {
-        "NTK": ["MEN1", "MEN2", "MEN3", "MEN4", "MEN5", "MEN6"],
-        "NM": ["MEN7"],
-        "MP": ["MEN8", "MEN9"],
-        "LAND": ["INFO"]
-      }
-    },
     { 
       "id": "hd-pc-ts",
       "filename": "Phân chia tài sản.docx",
@@ -64,9 +51,9 @@
         { "name": "Name", "label": "Họ và tên", "type": "text", "required": true },
         { "name": "Date", "label": "Ngày sinh", "type": "date", "required": true },
         { "name": "CCCD", "label": "CCCD", "type": "number", "required": true },
-        { "name": "Noi_Cap", "label": "Nơi cấp", "type": "select", "options": ["Cục Cảnh sát QLHC về TTXH", "Công an T. Đắk Lắk"], "required": true },
-        { "name": "Ngay_Cap", "label": "Ngày cấp", "type": "date", "required": true },
-        { "name": "Address", "label": "Địa chỉ thường trú", "type": "address-select", "required": true }
+        { "name": "Noi_Cap", "label": "Nơi cấp CCCD", "type": "select", "options": ["Cục Cảnh sát QLHC về TTXH", "Công an T. Đắk Lắk"], "required": true },
+        { "name": "Ngay_Cap", "label": "Ngày cấp CCCD", "type": "date", "required": true },
+        { "name": "Address", "label": "Hộ khẩu thường trú", "type": "address-select", "required": true }
       ]
     },
 
@@ -124,14 +111,13 @@
         { "id": "MEN8", "label": "Cha người mất", "visible": false },
         { "id": "MEN9", "label": "Mẹ người mất", "visible": false }
       ],
-      "suffixes": ["8", "9"],
-      "comment": "Cả bố và mẹ đều visible mặc định (khác với rule thông thường)"
+      "suffixes": ["8", "9"]
     },
     {
       "group": "LAND",
       "schema": "LandInfo",
       "subgroups": [
-        { "id": "INFO", "label": "Thông tin đất đai", "visible": false }
+        { "id": "INFO", "label": "Thông tin đất đai", "visible": true }
       ]
     }
   ]

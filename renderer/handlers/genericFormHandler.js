@@ -1578,7 +1578,7 @@ function collectGenericFormData() {
     if (!ph) return;
     let value = el.value.trim();
     if (ph === 'Money' && value) {
-      const rawMoney = value.replace(/\D/g, '');
+      const rawMoney = window.REGEX_HELPERS.removeNonDigits(value);
       if (rawMoney) {
         if (!value.includes(',')) {
           value = window.formatWithCommas ? window.formatWithCommas(rawMoney) : rawMoney;
@@ -1681,21 +1681,21 @@ function collectGenericFormData() {
     }
     
     if (ph.includes('CCCD') && value) {
-      const digits = value.replace(/\D/g, '');
-      if (/^\d{9}$|^\d{12}$/.test(digits)) {
+      const digits = window.REGEX_HELPERS.removeNonDigits(value);
+      if (window.REGEX.CCCD_PATTERN.test(digits)) {
         value = window.formatCCCD ? window.formatCCCD(digits) : digits;
       }
     }
     
     if (ph.includes('SDT') && value) {
-      const digits = value.replace(/\D/g, '');
-      if (/^\d{10}$/.test(digits)) {
+      const digits = window.REGEX_HELPERS.removeNonDigits(value);
+      if (window.REGEX.PHONE_PATTERN.test(digits)) {
         value = window.formatPhoneNumber ? window.formatPhoneNumber(digits) : digits;
       }
     }
     
     if (ph.includes('MST') && value) {
-      const digits = value.replace(/\D/g, '');
+      const digits = window.REGEX_HELPERS.removeNonDigits(value);
       value = digits;
     }
     

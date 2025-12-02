@@ -19,10 +19,10 @@ function setupNumericInput(el, maxLength) {
 
 function setupCCCDInput(el) {
   el.addEventListener("input", (e) => {
-    let value = e.target.value.replace(/\D/g, "").slice(0, 12);
+    let value = window.REGEX_HELPERS.removeNonDigits(e.target.value).slice(0, 12);
     e.target.value = value;
     
-    if (value.length > 0 && value.length !== 9 && value.length !== 12) {
+    if (value.length > 0 && !window.REGEX.CCCD_PATTERN.test(value)) {
       e.target.style.borderColor = '#ffa500';
       e.target.title = 'CCCD phải là 9 hoặc 12 số';
     } else {
@@ -32,21 +32,21 @@ function setupCCCDInput(el) {
   });
   
   el.addEventListener("focus", (e) => {
-    e.target.value = e.target.value.replace(/\D/g, "");
+    e.target.value = window.REGEX_HELPERS.removeNonDigits(e.target.value);
   });
   
   el.addEventListener("blur", (e) => {
-    let value = e.target.value.replace(/\D/g, "").slice(0, 12);
+    let value = window.REGEX_HELPERS.removeNonDigits(e.target.value).slice(0, 12);
     if (value.length === 0) return;
     
-    if (value.length !== 9 && value.length !== 12) {
+    if (!window.REGEX.CCCD_PATTERN.test(value)) {
       e.target.style.borderColor = '#dc3545';
       e.target.style.borderWidth = '2px';
       e.target.title = 'CCCD phải là 9 hoặc 12 số';
       return;
     }
     
-    if ((value.length === 9 || value.length === 12) && window.formatCCCD) {
+    if (window.REGEX.CCCD_PATTERN.test(value) && window.formatCCCD) {
       e.target.value = window.formatCCCD(value) || value;
     } else {
       e.target.value = value;
@@ -59,28 +59,27 @@ function setupCCCDInput(el) {
   
   el.addEventListener("paste", (e) => {
     e.preventDefault();
-    const text = (e.clipboardData || window.clipboardData)
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, 12);
+    const text = window.REGEX_HELPERS.removeNonDigits(
+      (e.clipboardData || window.clipboardData).getData("text")
+    ).slice(0, 12);
     document.execCommand("insertText", false, text);
   });
 }
 
 function setupPhoneInput(el) {
   el.addEventListener("input", (e) => {
-    let value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    let value = window.REGEX_HELPERS.removeNonDigits(e.target.value).slice(0, 10);
     e.target.value = value;
   });
   
   el.addEventListener("focus", (e) => {
-    e.target.value = e.target.value.replace(/\D/g, "");
+    e.target.value = window.REGEX_HELPERS.removeNonDigits(e.target.value);
   });
   
   el.addEventListener("blur", (e) => {
-    let value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    let value = window.REGEX_HELPERS.removeNonDigits(e.target.value).slice(0, 10);
     if (value.length === 0) return;
-    if (value.length === 10 && window.formatPhoneNumber) {
+    if (window.REGEX.PHONE_PATTERN.test(value) && window.formatPhoneNumber) {
       e.target.value = window.formatPhoneNumber(value) || value;
     } else {
       e.target.value = value;
@@ -89,23 +88,22 @@ function setupPhoneInput(el) {
   
   el.addEventListener("paste", (e) => {
     e.preventDefault();
-    const text = (e.clipboardData || window.clipboardData)
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, 10);
+    const text = window.REGEX_HELPERS.removeNonDigits(
+      (e.clipboardData || window.clipboardData).getData("text")
+    ).slice(0, 10);
     document.execCommand("insertText", false, text);
   });
 }
 
 function setupMSTInput(el) {
   const getRawValue = (value) => {
-    return value.replace(/\D/g, "").slice(0, 13);
+    return window.REGEX_HELPERS.removeNonDigits(value).slice(0, 13);
   };
   
   el.addEventListener("input", (e) => {
     let rawValue = getRawValue(e.target.value);
     e.target.value = rawValue;
-    if (rawValue.length > 0 && rawValue.length !== 10 && rawValue.length !== 13) {
+    if (rawValue.length > 0 && !window.REGEX.MST_PATTERN.test(rawValue)) {
       e.target.style.borderColor = '#ffa500';
       e.target.title = 'MST phải là 10 hoặc 13 số';
     } else {
@@ -122,14 +120,14 @@ function setupMSTInput(el) {
     let rawValue = getRawValue(e.target.value);
     
     if (rawValue.length === 0) return;
-    if (rawValue.length !== 10 && rawValue.length !== 13) {
+    if (!window.REGEX.MST_PATTERN.test(rawValue)) {
       e.target.style.borderColor = '#dc3545';
       e.target.style.borderWidth = '2px';
       e.target.title = 'MST phải là 10 hoặc 13 số';
       e.target.value = rawValue;
       return;
     }
-    if ((rawValue.length === 10 || rawValue.length === 13) && window.formatMST) {
+    if (window.REGEX.MST_PATTERN.test(rawValue) && window.formatMST) {
       e.target.value = window.formatMST(rawValue) || rawValue;
     } else {
       e.target.value = rawValue;
@@ -360,16 +358,16 @@ function setupLandTypeInput(el, id) {
 
 function setupMoneyInput(el) {
   el.addEventListener("input", (e) => {
-    let value = e.target.value.replace(/\D/g, ""); 
+    let value = window.REGEX_HELPERS.removeNonDigits(e.target.value);
     e.target.value = value; 
   });
   el.addEventListener("focus", (e) => {
-    let value = e.target.value.replace(/\D/g, "");
+    let value = window.REGEX_HELPERS.removeNonDigits(e.target.value);
     e.target.value = value;
   });
   
   el.addEventListener("blur", (e) => {
-    let value = e.target.value.replace(/\D/g, "");
+    let value = window.REGEX_HELPERS.removeNonDigits(e.target.value);
     if (value.length === 0) {
       const moneyTextField = document.querySelector('[data-ph="MoneyText"]');
       if (moneyTextField) {
@@ -681,8 +679,8 @@ function formatInputValue(value, ph, map) {
     }
   } else if (map.type === "number") {
     if (ph.includes('CCCD') && value) {
-      const digits = value.replace(/\D/g, "");
-      if (/^\d{9}$|^\d{12}$/.test(digits)) {
+      const digits = window.REGEX_HELPERS.removeNonDigits(value);
+      if (window.REGEX.CCCD_PATTERN.test(digits)) {
         formatted = window.formatCCCD ? window.formatCCCD(digits) : digits;
       } else {
         formatted = digits;

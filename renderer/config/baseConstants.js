@@ -65,10 +65,26 @@ const BASE_PLACEHOLDERS = {
     type: "email",
     order: 10
   },
+
+  QDLHS: {
+    type: "text",
+    order: 11
+  },
+
+  Ngay_CapHN: {
+  type:"date",
+  order: 12
+  },
   
+
+  Noi_CapHN:{
+    type: "textarea",
+    order: 13
+  },
+
   Address: {
     type: "address-select",
-    order: 11
+    order: 14
   },
 
   ///////////////////////////////////////////////////////////////////
@@ -118,11 +134,6 @@ const BASE_PLACEHOLDERS = {
       max: 1000000000000000000000,
       decimalPlaces: 2
     },
-    order: 8
-  },
-
-  S_Text: {
-    type: "text",
     order: 8
   },
 
@@ -180,27 +191,22 @@ const BASE_PLACEHOLDERS = {
     order: 12
   },
   
-  AddressD: {
-    type: "address-select",
-    order: 13
-  },
-  
-  Money: {
+    Money: {
     type: "currency",
     validation: {
       min: 1000,
       max: 1000000000000000000000000000000000000000
     },
-    order: 14
-  },
-
-  MoneyText: {
-    type: "text",
-    order: 14
+    order: 13
   },
 
   NG: {
     type: "text",
+    order: 14
+  },
+
+  AddressD: {
+    type: "address-select",
     order: 15
   },
 
