@@ -381,20 +381,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
       const clearBtn = document.createElement('button');
       clearBtn.className = 'clear-all-session-btn';
       clearBtn.innerHTML = '<span class="btn-icon">🗑️</span> Làm mới';
-      clearBtn.style.cssText = `
-        padding: 10px 20px;
-        background: #f44336;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-        margin-left: 10px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-      `;
       clearBtn.title = 'Xóa tất cả dữ liệu đã lưu trong session';
       footerActions.appendChild(clearBtn);
       
@@ -442,11 +428,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
     groupDiv.className = "form-group";
     
     const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
-    
-    // Lọc chỉ các subgroups có placeholder trong file Word
     const availableSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups.filter(sg => {
       const subId = typeof sg === 'string' ? sg : sg.id;
-      // Tìm suffix tương ứng với subgroup này
       const subIndex = groupMapping.subgroups.findIndex(s => {
         const sId = typeof s === 'string' ? s : s.id;
         return sId === subId;
@@ -454,8 +437,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
       const suffix = groupMapping.suffixes && groupMapping.suffixes[subIndex] 
         ? groupMapping.suffixes[subIndex] 
         : '';
-      
-      // Kiểm tra xem có placeholder nào với suffix này không
       const hasPlaceholder = Object.keys(phMapping).some(ph => {
         if (suffix) {
           return ph.endsWith(suffix);
@@ -478,17 +459,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
       groupDiv.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
           <h3 style="margin: 0;">${groupLabels[groupKey] || groupKey}</h3>
-          <button class="add-subgroup-btn" data-group="${groupKey}" style="
-            padding: 8px 16px;
-            background: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-          ">
-            ➕ Thêm ${subLabel}
+          <button class="add-subgroup-btn" data-group="${groupKey}">
+            ➕ ${subLabel}
           </button>
         </div>
       `;
@@ -515,19 +487,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
                   class="person-btn" 
                   data-person-id="${person.id}"
                   data-group="${groupKey}"
-                  style="
-                    padding: 15px 20px;
-                    margin: 10px 10px 10px 0;
-                    font-size: 16px;
-                    font-weight: normal;
-                    border: 2px solid #ddd;
-                    border-radius: 8px;
-                    background: white;
-                    color: #333;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    min-width: 150px;
-                  "
                   onmouseover="this.style.borderColor='#4CAF50'"
                   onmouseout="if(!this.classList.contains('active')) this.style.borderColor='#ddd'"
                 >
@@ -552,13 +511,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
         const subgroupDiv = document.createElement("div");
         subgroupDiv.className = "form-subgroup";
         subgroupDiv.setAttribute('data-subgroup-id', subKey);
-        subgroupDiv.style.cssText = `
-          border: 2px solid #2196F3;
-          border-radius: 8px;
-          padding: 15px;
-          margin-bottom: 20px;
-          background: #f8fbff;
-        `;
+    
         const isDefaultVisible = window.defaultVisibleSubgroups && window.defaultVisibleSubgroups.has(subKey);
         const visibleSubgroupsInGroup = subgroupKeys.filter(sk => window.visibleSubgroups.has(sk));
         const canDelete = !isDefaultVisible && visibleSubgroupsInGroup.length > 1;
@@ -567,17 +520,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
           <button class="remove-subgroup-btn" 
             data-group="${groupKey}" 
             data-subgroup="${subKey}"
-            style="
-              padding: 6px 12px;
-              background: #f44336;
-              color: white;
-              border: none;
-              border-radius: 4px;
-              cursor: pointer;
-              font-size: 12px;
-              font-weight: 500;
-              margin-left: 10px;
-            "
             title="Xóa ${subgroupLabels[subKey] || subKey}">
             ❌ Xóa
           </button>
@@ -656,10 +598,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
       const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
       
       if (groupMapping && groupMapping.subgroups) {
-        // Lọc chỉ các subgroups có placeholder trong file Word
         const availableSubgroups = groupMapping.subgroups.filter(sg => {
           const subId = typeof sg === 'string' ? sg : sg.id;
-          // Tìm suffix tương ứng với subgroup này
           const subIndex = groupMapping.subgroups.findIndex(s => {
             const sId = typeof s === 'string' ? s : s.id;
             return sId === subId;
@@ -667,8 +607,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
           const suffix = groupMapping.suffixes && groupMapping.suffixes[subIndex] 
             ? groupMapping.suffixes[subIndex] 
             : '';
-          
-          // Kiểm tra xem có placeholder nào với suffix này không
           const hasPlaceholder = Object.keys(phMapping).some(ph => {
             if (suffix) {
               return ph.endsWith(suffix);
@@ -693,14 +631,10 @@ async function renderGenericForm(placeholders, config, folderPath) {
             const groupDiv = sectionDiv.querySelector('.form-group');
             if (groupDiv) {
               groupDiv.appendChild(newSubgroupDiv);
-              
-              // Kiểm tra xem còn subgroup nào ẩn không (trong số các subgroup có placeholder)
               const remainingHidden = availableSubgroups.filter(sg => {
                 const subId = typeof sg === 'string' ? sg : sg.id;
                 return !window.visibleSubgroups.has(subId);
               });
-              
-              // Nếu không còn subgroup nào ẩn, ẩn nút "➕ Thêm"
               if (remainingHidden.length === 0) {
                 btn.style.display = 'none';
               }
@@ -724,8 +658,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
                     
                     window.visibleSubgroups.delete(subgroupIdToRemove);
                     groupDiv.removeChild(newSubgroupDiv);
-                    
-                    // Hiện lại nút "➕ Thêm" khi xóa subgroup
                     btn.style.display = '';
                   });
                 }
@@ -794,6 +726,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
           section.classList.remove('active');
         }
       });
+      
+      setupReuseDataListeners();
     });
   });
 
@@ -920,13 +854,6 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
   const subgroupDiv = document.createElement("div");
   subgroupDiv.className = "form-subgroup";
   subgroupDiv.setAttribute('data-subgroup-id', subKey);
-  subgroupDiv.style.cssText = `
-    border: 2px solid #2196F3;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
-    background: #f8fbff;
-  `;
   
   const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
   const allSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups : [];
@@ -940,17 +867,6 @@ function renderSingleSubgroup(groupKey, subKey, config, phMapping, grouped, grou
     <button class="remove-subgroup-btn" 
       data-group="${groupKey}" 
       data-subgroup="${subKey}"
-      style="
-        padding: 6px 12px;
-        background: #f44336;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 500;
-        margin-left: 10px;
-      "
       title="Xóa ${subgroupLabels[subKey] || subKey}">
       ❌ Xóa
     </button>
@@ -1071,25 +987,44 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
   const dropdownId = `reuse-${groupKey}-${subKey}-${Date.now()}`;
   
   return `
-    <div class="reuse-data-section" style="margin-bottom: 15px; padding: 12px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #4CAF50;">
-      <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #2e7d32;">
-        🔄 Tái sử dụng:
-      </label>
-      <select 
-        id="${dropdownId}"
-        class="reuse-data-select" 
-        data-target-group="${groupKey}"
-        data-target-subgroup="${subKey}"
-        data-target-suffix="${targetSuffix}"
-        style="width: 100%; padding: 10px; font-size: 14px; border: 2px solid #4CAF50; border-radius: 4px; background: white; cursor: pointer;"
-      >
-        <option value="">-- Nhập mới --</option>
-        ${availableGroups.map(group => `
-          <option value="${group.fileName}|${group.menKey}">
-            ${group.displayName}
-          </option>
-        `).join('')}
-      </select>
+    <div class="reuse-data-section">
+      <label>🔄 Tái sử dụng:</label>
+      <div class="custom-reuse-dropdown">
+        <div class="reuse-dropdown-trigger" data-dropdown-id="${dropdownId}">
+          <span class="selected-text">-- Nhập mới --</span>
+          <span>▼</span>
+        </div>
+        <div 
+          class="reuse-dropdown-menu" 
+          id="${dropdownId}"
+          data-target-group="${groupKey}"
+          data-target-subgroup="${subKey}"
+          data-target-suffix="${targetSuffix}"
+        >
+          <div class="reuse-option" data-value="">
+            <span>-- Nhập mới --</span>
+          </div>
+          ${availableGroups.map(group => `
+            <div 
+              class="reuse-option" 
+              data-value="${group.fileName}|${group.menKey}"
+              data-file-name="${group.fileName}"
+              data-group-key="${group.menKey}"
+            >
+              <span>${group.displayName}</span>
+              <button 
+                class="delete-reuse-btn"
+                data-file-name="${group.fileName}"
+                data-group-key="${group.menKey}"
+                title="Xóa dữ liệu này"
+                onclick="event.stopPropagation();"
+              >
+                🗑️
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
     </div>
   `;
 }
@@ -1166,19 +1101,6 @@ async function refreshPersonButtons(groupKey) {
       class="person-btn" 
       data-person-id="${person.id}"
       data-group="${groupKey}"
-      style="
-        padding: 15px 20px;
-        margin: 10px 10px 10px 0;
-        font-size: 16px;
-        font-weight: normal;
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        background: white;
-        color: #333;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-width: 150px;
-      "
       onmouseover="this.style.borderColor='#4CAF50'"
       onmouseout="if(!this.classList.contains('active')) this.style.borderColor='#ddd'"
     >
@@ -1202,12 +1124,70 @@ if (typeof window !== 'undefined') {
 
 
 function setupReuseDataListeners() {
-  window.stateManager.querySelectorAll('.reuse-data-select').forEach(select => {
-    select.addEventListener('change', (e) => {
-      const value = e.target.value;
-      const targetGroup = e.target.getAttribute('data-target-group');
-      const targetSubgroup = e.target.getAttribute('data-target-subgroup'); 
-      const targetSuffix = e.target.getAttribute('data-target-suffix');
+  if (window._reuseDataClickHandler) {
+    document.removeEventListener('click', window._reuseDataClickHandler);
+  }
+  
+  const activeSection = document.querySelector('.form-section.active');
+  if (!activeSection) return;
+  
+  const triggers = activeSection.querySelectorAll('.reuse-dropdown-trigger');
+  triggers.forEach(trigger => {
+    const oldHandler = trigger._clickHandler;
+    if (oldHandler) {
+      trigger.removeEventListener('click', oldHandler);
+    }
+    const handler = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const dropdownId = trigger.getAttribute('data-dropdown-id');
+      const menu = document.getElementById(dropdownId);
+      
+      if (!menu) return;
+      document.querySelectorAll('.reuse-dropdown-menu').forEach(m => {
+        if (m.id !== dropdownId) {
+          m.style.display = 'none';
+        }
+      });
+      
+      const isVisible = menu.style.display === 'block';
+      menu.style.display = isVisible ? 'none' : 'block';
+    };
+    
+    trigger._clickHandler = handler;
+    trigger.addEventListener('click', handler);
+  });
+  
+  window._reuseDataClickHandler = (e) => {
+    if (!e.target.closest('.custom-reuse-dropdown')) {
+      document.querySelectorAll('.reuse-dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+      });
+    }
+  };
+  document.addEventListener('click', window._reuseDataClickHandler);
+  
+  const options = activeSection.querySelectorAll('.reuse-option');
+  options.forEach(option => {
+    const oldHandler = option._clickHandler;
+    if (oldHandler) {
+      option.removeEventListener('click', oldHandler);
+    }
+    
+    const handler = (e) => {
+      e.stopPropagation();
+      
+      const value = option.getAttribute('data-value');
+      const menu = option.closest('.reuse-dropdown-menu');
+      const trigger = menu.previousElementSibling;
+      const selectedText = trigger.querySelector('.selected-text');
+      const targetGroup = menu.getAttribute('data-target-group');
+      const targetSubgroup = menu.getAttribute('data-target-subgroup');
+      const targetSuffix = menu.getAttribute('data-target-suffix');
+
+      selectedText.textContent = option.querySelector('span').textContent;
+      menu.style.display = 'none';
       
       if (!value) {
         window.stateManager.setFormDataReused(false);
@@ -1227,14 +1207,59 @@ function setupReuseDataListeners() {
       }
       
       window.stateManager.addReusedGroup(targetSubgroup);
-      window.stateManager.setReusedGroupSource(targetSubgroup, { 
-        sourceFileName: fileName, 
-        sourceGroupKey: sourceGroupKey,  
-        sourceData: sourceData 
+      window.stateManager.setReusedGroupSource(targetSubgroup, {
+        sourceFileName: fileName,
+        sourceGroupKey: sourceGroupKey,
+        sourceData: sourceData
       });
       
       fillFormWithMenData(sourceData, targetSuffix);
-    });
+    };
+    
+    option._clickHandler = handler;
+    option.addEventListener('click', handler);
+  });
+  
+  const deleteButtons = activeSection.querySelectorAll('.delete-reuse-btn');
+  deleteButtons.forEach(btn => {
+    const oldHandler = btn._clickHandler;
+    if (oldHandler) {
+      btn.removeEventListener('click', oldHandler);
+    }
+    
+    const handler = async (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      
+      const fileName = btn.getAttribute('data-file-name');
+      const groupKey = btn.getAttribute('data-group-key');
+      
+      const confirmed = await new Promise((resolve) => {
+        showConfirm(
+          'Xóa dữ liệu này khỏi danh sách tái sử dụng?',
+          () => resolve(true),
+          () => resolve(false)
+        );
+      });
+      
+      if (!confirmed) return;
+      if (window.sessionStorageManager) {
+        const allData = window.sessionStorageManager.getAllSessionData();
+        if (allData[fileName] && allData[fileName].dataGroups) {
+          delete allData[fileName].dataGroups[groupKey];
+          if (Object.keys(allData[fileName].dataGroups).length === 0) {
+            delete allData[fileName];
+          }
+          sessionStorage.setItem('theword_session_data', JSON.stringify(allData));
+        }
+      }
+      const option = btn.closest('.reuse-option');
+      option.remove();
+      showSuccess('Đã xóa dữ liệu');
+    };
+    
+    btn._clickHandler = handler;
+    btn.addEventListener('click', handler);
   });
 }
 
@@ -1343,40 +1368,40 @@ function fillFormWithMenData(groupData, targetSuffix) {
       const loaiDatDPlaceholder = targetSuffix ? `Loai_Dat_D${targetSuffix}` : 'Loai_Dat_D';
       const loaiDatFPlaceholder = targetSuffix ? `Loai_Dat_F${targetSuffix}` : 'Loai_Dat_F';
       const loaiDatPlaceholder = targetSuffix ? `Loai_Dat${targetSuffix}` : 'Loai_Dat';
-      
       const loaiDatDInput = document.querySelector(`input[data-ph="${loaiDatDPlaceholder}"]`);
       const loaiDatFContainer = document.querySelector(`.land-type-size-container[data-ph="${loaiDatFPlaceholder}"]`);
       const loaiDatInput = document.querySelector(`input[data-ph="${loaiDatPlaceholder}"]`);
+      const targetField = loaiDatDInput ? 'D' : (loaiDatFContainer ? 'F' : (loaiDatInput ? 'basic' : null));
       
-      // Chỉ bỏ qua nếu file Word đích không có field này
-      if (fieldName === 'Loai_Dat' && !loaiDatInput) {
-        return; // File Word không có Loai_Dat
+      if (!targetField) {
+        return; 
       }
-      if (fieldName === 'Loai_Dat_F' && !loaiDatFContainer) {
-        return; // File Word không có Loai_Dat_F
-      }
-      if (fieldName === 'Loai_Dat_D' && !loaiDatDInput) {
-        return; // File Word không có Loai_Dat_D
+      let sourceValue = null;
+      let sourceType = null;
+      if (groupData.Loai_Dat_D) {
+        sourceValue = groupData.Loai_Dat_D;
+        sourceType = 'D';
+      } else if (groupData.Loai_Dat_F) {
+        sourceValue = groupData.Loai_Dat_F;
+        sourceType = 'F';
+      } else if (groupData.Loai_Dat) {
+        sourceValue = groupData.Loai_Dat;
+        sourceType = 'basic';
       }
       
-      // Áp dụng priority: Loai_Dat_D > Loai_Dat_F > Loai_Dat
+      if (!sourceValue) return;
       if (fieldName === 'Loai_Dat' && (groupData.Loai_Dat_D || groupData.Loai_Dat_F)) {
-        // Nếu có data cao hơn, chỉ skip nếu file Word cũng có field cao hơn đó
-        if ((groupData.Loai_Dat_D && loaiDatDInput) || (groupData.Loai_Dat_F && loaiDatFContainer)) {
-          return;
-        }
+        return;
       }
       if (fieldName === 'Loai_Dat_F' && groupData.Loai_Dat_D) {
-        // Nếu có Loai_Dat_D, chỉ skip nếu file Word cũng có Loai_Dat_D
-        if (loaiDatDInput) {
-          return;
-        }
+        return;
       }
       
-      if (loaiDatDInput) {
-        let convertedValue = value;
-        if (fieldName === 'Loai_Dat_F') {
-          const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+      if (targetField === 'D') {
+        let convertedValue = sourceValue;
+        
+        if (sourceType === 'F') {
+          const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
           convertedValue = entries.map(entry => {
             let match = entry.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/i);
             if (match) {
@@ -1392,42 +1417,43 @@ function fillFormWithMenData(groupData, targetSuffix) {
             }
             return `${entry}||`;
           }).join(';');
-        } else if (fieldName === 'Loai_Dat') {
-          const codes = value.split('+').map(c => c.trim()).filter(Boolean);
+        } else if (sourceType === 'basic') {
+          const codes = sourceValue.split('+').map(c => c.trim()).filter(Boolean);
           convertedValue = codes.map(code => `${code}||`).join(';');
         }
         
         fillLandTypeDetailField(loaiDatDPlaceholder, convertedValue);
         return;
-      } else if (loaiDatFContainer) {
-        let convertedValue = value;
-        
-        if (fieldName === 'Loai_Dat_D') {
-          const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+      } else if (targetField === 'F') {
+        let convertedValue = sourceValue;
+        if (sourceType === 'D') {
+          const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
           convertedValue = entries.map(entry => {
             const parts = entry.split('|');
             const code = parts[0] ? parts[0].trim() : '';
             const area = parts[2] ? parts[2].trim() : '';
             return area ? `${code} ${area}` : code;
           }).filter(Boolean).join('; ');
-        } else if (fieldName === 'Loai_Dat') {
-          const codes = value.split('+').map(c => c.trim()).filter(Boolean);
+        } else if (sourceType === 'basic') {
+          const codes = sourceValue.split('+').map(c => c.trim()).filter(Boolean);
           convertedValue = codes.join('; ');
         }
         
         fillLandTypeSizeField(loaiDatFPlaceholder, convertedValue);
         return;
-      } else if (loaiDatInput) {
-        let convertedValue = value;
-        if (fieldName === 'Loai_Dat_D') {
-          const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+        
+      } else if (targetField === 'basic') {
+        let convertedValue = sourceValue;
+        
+        if (sourceType === 'D') {
+          const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
           const codes = entries.map(entry => {
             const parts = entry.split('|');
             return parts[0] ? parts[0].trim() : '';
           }).filter(Boolean);
           convertedValue = codes.join('+');
-        } else if (fieldName === 'Loai_Dat_F') {
-          const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+        } else if (sourceType === 'F') {
+          const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
           const codes = entries.map(entry => {
             const match = entry.match(/^([A-Z]+)/i);
             return match ? match[1] : '';

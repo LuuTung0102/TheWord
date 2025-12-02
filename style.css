@@ -2872,3 +2872,223 @@ label.required::after {
     width: 100%;
   }
 }
+
+
+/* ===================================
+       KHU VỰC TÁI SỬ DỤNG DỮ LIỆU 
+  ==================================== */
+.reuse-data-section {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 6px;
+  border: 1px solid #bae6fd;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.reuse-data-section label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0369a1;
+}
+
+
+/* === DROPDOWN === */
+.custom-reuse-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.reuse-dropdown-trigger {
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 2px solid #0ea5e9;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.reuse-dropdown-trigger:hover {
+  background: #f0f9ff;
+  border-color: #0284c7;
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.15);
+}
+
+.reuse-dropdown-trigger .selected-text {
+  flex: 1;
+  font-size: 13px;
+  color: #0c4a6e;
+  font-weight: 500;
+}
+
+.reuse-dropdown-trigger > span:last-child {
+  font-size: 10px;
+  color: #0284c7;
+  transition: transform 0.2s ease;
+}
+
+.reuse-dropdown-trigger:hover > span:last-child {
+  transform: translateY(2px);
+}
+
+
+/* === MENU DROPDOWN === */
+.reuse-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+
+  border: 2px solid #0ea5e9;
+  border-radius: 6px;
+
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 1000;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+/* === OPTION === */
+.reuse-option {
+  padding: 10px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid #e0f2fe;
+  user-select: none;
+  transition: all 0.15s ease;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.reuse-option span:first-child {
+  flex: 1;
+  color: #0c4a6e;
+  font-weight: 500;
+}
+
+.reuse-option:hover {
+  background: linear-gradient(90deg, #e0f2fe 0%, #f0f9ff 100%);
+  padding-left: 16px;
+}
+
+.reuse-option:first-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.reuse-option:last-child {
+  border-bottom: none;
+  border-radius: 0 0 4px 4px;
+}
+
+
+/* === DELETE BUTTON === */
+.delete-reuse-btn {
+  padding: 4px 8px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.delete-reuse-btn:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.delete-reuse-btn:active {
+  transform: scale(0.95);
+}
+/* ========================================
+    Styles
+   ======================================== */
+.remove-subgroup-btn {
+  padding: 6px 12px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.person-btn {
+    padding: 15px 20px;
+    margin: 10px 10px 10px 0;
+    font-size: 16px;
+    font-weight: normal;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
+}
+
+.person-btn:hover {
+    background: #f0f0f0;
+    border-color: #bbb;
+}
+
+.add-subgroup-btn {
+  padding: 8px 16px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+
+.clear-all-session-btn {
+    padding: 10px 20px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.clear-all-session-btn:hover {
+    background: #d32f2f; /* màu hover tối hơn */
+}
+
+.form-subgroup {
+    border: 2px solid #2196F3;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background: #f8fbff;
+}
