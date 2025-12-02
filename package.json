@@ -67,6 +67,7 @@
           ]
         }
       ],
+      "icon": "icon.ico",
       "requestedExecutionLevel": "highestAvailable"
     },
     "nsis": {
@@ -77,6 +78,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "TheWord",
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
       "license": "LICENSE.txt"
     },
     "mac": {
