@@ -1,6 +1,6 @@
 {
   "name": "TheWord",
-  "version": "5.3.2",
+  "version": "1.0.0",
   "description": "Hệ thống tự động hóa văn bản Word",
   "main": "main.js",
   "scripts": {
@@ -68,7 +68,7 @@
         }
       ],
       "icon": "icon.ico",
-      "requestedExecutionLevel": "highestAvailable"
+      "requestedExecutionLevel": "asInvoker"
     },
     "nsis": {
       "oneClick": false,

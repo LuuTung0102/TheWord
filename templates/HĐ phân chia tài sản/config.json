@@ -47,13 +47,18 @@
       "description": "Thông tin cá nhân",
       "applicableTo": ["NTK", "NM", "MP"],
       "fields": [
-        { "name": "Gender", "label": "Giới tính", "type": "select", "options": ["Ông", "Bà"], "defaultValue": "Ông", "required": true },
+        { "name": "Gender", "label": "Giới tính", "type": "select", "options": ["Ông", "Bà"], "required": true },
         { "name": "Name", "label": "Họ và tên", "type": "text", "required": true },
         { "name": "Date", "label": "Ngày sinh", "type": "date", "required": true },
         { "name": "CCCD", "label": "CCCD", "type": "number", "required": true },
+        { "name": "Relation", "label": "Quan hệ", "type": "select", "options": ["Con", "Vợ", "Chồng"], "required": true },
         { "name": "Noi_Cap", "label": "Nơi cấp CCCD", "type": "select", "options": ["Cục Cảnh sát QLHC về TTXH", "Công an T. Đắk Lắk"], "required": true },
         { "name": "Ngay_Cap", "label": "Ngày cấp CCCD", "type": "date", "required": true },
-        { "name": "Address", "label": "Hộ khẩu thường trú", "type": "address-select", "required": true }
+        { "name": "Address", "label": "Hộ khẩu thường trú", "type": "address-select", "required": true },
+        { "name": "Noi_CapDie", "label": "Nơi cấp giấy tử", "type": "textarea", "required": true },
+        { "name": "TLKT", "label": "Trích lục khai tử", "type": "textarea", "required": true },
+        { "name": "Noi_CapDie", "label": "Nơi cấp giấy tử", "type": "textarea", "required": true },
+        { "name": "Date_Die", "label": "Ngày cấp giấy tử", "type": "date", "required": true }
       ]
     },
 
@@ -69,6 +74,8 @@
         { "name": "S", "label": "Diện tích (m²)", "type": "number", "required": true },
         { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "placeholder": "VD: XXX+XXX", "required": true },
         { "name": "Loai_Dat_F", "label": "Loại đất (có diện tích)", "type": "land_type_size", "required": true },
+        { "name": "Loai_Dat_D", "label": "Loại đất chi tiết", "type": "land_type_detail", "required": true },
+        { "name": "NG", "label": "Nguồn gốc", "type": "textarea", "required": true },
         { "name": "HTSD_R", "label": "Sử dụng riêng (m²)", "type": "number", "required": true },
         { "name": "HTSD_C", "label": "Sử dụng chung (m²)", "type": "number", "required": true },
         { "name": "THSD", "label": "Thời hạn sử dụng", "type": "textarea", "required": false },
@@ -94,7 +101,8 @@
         { "id": "MEN5", "label": "Người thừa kế", "visible": false },
         { "id": "MEN6", "label": "Người thừa kế", "visible": false }
       ],
-      "suffixes": ["1", "2", "3", "4", "5", "6"]
+      "suffixes": ["1", "2", "3", "4", "5", "6"],
+       "defaultGenders": ["Ông"]
     },
     {
       "group": "NM",
@@ -102,16 +110,18 @@
       "subgroups": [
         { "id": "MEN7", "label": "Người mất", "visible": true}
       ],
-      "suffixes": ["7"]
+      "suffixes": ["7"],
+       "defaultGenders": ["Ông"]
     },
     {
       "group": "MP",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN8", "label": "Cha người mất", "visible": false },
-        { "id": "MEN9", "label": "Mẹ người mất", "visible": false }
+        { "id": "MEN8", "label": "Phụ huynh người mất", "visible": true },
+        { "id": "MEN9", "label": "Phụ huynh người mất", "visible": true }
       ],
-      "suffixes": ["8", "9"]
+      "suffixes": ["8", "9"],
+      "defaultGenders": ["Ông", "Bà"]
     },
     {
       "group": "LAND",

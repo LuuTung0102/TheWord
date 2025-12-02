@@ -166,8 +166,8 @@ dist\TheWord Setup 5.3.2.exe
 
 ### Nếu muốn build cho Mac/Linux:
 ```bash
-npm run build:mac   # macOS
-npm run build:linux # Linux
+npm run build:mac
+npm run build:linux
 ```
 
 **That's it! 🚀**

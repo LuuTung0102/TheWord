@@ -99,7 +99,6 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  // Initialize directories on first run
   ensureTemplatesDir();
   ensureConfigDir();
   

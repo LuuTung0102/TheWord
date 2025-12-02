@@ -442,10 +442,34 @@ async function renderGenericForm(placeholders, config, folderPath) {
     groupDiv.className = "form-group";
     
     const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
-    const hiddenSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups.filter(sg => {
+    
+    // Lọc chỉ các subgroups có placeholder trong file Word
+    const availableSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups.filter(sg => {
+      const subId = typeof sg === 'string' ? sg : sg.id;
+      // Tìm suffix tương ứng với subgroup này
+      const subIndex = groupMapping.subgroups.findIndex(s => {
+        const sId = typeof s === 'string' ? s : s.id;
+        return sId === subId;
+      });
+      const suffix = groupMapping.suffixes && groupMapping.suffixes[subIndex] 
+        ? groupMapping.suffixes[subIndex] 
+        : '';
+      
+      // Kiểm tra xem có placeholder nào với suffix này không
+      const hasPlaceholder = Object.keys(phMapping).some(ph => {
+        if (suffix) {
+          return ph.endsWith(suffix);
+        }
+        return true;
+      });
+      
+      return hasPlaceholder;
+    }) : [];
+    
+    const hiddenSubgroups = availableSubgroups.filter(sg => {
       const subId = typeof sg === 'string' ? sg : sg.id;
       return !window.visibleSubgroups.has(subId);
-    }) : [];
+    });
     
     if (hiddenSubgroups.length > 0) {
       const firstHidden = hiddenSubgroups[0];
@@ -480,9 +504,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
           suffix = mapping.suffixes[0];
         }
       }
-      
       const savedPeople = window.loadSavedPeople ? await window.loadSavedPeople() : [];
-      
       const buttonsHtml = `
         <div class="form-subgroup">
           <h4>Chọn người từ danh sách đã lưu</h4>
@@ -525,10 +547,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
     } else {
       const allSubgroups = groupMapping && groupMapping.subgroups ? groupMapping.subgroups : [];
       const subgroupKeys = allSubgroups.map(sg => typeof sg === 'string' ? sg : sg.id);
-      
       subgroupKeys.forEach(subKey => {
         if (!window.visibleSubgroups.has(subKey)) return;
-        
         const subgroupDiv = document.createElement("div");
         subgroupDiv.className = "form-subgroup";
         subgroupDiv.setAttribute('data-subgroup-id', subKey);
@@ -539,7 +559,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
           margin-bottom: 20px;
           background: #f8fbff;
         `;
-        
         const isDefaultVisible = window.defaultVisibleSubgroups && window.defaultVisibleSubgroups.has(subKey);
         const visibleSubgroupsInGroup = subgroupKeys.filter(sk => window.visibleSubgroups.has(sk));
         const canDelete = !isDefaultVisible && visibleSubgroupsInGroup.length > 1;
@@ -637,7 +656,30 @@ async function renderGenericForm(placeholders, config, folderPath) {
       const groupMapping = config.fieldMappings ? config.fieldMappings.find(m => m.group === groupKey) : null;
       
       if (groupMapping && groupMapping.subgroups) {
-        const nextHidden = groupMapping.subgroups.find(sg => {
+        // Lọc chỉ các subgroups có placeholder trong file Word
+        const availableSubgroups = groupMapping.subgroups.filter(sg => {
+          const subId = typeof sg === 'string' ? sg : sg.id;
+          // Tìm suffix tương ứng với subgroup này
+          const subIndex = groupMapping.subgroups.findIndex(s => {
+            const sId = typeof s === 'string' ? s : s.id;
+            return sId === subId;
+          });
+          const suffix = groupMapping.suffixes && groupMapping.suffixes[subIndex] 
+            ? groupMapping.suffixes[subIndex] 
+            : '';
+          
+          // Kiểm tra xem có placeholder nào với suffix này không
+          const hasPlaceholder = Object.keys(phMapping).some(ph => {
+            if (suffix) {
+              return ph.endsWith(suffix);
+            }
+            return true;
+          });
+          
+          return hasPlaceholder;
+        });
+        
+        const nextHidden = availableSubgroups.find(sg => {
           const subId = typeof sg === 'string' ? sg : sg.id;
           return !window.visibleSubgroups.has(subId);
         });
@@ -651,17 +693,40 @@ async function renderGenericForm(placeholders, config, folderPath) {
             const groupDiv = sectionDiv.querySelector('.form-group');
             if (groupDiv) {
               groupDiv.appendChild(newSubgroupDiv);
+              
+              // Kiểm tra xem còn subgroup nào ẩn không (trong số các subgroup có placeholder)
+              const remainingHidden = availableSubgroups.filter(sg => {
+                const subId = typeof sg === 'string' ? sg : sg.id;
+                return !window.visibleSubgroups.has(subId);
+              });
+              
+              // Nếu không còn subgroup nào ẩn, ẩn nút "➕ Thêm"
+              if (remainingHidden.length === 0) {
+                btn.style.display = 'none';
+              }
+              
               setTimeout(() => {
                 const removeBtn = newSubgroupDiv.querySelector('.remove-subgroup-btn');
                 if (removeBtn) {
                   removeBtn.addEventListener('click', async () => {
                     const subgroupIdToRemove = removeBtn.dataset.subgroup;
                     const subgroupLabel = removeBtn.getAttribute('title')?.replace('Xóa ', '') || subgroupIdToRemove;
-                    if (!confirm(`Bạn có chắc muốn xóa "${subgroupLabel}"?\n\nDữ liệu đã nhập sẽ bị xóa.`)) {
-                      return;
-                    }
+                    
+                    const confirmed = await new Promise((resolve) => {
+                      showConfirm(
+                        `Bạn có chắc muốn xóa "${subgroupLabel}"?\n\nDữ liệu đã nhập sẽ bị xóa.`,
+                        () => resolve(true),
+                        () => resolve(false)
+                      );
+                    });
+                    
+                    if (!confirmed) return;
+                    
                     window.visibleSubgroups.delete(subgroupIdToRemove);
                     groupDiv.removeChild(newSubgroupDiv);
+                    
+                    // Hiện lại nút "➕ Thêm" khi xóa subgroup
+                    btn.style.display = '';
                   });
                 }
                 setupReuseDataListeners();
@@ -684,7 +749,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
 
   const removeButtons = window.stateManager.querySelectorAll('.remove-subgroup-btn');
   removeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const groupKey = btn.dataset.group;
       const subgroupId = btn.dataset.subgroup;
       
@@ -693,11 +758,19 @@ async function renderGenericForm(placeholders, config, folderPath) {
       }
       
       const subgroupLabel = btn.getAttribute('title')?.replace('Xóa ', '') || subgroupId;
-      if (!confirm(`Bạn có chắc muốn xóa "${subgroupLabel}"?\n\nDữ liệu đã nhập sẽ bị xóa.`)) {
-        return;
-      }
-      window.visibleSubgroups.delete(subgroupId);
       
+      const confirmed = await new Promise((resolve) => {
+        showConfirm(
+          `Bạn có chắc muốn xóa "${subgroupLabel}"?\n\nDữ l
+       sẽ bị xóa.`,
+          () => resolve(true),
+          () => resolve(false)
+        );
+      });
+      
+      if (!confirmed) return;
+      
+      window.visibleSubgroups.delete(subgroupId);
       const subgroupElement = window.stateManager.querySelector(`[data-subgroup-id="${subgroupId}"]`);
       if (subgroupElement && subgroupElement.parentNode) {
         subgroupElement.parentNode.removeChild(subgroupElement);
@@ -1266,12 +1339,6 @@ function fillFormWithMenData(groupData, targetSuffix) {
     
     if (fieldName === 'Loai_Dat_D' || fieldName === 'Loai_Dat_F' || fieldName === 'Loai_Dat') {
       if (!value || typeof value !== 'string') return;
-      if (fieldName === 'Loai_Dat' && (groupData.Loai_Dat_D || groupData.Loai_Dat_F)) {
-        return; 
-      }
-      if (fieldName === 'Loai_Dat_F' && groupData.Loai_Dat_D) {
-        return; 
-      }
       
       const loaiDatDPlaceholder = targetSuffix ? `Loai_Dat_D${targetSuffix}` : 'Loai_Dat_D';
       const loaiDatFPlaceholder = targetSuffix ? `Loai_Dat_F${targetSuffix}` : 'Loai_Dat_F';
@@ -1280,6 +1347,31 @@ function fillFormWithMenData(groupData, targetSuffix) {
       const loaiDatDInput = document.querySelector(`input[data-ph="${loaiDatDPlaceholder}"]`);
       const loaiDatFContainer = document.querySelector(`.land-type-size-container[data-ph="${loaiDatFPlaceholder}"]`);
       const loaiDatInput = document.querySelector(`input[data-ph="${loaiDatPlaceholder}"]`);
+      
+      // Chỉ bỏ qua nếu file Word đích không có field này
+      if (fieldName === 'Loai_Dat' && !loaiDatInput) {
+        return; // File Word không có Loai_Dat
+      }
+      if (fieldName === 'Loai_Dat_F' && !loaiDatFContainer) {
+        return; // File Word không có Loai_Dat_F
+      }
+      if (fieldName === 'Loai_Dat_D' && !loaiDatDInput) {
+        return; // File Word không có Loai_Dat_D
+      }
+      
+      // Áp dụng priority: Loai_Dat_D > Loai_Dat_F > Loai_Dat
+      if (fieldName === 'Loai_Dat' && (groupData.Loai_Dat_D || groupData.Loai_Dat_F)) {
+        // Nếu có data cao hơn, chỉ skip nếu file Word cũng có field cao hơn đó
+        if ((groupData.Loai_Dat_D && loaiDatDInput) || (groupData.Loai_Dat_F && loaiDatFContainer)) {
+          return;
+        }
+      }
+      if (fieldName === 'Loai_Dat_F' && groupData.Loai_Dat_D) {
+        // Nếu có Loai_Dat_D, chỉ skip nếu file Word cũng có Loai_Dat_D
+        if (loaiDatDInput) {
+          return;
+        }
+      }
       
       if (loaiDatDInput) {
         let convertedValue = value;
