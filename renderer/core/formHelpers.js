@@ -804,6 +804,8 @@ function setupLandTypeDetailInput(container, inputId) {
       return;
     }
     
+
+    
     if (tags.length === 0) {
       hiddenInput.value = '';
     } else {
@@ -1232,6 +1234,8 @@ function setupLandTypeSizeInput(container, inputId) {
   }
   
   function updateHiddenValue() {
+
+    
     if (tags.length === 0) {
       input.value = '';
       input.dispatchEvent(new Event('change', { bubbles: true }));

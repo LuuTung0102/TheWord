@@ -15,7 +15,7 @@ function generateAllLandTypeFormats(...args) {
 }
 
 function renderSingleSubgroup(...args){
-  return window.SubgroupRenderer?.renderSingleSubgroup?.(...args);
+  return window.SubgroupRenderer?.renderSingleSubgroup?.(...args); 
 }
 
 function renderReuseDataDropdown(...args){
@@ -49,7 +49,6 @@ function fillAddressField(...args){
 let idToPhGeneric = {};
 
 async function renderGenericForm(placeholders, config, folderPath) {
-  window._autoFilledLandFields = new Set();
   
   if (window.personDataService && !window.personDataService.labelsLoaded) {
     await window.personDataService.loadPeople();
@@ -910,7 +909,7 @@ function collectGenericFormData() {
         data[sexPh] = 'Nữ';
       }
     }
-    if (value !== '' && !window._autoFilledLandFields?.has(ph)) {
+    if (value !== '') {
       data[ph] = value;
     }
   });

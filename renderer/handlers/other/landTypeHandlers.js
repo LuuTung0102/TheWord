@@ -165,38 +165,128 @@ function populateDynamicOptions(groupData, targetSuffix) {
 }
 
 function fillLandTypeFields(groupData, isFromReuse = false) {
-  if (!window._autoFilledLandFields) {
-    window._autoFilledLandFields = new Set();
-  }
-  
   const loaiDatDInput = document.querySelector('input[data-ph="Loai_Dat_D"]');
   const loaiDatFContainer = document.querySelector('.land-type-size-container[data-ph="Loai_Dat_F"]');
   const loaiDatInput = document.querySelector('input[data-ph="Loai_Dat"]');
+  
   const sourceHasD = groupData.Loai_Dat_D && groupData.Loai_Dat_D.trim();
   const sourceHasF = groupData.Loai_Dat_F && groupData.Loai_Dat_F.trim();
   const sourceHasBasic = groupData.Loai_Dat && groupData.Loai_Dat.trim();
   
-  if (loaiDatDInput && sourceHasD) {
-    fillLandTypeDetailField('Loai_Dat_D', groupData.Loai_Dat_D);
-    if (isFromReuse && !sourceHasD) {
-      window._autoFilledLandFields.add('Loai_Dat_D');
+  // Xác định nguồn dữ liệu ưu tiên: D > F > Basic
+  let sourceValue = null;
+  let sourceType = null;
+  
+  if (sourceHasD) {
+    sourceValue = groupData.Loai_Dat_D;
+    sourceType = 'D';
+  } else if (sourceHasF) {
+    sourceValue = groupData.Loai_Dat_F;
+    sourceType = 'F';
+  } else if (sourceHasBasic) {
+    sourceValue = groupData.Loai_Dat;
+    sourceType = 'basic';
+  }
+  
+  if (!sourceValue) {
+    return;
+  }
+  
+  // Điền Loai_Dat_D nếu template có
+  if (loaiDatDInput) {
+    if (sourceType === 'D') {
+      fillLandTypeDetailField('Loai_Dat_D', sourceValue);
+    } else if (sourceType === 'F') {
+      const convertedD = convertLoaiDatFtoD(sourceValue);
+      fillLandTypeDetailField('Loai_Dat_D', convertedD);
+    } else if (sourceType === 'basic') {
+      const convertedD = convertLoaiDatBasicToD(sourceValue);
+      fillLandTypeDetailField('Loai_Dat_D', convertedD);
     }
   }
   
-  if (loaiDatFContainer && sourceHasF) {
-    fillLandTypeSizeField('Loai_Dat_F', groupData.Loai_Dat_F);
-    if (isFromReuse && !sourceHasF) {
-      window._autoFilledLandFields.add('Loai_Dat_F');
+  // Điền Loai_Dat_F nếu template có
+  if (loaiDatFContainer) {
+    if (sourceType === 'F') {
+      fillLandTypeSizeField('Loai_Dat_F', sourceValue);
+    } else if (sourceType === 'D') {
+      const convertedF = convertLoaiDatDtoF(sourceValue);
+      fillLandTypeSizeField('Loai_Dat_F', convertedF);
+    } else if (sourceType === 'basic') {
+      const convertedF = convertLoaiDatBasicToF(sourceValue);
+      fillLandTypeSizeField('Loai_Dat_F', convertedF);
     }
   }
   
-  if (loaiDatInput && sourceHasBasic) {
-    loaiDatInput.value = groupData.Loai_Dat;
-    loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
-    if (isFromReuse && !sourceHasBasic) {
-      window._autoFilledLandFields.add('Loai_Dat');
+  // Điền Loai_Dat nếu template có
+  if (loaiDatInput) {
+    if (sourceType === 'basic') {
+      loaiDatInput.value = sourceValue;
+      loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
+    } else if (sourceType === 'D') {
+      const convertedBasic = convertLoaiDatDtoBasic(sourceValue);
+      loaiDatInput.value = convertedBasic;
+      loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
+    } else if (sourceType === 'F') {
+      const convertedBasic = convertLoaiDatFtoBasic(sourceValue);
+      loaiDatInput.value = convertedBasic;
+      loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
   }
+}
+
+// Hàm chuyển đổi giữa các định dạng
+function convertLoaiDatDtoF(loaiDatD) {
+  const entries = loaiDatD.split(';').map(e => e.trim()).filter(Boolean);
+  return entries.map(entry => {
+    const parts = entry.split('|');
+    const code = parts[0] ? parts[0].trim() : '';
+    const area = parts[2] ? parts[2].trim() : '';
+    return area ? `${code} ${area}` : code;
+  }).filter(Boolean).join('; ');
+}
+
+function convertLoaiDatDtoBasic(loaiDatD) {
+  const entries = loaiDatD.split(';').map(e => e.trim()).filter(Boolean);
+  const codes = entries.map(entry => {
+    const parts = entry.split('|');
+    return parts[0] ? parts[0].trim() : '';
+  }).filter(Boolean);
+  return codes.join('+');
+}
+
+function convertLoaiDatFtoD(loaiDatF) {
+  const entries = loaiDatF.split(';').map(e => e.trim()).filter(Boolean);
+  return entries.map(entry => {
+    const match = entry.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/i);
+    if (match) {
+      return `${match[1]}||${match[2]}`;
+    }
+    const codeMatch = entry.match(/^([A-Z]+)$/i);
+    if (codeMatch) {
+      return `${codeMatch[1]}||`;
+    }
+    return `${entry}||`;
+  }).join(';');
+}
+
+function convertLoaiDatFtoBasic(loaiDatF) {
+  const entries = loaiDatF.split(';').map(e => e.trim()).filter(Boolean);
+  const codes = entries.map(entry => {
+    const match = entry.match(/^([A-Z]+)/i);
+    return match ? match[1] : '';
+  }).filter(Boolean);
+  return codes.join('+');
+}
+
+function convertLoaiDatBasicToD(loaiDat) {
+  const codes = loaiDat.split('+').map(c => c.trim()).filter(Boolean);
+  return codes.map(code => `${code}||`).join(';');
+}
+
+function convertLoaiDatBasicToF(loaiDat) {
+  const codes = loaiDat.split('+').map(c => c.trim()).filter(Boolean);
+  return codes.join('; ');
 }
 
 function fillLandTypeDetailField(placeholder, valueString) {
@@ -319,13 +409,8 @@ function generateAllLandTypeFormats(data) {
   const loaiDat = data['Loai_Dat'];
   const loaiDatF = data['Loai_Dat_F'];
   const loaiDatD = data['Loai_Dat_D'];
-  const originalFields = [];
-  if (loaiDat && loaiDat.trim()) originalFields.push('Loai_Dat');
-  if (loaiDatF && loaiDatF.trim()) originalFields.push('Loai_Dat_F');
-  if (loaiDatD && loaiDatD.trim()) originalFields.push('Loai_Dat_D');
   
-  data._landOriginalFields = originalFields;
-  
+  // Xác định nguồn dữ liệu ưu tiên: D > F > Basic
   let sourceValue = null;
   let sourceType = null;
   
@@ -341,56 +426,29 @@ function generateAllLandTypeFormats(data) {
   }
   
   if (!sourceValue) return;
+  
+  // Luôn sinh đủ 3 định dạng để lưu vào session
   if (!loaiDat || !loaiDat.trim()) {
     if (sourceType === 'D') {
-      const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
-      const codes = entries.map(entry => {
-        const parts = entry.split('|');
-        return parts[0] ? parts[0].trim() : '';
-      }).filter(Boolean);
-      data['Loai_Dat'] = codes.join('+');
+      data['Loai_Dat'] = convertLoaiDatDtoBasic(sourceValue);
     } else if (sourceType === 'F') {
-      const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
-      const codes = entries.map(entry => {
-        const match = entry.match(/^(?:\d+(?:\.\d+)?\s*m2?\s+)?([A-Z]+)/i);
-        return match ? match[1] : '';
-      }).filter(Boolean);
-      data['Loai_Dat'] = codes.join('+');
+      data['Loai_Dat'] = convertLoaiDatFtoBasic(sourceValue);
     }
   }
   
   if (!loaiDatF || !loaiDatF.trim()) {
     if (sourceType === 'D') {
-      const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
-      const converted = entries.map(entry => {
-        const parts = entry.split('|');
-        const code = parts[0] ? parts[0].trim() : '';
-        const area = parts[2] ? parts[2].trim() : '';
-        return area ? `${code} ${area}` : code;
-      }).filter(Boolean);
-      data['Loai_Dat_F'] = converted.join('; ');
+      data['Loai_Dat_F'] = convertLoaiDatDtoF(sourceValue);
     } else if (sourceType === 'basic') {
-      const codes = sourceValue.split('+').map(c => c.trim()).filter(Boolean);
-      data['Loai_Dat_F'] = codes.join('; ');
+      data['Loai_Dat_F'] = convertLoaiDatBasicToF(sourceValue);
     }
   }
   
   if (!loaiDatD || !loaiDatD.trim()) {
     if (sourceType === 'F') {
-      const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
-      const converted = entries.map(entry => {
-        let match = entry.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/i);
-        if (match) return `${match[1]}||${match[2]}`;
-        match = entry.match(/^(\d+(?:\.\d+)?)\s*m2?\s+([A-Z]+)/i);
-        if (match) return `${match[2]}||${match[1]}`;
-        match = entry.match(/^([A-Z]+)$/i);
-        if (match) return `${match[1]}||`;
-        return `${entry}||`;
-      });
-      data['Loai_Dat_D'] = converted.join(';');
+      data['Loai_Dat_D'] = convertLoaiDatFtoD(sourceValue);
     } else if (sourceType === 'basic') {
-      const codes = sourceValue.split('+').map(c => c.trim()).filter(Boolean);
-      data['Loai_Dat_D'] = codes.map(code => `${code}||`).join(';');
+      data['Loai_Dat_D'] = convertLoaiDatBasicToD(sourceValue);
     }
   }
 }
@@ -402,4 +460,10 @@ window.LandTypeHandlers = {
   fillLandTypeDetailField,
   fillLandTypeSizeField,
   generateAllLandTypeFormats,
+  convertLoaiDatDtoF,
+  convertLoaiDatDtoBasic,
+  convertLoaiDatFtoD,
+  convertLoaiDatFtoBasic,
+  convertLoaiDatBasicToD,
+  convertLoaiDatBasicToF,
 };

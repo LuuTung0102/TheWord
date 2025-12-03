@@ -10,8 +10,8 @@
     };
     
     Object.keys(data).forEach((key) => {
-      if (key === 'Loai_Dat_F' && data.Loai_Dat_D) return;
-      if (key === 'Loai_Dat' && (data.Loai_Dat_D || data.Loai_Dat_F)) return;
+      // Bỏ qua _landOriginalFields nếu có
+      if (key === '_landOriginalFields') return;
       
       let value = data[key];
       if (isEmpty(value)) return;
@@ -58,7 +58,7 @@
         continue;
       }
       
-      // Bỏ qua các trường Loai_Dat khi so sánh
+      // Bỏ qua các trường land type vì đã so sánh riêng
       if (key === 'Loai_Dat' || key === 'Loai_Dat_F' || key === 'Loai_Dat_D') {
         continue;
       }
