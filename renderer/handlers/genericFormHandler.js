@@ -931,6 +931,29 @@ function collectGenericFormData() {
     if (provinceSelect && provinceSelect.value) parts.push(provinceSelect.value);
     data[ph] = parts.join(', ');
   });
+  
+  // Merge với dữ liệu gốc từ session để giữ thông tin chi tiết
+  const reusedGroupSources = window.stateManager?.getReusedGroupSources?.();
+  if (reusedGroupSources && reusedGroupSources.size > 0) {
+    reusedGroupSources.forEach((sourceInfo) => {
+      const sourceData = sourceInfo.sourceData;
+      if (sourceData) {
+        // Nếu source có Loai_Dat_D với thông tin chi tiết, giữ lại
+        if (sourceData.Loai_Dat_D && !data.Loai_Dat_D) {
+          data.Loai_Dat_D = sourceData.Loai_Dat_D;
+        }
+        // Nếu source có Loai_Dat_F với thông tin chi tiết, giữ lại
+        if (sourceData.Loai_Dat_F && !data.Loai_Dat_F) {
+          data.Loai_Dat_F = sourceData.Loai_Dat_F;
+        }
+        // Nếu source có Loai_Dat, giữ lại
+        if (sourceData.Loai_Dat && !data.Loai_Dat) {
+          data.Loai_Dat = sourceData.Loai_Dat;
+        }
+      }
+    });
+  }
+  
   generateAllLandTypeFormats(data);
   return data;
 }
