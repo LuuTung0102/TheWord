@@ -8,7 +8,7 @@ class MainApp {
     this.formData = {};
     this.isLoading = false;
     this.lastExportedPath = null;
-    this.sessionRestoreChecked = false; // Flag để đảm bảo chỉ check một lần
+    this.sessionRestoreChecked = false;
   }
 
   async init() {
@@ -16,9 +16,7 @@ class MainApp {
       await this.loadTemplates();
       this.setupEventListeners();
       this.updateUI();
-      
-      // Kiểm tra và khôi phục session ngay sau khi UI sẵn sàng
-      // TRƯỚC KHI người dùng chọn file
+    
       setTimeout(async () => {
         await this.checkAndRestoreSession();
         this.sessionRestoreChecked = true;
@@ -32,7 +30,6 @@ class MainApp {
     if (!window.sessionStorageManager) return;
 
     try {
-      // Kiểm tra xem có disable auto-restore không (để debug)
       const disableAutoRestore = localStorage.getItem('disable_auto_restore') === 'true';
       if (disableAutoRestore) {
         console.log('Auto-restore is disabled');
@@ -42,15 +39,12 @@ class MainApp {
       const hasPersistedSession = window.sessionStorageManager.hasPersistedSession();
       
       if (hasPersistedSession) {
-        // Hiển thị modal hỏi người dùng
         const shouldRestore = await this.showRestoreSessionModal();
         
         if (shouldRestore) {
-          // Khôi phục session
           window.sessionStorageManager.restoreSessionFromLocalStorage();
-          this.showNotification('Đã khôi phục session trước đó', 'success');
+          this.showNotification('Đã khôi phục dữ liệu trước đó', 'success');
         } else {
-          // Xóa session cũ và bắt đầu mới
           window.sessionStorageManager.clearPersistedSession();
           window.sessionStorageManager.clearAllSessionData();
           this.showNotification('Đã bắt đầu session mới', 'info');
@@ -58,7 +52,6 @@ class MainApp {
       }
     } catch (error) {
       console.error('Error checking/restoring session:', error);
-      // Nếu có lỗi, tiếp tục bình thường không ảnh hưởng đến app
     }
   }
 
@@ -67,7 +60,7 @@ class MainApp {
       const modal = document.createElement('div');
       modal.className = 'modal';
       modal.style.display = 'flex';
-      modal.style.zIndex = '10001'; // Đảm bảo modal hiển thị trên cùng
+      modal.style.zIndex = '10001';
       modal.innerHTML = `
         <div class="modal-content">
           <div class="modal-header">
@@ -126,35 +119,14 @@ class MainApp {
   }
 
   showNotification(message, type = 'info') {
-    if (window.showSuccess && type === 'success') {
+    if (type === 'success' && window.showSuccess) {
       window.showSuccess(message);
-    } else if (window.showError && type === 'error') {
+    } else if (type === 'error' && window.showError) {
       window.showError(message);
-    } else {
-      const notification = document.createElement('div');
-      notification.className = `notification notification-${type}`;
-      notification.textContent = message;
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3'};
-        color: white;
-        border-radius: 4px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        z-index: 10000;
-        animation: slideIn 0.3s ease-out;
-      `;
-      
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease-out';
-        setTimeout(() => {
-          document.body.removeChild(notification);
-        }, 300);
-      }, 3000);
+    } else if (type === 'warning' && window.showWarning) {
+      window.showWarning(message);
+    } else if (window.showInfo) {
+      window.showInfo(message);
     }
   }
 

@@ -10,7 +10,6 @@
     };
     
     Object.keys(data).forEach((key) => {
-      // Bỏ qua _landOriginalFields nếu có
       if (key === '_landOriginalFields') return;
       
       let value = data[key];
@@ -58,7 +57,6 @@
         continue;
       }
       
-      // Bỏ qua các trường land type vì đã so sánh riêng
       if (key === 'Loai_Dat' || key === 'Loai_Dat_F' || key === 'Loai_Dat_D') {
         continue;
       }
@@ -516,7 +514,6 @@
     sessionStorage.removeItem(STORAGE_KEY);
   }
 
-  // Lưu sessionStorage vào localStorage
   function persistSessionToLocalStorage() {
     try {
       const sessionData = sessionStorage.getItem(STORAGE_KEY);
@@ -531,7 +528,6 @@
     }
   }
 
-  // Khôi phục sessionStorage từ localStorage
   function restoreSessionFromLocalStorage() {
     try {
       const persistedData = localStorage.getItem(STORAGE_KEY);
@@ -546,7 +542,6 @@
     }
   }
 
-  // Xóa dữ liệu đã lưu trong localStorage
   function clearPersistedSession() {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -557,7 +552,6 @@
     }
   }
 
-  // Kiểm tra xem có session đã lưu không
   function hasPersistedSession() {
     try {
       const persistedData = localStorage.getItem(STORAGE_KEY);
@@ -567,7 +561,6 @@
     }
   }
 
-  // Tự động lưu trước khi đóng cửa sổ
   if (typeof window !== "undefined") {
     window.addEventListener('beforeunload', () => {
       persistSessionToLocalStorage();

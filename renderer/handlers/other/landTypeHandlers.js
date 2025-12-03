@@ -173,7 +173,6 @@ function fillLandTypeFields(groupData, isFromReuse = false) {
   const sourceHasF = groupData.Loai_Dat_F && groupData.Loai_Dat_F.trim();
   const sourceHasBasic = groupData.Loai_Dat && groupData.Loai_Dat.trim();
   
-  // Xác định nguồn dữ liệu ưu tiên: D > F > Basic
   let sourceValue = null;
   let sourceType = null;
   
@@ -192,7 +191,6 @@ function fillLandTypeFields(groupData, isFromReuse = false) {
     return;
   }
   
-  // Điền Loai_Dat_D nếu template có
   if (loaiDatDInput) {
     if (sourceType === 'D') {
       fillLandTypeDetailField('Loai_Dat_D', sourceValue);
@@ -205,7 +203,6 @@ function fillLandTypeFields(groupData, isFromReuse = false) {
     }
   }
   
-  // Điền Loai_Dat_F nếu template có
   if (loaiDatFContainer) {
     if (sourceType === 'F') {
       fillLandTypeSizeField('Loai_Dat_F', sourceValue);
@@ -218,7 +215,6 @@ function fillLandTypeFields(groupData, isFromReuse = false) {
     }
   }
   
-  // Điền Loai_Dat nếu template có
   if (loaiDatInput) {
     if (sourceType === 'basic') {
       loaiDatInput.value = sourceValue;
@@ -235,7 +231,6 @@ function fillLandTypeFields(groupData, isFromReuse = false) {
   }
 }
 
-// Hàm chuyển đổi giữa các định dạng
 function convertLoaiDatDtoF(loaiDatD) {
   const entries = loaiDatD.split(';').map(e => e.trim()).filter(Boolean);
   return entries.map(entry => {
@@ -405,20 +400,15 @@ function generateAllLandTypeFormats(data) {
   if (!hasLoaiDat && !hasLoaiDatF && !hasLoaiDatD) {
     return;
   }
-  
   const loaiDat = data['Loai_Dat'];
   const loaiDatF = data['Loai_Dat_F'];
   const loaiDatD = data['Loai_Dat_D'];
-  
-  // Kiểm tra xem có dữ liệu chi tiết (địa điểm/diện tích) không
   const hasDetailInD = loaiDatD && loaiDatD.includes('|') && loaiDatD.split(';').some(e => {
     const parts = e.split('|');
     return (parts[1] && parts[1].trim()) || (parts[2] && parts[2].trim());
   });
   
   const hasDetailInF = loaiDatF && loaiDatF.match(/\d+(?:\.\d+)?/);
-  
-  // Xác định nguồn dữ liệu ưu tiên: D (có chi tiết) > F (có chi tiết) > D > F > Basic
   let sourceValue = null;
   let sourceType = null;
   
@@ -441,8 +431,6 @@ function generateAllLandTypeFormats(data) {
   
   if (!sourceValue) return;
   
-  // Luôn sinh đủ 3 định dạng để lưu vào session
-  // Nhưng ưu tiên giữ dữ liệu có chi tiết
   if (!loaiDat || !loaiDat.trim()) {
     if (sourceType === 'D') {
       data['Loai_Dat'] = convertLoaiDatDtoBasic(sourceValue);
