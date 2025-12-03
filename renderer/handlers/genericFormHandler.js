@@ -953,7 +953,6 @@ function collectGenericFormData() {
       }
     });
   }
-  
   generateAllLandTypeFormats(data);
   return data;
 }

@@ -804,8 +804,6 @@ function setupLandTypeDetailInput(container, inputId) {
       return;
     }
     
-
-    
     if (tags.length === 0) {
       hiddenInput.value = '';
     } else {

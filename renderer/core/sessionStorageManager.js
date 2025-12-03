@@ -516,6 +516,64 @@
     sessionStorage.removeItem(STORAGE_KEY);
   }
 
+  // Lưu sessionStorage vào localStorage
+  function persistSessionToLocalStorage() {
+    try {
+      const sessionData = sessionStorage.getItem(STORAGE_KEY);
+      if (sessionData) {
+        localStorage.setItem(STORAGE_KEY, sessionData);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error persisting session to localStorage:', error);
+      return false;
+    }
+  }
+
+  // Khôi phục sessionStorage từ localStorage
+  function restoreSessionFromLocalStorage() {
+    try {
+      const persistedData = localStorage.getItem(STORAGE_KEY);
+      if (persistedData) {
+        sessionStorage.setItem(STORAGE_KEY, persistedData);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error restoring session from localStorage:', error);
+      return false;
+    }
+  }
+
+  // Xóa dữ liệu đã lưu trong localStorage
+  function clearPersistedSession() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      return true;
+    } catch (error) {
+      console.error('Error clearing persisted session:', error);
+      return false;
+    }
+  }
+
+  // Kiểm tra xem có session đã lưu không
+  function hasPersistedSession() {
+    try {
+      const persistedData = localStorage.getItem(STORAGE_KEY);
+      return !!persistedData;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Tự động lưu trước khi đóng cửa sổ
+  if (typeof window !== "undefined") {
+    window.addEventListener('beforeunload', () => {
+      persistSessionToLocalStorage();
+    });
+  }
+
   if (typeof window !== "undefined") {
     window.sessionStorageManager = {
       saveFormData,
@@ -523,6 +581,10 @@
       getAvailableMenGroups,
       getMenGroupData,
       clearAllSessionData,
+      persistSessionToLocalStorage,
+      restoreSessionFromLocalStorage,
+      clearPersistedSession,
+      hasPersistedSession,
     };
   }
 })();

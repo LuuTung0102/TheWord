@@ -8,6 +8,7 @@ class MainApp {
     this.formData = {};
     this.isLoading = false;
     this.lastExportedPath = null;
+    this.sessionRestoreChecked = false; // Flag để đảm bảo chỉ check một lần
   }
 
   async init() {
@@ -15,8 +16,145 @@ class MainApp {
       await this.loadTemplates();
       this.setupEventListeners();
       this.updateUI();
+      
+      // Kiểm tra và khôi phục session ngay sau khi UI sẵn sàng
+      // TRƯỚC KHI người dùng chọn file
+      setTimeout(async () => {
+        await this.checkAndRestoreSession();
+        this.sessionRestoreChecked = true;
+      }, 300);
     } catch (error) {
       this.showError('Không thể khởi tạo ứng dụng');
+    }
+  }
+
+  async checkAndRestoreSession() {
+    if (!window.sessionStorageManager) return;
+
+    try {
+      // Kiểm tra xem có disable auto-restore không (để debug)
+      const disableAutoRestore = localStorage.getItem('disable_auto_restore') === 'true';
+      if (disableAutoRestore) {
+        console.log('Auto-restore is disabled');
+        return;
+      }
+
+      const hasPersistedSession = window.sessionStorageManager.hasPersistedSession();
+      
+      if (hasPersistedSession) {
+        // Hiển thị modal hỏi người dùng
+        const shouldRestore = await this.showRestoreSessionModal();
+        
+        if (shouldRestore) {
+          // Khôi phục session
+          window.sessionStorageManager.restoreSessionFromLocalStorage();
+          this.showNotification('Đã khôi phục session trước đó', 'success');
+        } else {
+          // Xóa session cũ và bắt đầu mới
+          window.sessionStorageManager.clearPersistedSession();
+          window.sessionStorageManager.clearAllSessionData();
+          this.showNotification('Đã bắt đầu session mới', 'info');
+        }
+      }
+    } catch (error) {
+      console.error('Error checking/restoring session:', error);
+      // Nếu có lỗi, tiếp tục bình thường không ảnh hưởng đến app
+    }
+  }
+
+  showRestoreSessionModal() {
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.display = 'flex';
+      modal.style.zIndex = '10001'; // Đảm bảo modal hiển thị trên cùng
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">🔄 Khôi phục</h3>
+          </div>
+          <div class="modal-body">
+            <p>Phát hiện có dữ liệu từ lần trước. Bạn có muốn khôi phục không?</p>
+            <div class="modal-actions">
+              <button class="btn btn-primary" id="restoreSessionBtn">
+                Khôi phục
+              </button>
+              <button class="btn btn-secondary" id="newSessionBtn">
+                Làm mới
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      const restoreBtn = modal.querySelector('#restoreSessionBtn');
+      const newSessionBtn = modal.querySelector('#newSessionBtn');
+      
+      const cleanup = () => {
+        try {
+          if (modal && modal.parentNode) {
+            document.body.removeChild(modal);
+          }
+        } catch (e) {
+          console.error('Error removing modal:', e);
+        }
+      };
+      
+      const handleRestore = () => {
+        cleanup();
+        resolve(true);
+      };
+      
+      const handleNew = () => {
+        cleanup();
+        resolve(false);
+      };
+      
+      restoreBtn.addEventListener('click', handleRestore, { once: true });
+      newSessionBtn.addEventListener('click', handleNew, { once: true });
+      
+      const handleEsc = (e) => {
+        if (e.key === 'Escape') {
+          document.removeEventListener('keydown', handleEsc);
+          handleNew();
+        }
+      };
+      document.addEventListener('keydown', handleEsc);
+    });
+  }
+
+  showNotification(message, type = 'info') {
+    if (window.showSuccess && type === 'success') {
+      window.showSuccess(message);
+    } else if (window.showError && type === 'error') {
+      window.showError(message);
+    } else {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3'};
+        color: white;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
     }
   }
 
