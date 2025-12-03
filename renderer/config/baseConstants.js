@@ -21,6 +21,11 @@ const BASE_PLACEHOLDERS = {
     order: 4
   },
 
+  Date_Die:{
+    type: "date",
+    order: 4
+  },
+
   Sex:{
     type: "select",
     options: ["Nam", "Nữ"],
@@ -82,9 +87,19 @@ const BASE_PLACEHOLDERS = {
     order: 13
   },
 
+  Ngay_CapDie: {
+  type:"date",
+  order: 14
+  },
+
+  Noi_CapDie:{
+    type: "textarea",
+    order: 15
+  },
+
   Address: {
     type: "address-select",
-    order: 14
+    order: 16
   },
 
   ///////////////////////////////////////////////////////////////////

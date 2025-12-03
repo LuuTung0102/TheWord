@@ -435,24 +435,9 @@
             await configManager.writeConfig(folderPath, existingConfig);
             this.files = await this.loadFilesInFolder(this.selectedFolder.path);
             this.renderFileList();
-            
-            if (window.mainAppInstance) {
-              if (typeof window.mainAppInstance.loadFilesInFolder === 'function') {
-                await window.mainAppInstance.loadFilesInFolder(this.selectedFolder.name);
-              }
-              
-              if (typeof window.mainAppInstance.loadTemplates === 'function') {
-                await window.mainAppInstance.loadTemplates();
-              }
-              
-              if (typeof window.mainAppInstance.renderFiles === 'function') {
-                window.mainAppInstance.renderFiles();
-              }
-            } else {
-              window.dispatchEvent(new CustomEvent('templates-updated', { 
-                detail: { folderName: this.selectedFolder.name } 
-              }));
-            }
+            window.dispatchEvent(new CustomEvent('templates-updated', { 
+              detail: { folderName: this.selectedFolder.name } 
+            }));
             
             showSuccess(`File "${fileName}" đã được thêm và cấu hình thành công!`);
           } catch (error) {
@@ -478,10 +463,6 @@
         } else {
           this.files = await this.loadFilesInFolder(this.selectedFolder.path);
           this.renderFileList();
-        
-          if (window.mainAppInstance && typeof window.mainAppInstance.loadFilesInFolder === 'function') {
-            await window.mainAppInstance.loadFilesInFolder(this.selectedFolder.name);
-          }
           
           showInfo(`Đã hủy thêm file "${fileName}"`);
         }
@@ -549,6 +530,9 @@
         }
         this.files = await this.loadFilesInFolder(this.selectedFolder.path);
         this.renderFileList();
+        window.dispatchEvent(new CustomEvent('templates-updated', { 
+          detail: { folderName: this.selectedFolder.name } 
+        }));
       } catch (error) {
         showError(`Không thể xóa file: ${error.message || 'Lỗi không xác định'}`);
       }

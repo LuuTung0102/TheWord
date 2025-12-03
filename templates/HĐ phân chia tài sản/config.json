@@ -58,7 +58,8 @@
         { "name": "Noi_CapDie", "label": "Nơi cấp giấy tử", "type": "textarea", "required": true },
         { "name": "TLKT", "label": "Trích lục khai tử", "type": "textarea", "required": true },
         { "name": "Noi_CapDie", "label": "Nơi cấp giấy tử", "type": "textarea", "required": true },
-        { "name": "Date_Die", "label": "Ngày cấp giấy tử", "type": "date", "required": true }
+        { "name": "Date_Die", "label": "Ngày mất", "type": "date", "required": true },
+        { "name": "Ngay_CapDie", "label": "Ngày cấp giấy tử", "type": "date", "required": true }
       ]
     },
 

@@ -4,9 +4,12 @@ const fs = require("fs");
 
 let configCache = {};
 
-
-async function loadFolderConfig(folderPath) {
+async function loadFolderConfig(folderPath, forceReload = false) {
   try {
+    if (forceReload && configCache[folderPath]) {
+      delete configCache[folderPath];
+    }
+    
     if (configCache[folderPath]) {
       return configCache[folderPath];
     }
@@ -19,15 +22,20 @@ async function loadFolderConfig(folderPath) {
     
     const configContent = fs.readFileSync(configPath, 'utf-8');
     const config = JSON.parse(configContent);
-    
     configCache[folderPath] = config;
-    
     return config;
   } catch (error) {
     return null;
   }
 }
 
+function clearConfigCache(folderPath = null) {
+  if (folderPath) {
+    delete configCache[folderPath];
+  } else {
+    configCache = {};
+  }
+}
 
 function validateDotPlaceholder(fieldDef, placeholder) {
   if (fieldDef.type !== 'text-or-dots') {
@@ -66,9 +74,7 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
     config.fieldMappings.forEach(mappingDef => {
       const { group, subgroups, schema, suffixes, defaultGenders } = mappingDef;
       const schemaDef = config.fieldSchemas[schema];
-      
       if (!schemaDef) return;
-      
       subgroups.forEach((subgroupDef, subIndex) => {
         const subgroupId = typeof subgroupDef === 'string' ? subgroupDef : subgroupDef.id;
         const subgroupLabel = typeof subgroupDef === 'object' ? subgroupDef.label : subgroupDef;
@@ -97,7 +103,6 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
             subgroupLabel: subgroupLabel
           };
           
-          
           if (fieldDef.hasOwnProperty('required')) {
             fieldConfig.required = fieldDef.required;
           } else if (!fieldConfig.hasOwnProperty('required')) {
@@ -125,7 +130,6 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
           } else if (fieldConfig.type !== 'text-or-dots' && fieldConfig.dotPlaceholder) {
             delete fieldConfig.dotPlaceholder;
           }
-          
           mapping[placeholder] = fieldConfig;
         });
       });
@@ -318,7 +322,6 @@ function getGroupLabels(config) {
       labels[groupId] = config.groups[groupId].label || groupId;
     });
   }
-  
   return labels;
 }
 
@@ -345,12 +348,12 @@ function getSubgroupLabels(config) {
       labels[subgroupId] = config.subgroupLabels[subgroupId];
     });
   }
-  
   return labels;
 }
 
 if (typeof window !== 'undefined') {
   window.loadFolderConfig = loadFolderConfig;
+  window.clearConfigCache = clearConfigCache;
   window.buildPlaceholderMapping = buildPlaceholderMapping;
   window.getGroupLabels = getGroupLabels;
   window.getSubgroupLabels = getSubgroupLabels;
@@ -359,6 +362,7 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     loadFolderConfig,
+    clearConfigCache,
     buildPlaceholderMapping,
     getGroupLabels,
     getSubgroupLabels

@@ -92,6 +92,41 @@ class MainApp {
     }
 
     this.setupTemplateListeners();
+    
+    window.addEventListener('templates-updated', async (e) => {
+      const folderName = e.detail?.folderName;
+      try {
+        this.currentConfig = null;
+        window.currentTemplate = null;
+        if (window.clearConfigCache && typeof window.clearConfigCache === 'function') {
+          window.clearConfigCache();
+        }
+        if (window.stateManager && typeof window.stateManager.invalidateDOMCache === 'function') {
+          window.stateManager.invalidateDOMCache();
+        }
+        await this.loadTemplates();
+        this.renderTemplates();
+        
+        if (folderName) {
+          const folder = this.templates.find(t => t.name === folderName);
+          if (folder) {
+            this.expandedFolder = folderName;
+            this.selectedFolder = folderName;
+            this.files = (folder.files || []).map(fileName => ({
+              name: fileName,
+              displayName: fileName.replace('.docx', ''),
+              icon: '📄'
+            }));
+            
+            this.renderTemplates();
+            showSuccess(`Folder "${folderName}" đã được cập nhật. Click vào file để xem form.`);
+          }
+        }
+      } catch (error) {
+        console.error('Error reloading templates:', error);
+        showError('Không thể reload templates. Vui lòng refresh lại trang.');
+      }
+    });
   }
 
   setupTemplateListeners() {
@@ -184,6 +219,11 @@ class MainApp {
       }
       const folderPath = `${templatesRoot}\\${selectedTemplate.path.replace(/\//g, '\\')}`;
       const placeholders = await this.loadPlaceholdersForFile(folderPath, fileName);
+      
+      if (window.clearConfigCache && typeof window.clearConfigCache === 'function') {
+        window.clearConfigCache(folderPath);
+      }
+      
       const folderConfig = await this.loadConfig(folderPath);
       this.currentConfig = folderConfig; 
       

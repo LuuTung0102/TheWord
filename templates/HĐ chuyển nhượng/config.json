@@ -1,10 +1,10 @@
 {
   "templates": [
     {
-      "id": "hd-cn-dat",
-      "filename": "HĐ chuyển nhượng(1).docx",
-      "name": "Hợp đồng chuyển nhượng đất",
-      "description": "Chuyển nhượng quyền sử dụng đất",
+      "id": "hop-dong-chuyen-nhuong-bia-2024",
+      "filename": "Hop dong chuyen nhuong bia 2024.docx",
+      "name": "HĐ chuyển nhượng(HGĐ)",
+      "description": "",
       "groups": [
         "BCN",
         "BNCN",
@@ -12,8 +12,8 @@
       ],
       "placeholders": {
         "BCN": [
-          "MEN1",
-          "MEN2"
+          "MEN2",
+          "MEN1"
         ],
         "BNCN": [
           "MEN7",
@@ -25,10 +25,10 @@
       }
     },
     {
-      "id": "hd-cn-hgd",
+      "id": "h-chuy-n-nh-ng-hg",
       "filename": "HĐ chuyển nhượng(HGĐ).docx",
-      "name": "Hợp đồng chuyển nhượng (HGĐ)",
-      "description": "Chuyển nhượng đất hộ gia đình",
+      "name": "HĐ chuyển nhượng(HGĐ)",
+      "description": "",
       "groups": [
         "BCN",
         "BNCN",
@@ -53,19 +53,16 @@
       }
     },
     {
-      "id": "hop-dong-chuyen-nhuong-bia-2024",
-      "filename": "Hop dong chuyen nhuong bia 2024.docx",
-      "name": "Hop dong chuyen nhuong bia 2024",
+      "id": "h-chuy-n-nh-ng-1",
+      "filename": "HĐ chuyển nhượng(1).docx",
+      "name": "HĐ chuyển nhượng(HGĐ)",
       "description": "",
       "groups": [
-        "LAND",
         "BCN",
-        "BNCN"
+        "BNCN",
+        "LAND"
       ],
       "placeholders": {
-        "LAND": [
-          "INFO"
-        ],
         "BCN": [
           "MEN1",
           "MEN2"
@@ -73,6 +70,9 @@
         "BNCN": [
           "MEN7",
           "MEN8"
+        ],
+        "LAND": [
+          "INFO"
         ]
       }
     }

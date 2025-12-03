@@ -92,6 +92,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1000,
     height: 900,
+    autoHideMenuBar: true,
     webPreferences: { nodeIntegration: true, contextIsolation: false },
   });
   win.loadFile("index.html");
