@@ -270,6 +270,8 @@ function setupEditableSelectInput(input) {
 
 
 async function renderGenericForm(placeholders, config, folderPath) {
+  window._autoFilledLandFields = new Set();
+  
   if (window.personDataService && !window.personDataService.labelsLoaded) {
     await window.personDataService.loadPeople();
   }
@@ -1349,9 +1351,45 @@ function populateDynamicOptions(groupData, targetSuffix) {
   }
 }
 
+function fillLandTypeFields(groupData, isFromReuse = false) {
+  if (!window._autoFilledLandFields) {
+    window._autoFilledLandFields = new Set();
+  }
+  
+  const loaiDatDInput = document.querySelector('input[data-ph="Loai_Dat_D"]');
+  const loaiDatFContainer = document.querySelector('.land-type-size-container[data-ph="Loai_Dat_F"]');
+  const loaiDatInput = document.querySelector('input[data-ph="Loai_Dat"]');
+  const sourceHasD = groupData.Loai_Dat_D && groupData.Loai_Dat_D.trim();
+  const sourceHasF = groupData.Loai_Dat_F && groupData.Loai_Dat_F.trim();
+  const sourceHasBasic = groupData.Loai_Dat && groupData.Loai_Dat.trim();
+  
+  if (loaiDatDInput && sourceHasD) {
+    fillLandTypeDetailField('Loai_Dat_D', groupData.Loai_Dat_D);
+    if (isFromReuse && !sourceHasD) {
+      window._autoFilledLandFields.add('Loai_Dat_D');
+    }
+  }
+  
+  if (loaiDatFContainer && sourceHasF) {
+    fillLandTypeSizeField('Loai_Dat_F', groupData.Loai_Dat_F);
+    if (isFromReuse && !sourceHasF) {
+      window._autoFilledLandFields.add('Loai_Dat_F');
+    }
+  }
+  
+  if (loaiDatInput && sourceHasBasic) {
+    loaiDatInput.value = groupData.Loai_Dat;
+    loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
+    if (isFromReuse && !sourceHasBasic) {
+      window._autoFilledLandFields.add('Loai_Dat');
+    }
+  }
+}
+
 function fillFormWithMenData(groupData, targetSuffix) {
   const hasLoaiDatF = Object.keys(groupData).some(key => key === 'Loai_Dat_F');
   populateDynamicOptions(groupData, targetSuffix);
+  fillLandTypeFields(groupData, true);
   
   Object.keys(groupData).forEach(fieldName => {
     const value = groupData[fieldName];
@@ -1363,109 +1401,6 @@ function fillFormWithMenData(groupData, targetSuffix) {
     }
     
     if (fieldName === 'Loai_Dat_D' || fieldName === 'Loai_Dat_F' || fieldName === 'Loai_Dat') {
-      if (!value || typeof value !== 'string') return;
-      
-      const loaiDatDPlaceholder = targetSuffix ? `Loai_Dat_D${targetSuffix}` : 'Loai_Dat_D';
-      const loaiDatFPlaceholder = targetSuffix ? `Loai_Dat_F${targetSuffix}` : 'Loai_Dat_F';
-      const loaiDatPlaceholder = targetSuffix ? `Loai_Dat${targetSuffix}` : 'Loai_Dat';
-      const loaiDatDInput = document.querySelector(`input[data-ph="${loaiDatDPlaceholder}"]`);
-      const loaiDatFContainer = document.querySelector(`.land-type-size-container[data-ph="${loaiDatFPlaceholder}"]`);
-      const loaiDatInput = document.querySelector(`input[data-ph="${loaiDatPlaceholder}"]`);
-      const targetField = loaiDatDInput ? 'D' : (loaiDatFContainer ? 'F' : (loaiDatInput ? 'basic' : null));
-      
-      if (!targetField) {
-        return; 
-      }
-      let sourceValue = null;
-      let sourceType = null;
-      if (groupData.Loai_Dat_D) {
-        sourceValue = groupData.Loai_Dat_D;
-        sourceType = 'D';
-      } else if (groupData.Loai_Dat_F) {
-        sourceValue = groupData.Loai_Dat_F;
-        sourceType = 'F';
-      } else if (groupData.Loai_Dat) {
-        sourceValue = groupData.Loai_Dat;
-        sourceType = 'basic';
-      }
-      
-      if (!sourceValue) return;
-      if (fieldName === 'Loai_Dat' && (groupData.Loai_Dat_D || groupData.Loai_Dat_F)) {
-        return;
-      }
-      if (fieldName === 'Loai_Dat_F' && groupData.Loai_Dat_D) {
-        return;
-      }
-      
-      if (targetField === 'D') {
-        let convertedValue = sourceValue;
-        
-        if (sourceType === 'F') {
-          const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
-          convertedValue = entries.map(entry => {
-            let match = entry.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/i);
-            if (match) {
-              return `${match[1]}||${match[2]}`;
-            }
-            match = entry.match(/^(\d+(?:\.\d+)?)\s*m2?\s+([A-Z]+)/i);
-            if (match) {
-              return `${match[2]}||${match[1]}`;
-            }
-            match = entry.match(/^([A-Z]+)$/i);
-            if (match) {
-              return `${match[1]}||`;
-            }
-            return `${entry}||`;
-          }).join(';');
-        } else if (sourceType === 'basic') {
-          const codes = sourceValue.split('+').map(c => c.trim()).filter(Boolean);
-          convertedValue = codes.map(code => `${code}||`).join(';');
-        }
-        
-        fillLandTypeDetailField(loaiDatDPlaceholder, convertedValue);
-        return;
-      } else if (targetField === 'F') {
-        let convertedValue = sourceValue;
-        if (sourceType === 'D') {
-          const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
-          convertedValue = entries.map(entry => {
-            const parts = entry.split('|');
-            const code = parts[0] ? parts[0].trim() : '';
-            const area = parts[2] ? parts[2].trim() : '';
-            return area ? `${code} ${area}` : code;
-          }).filter(Boolean).join('; ');
-        } else if (sourceType === 'basic') {
-          const codes = sourceValue.split('+').map(c => c.trim()).filter(Boolean);
-          convertedValue = codes.join('; ');
-        }
-        
-        fillLandTypeSizeField(loaiDatFPlaceholder, convertedValue);
-        return;
-        
-      } else if (targetField === 'basic') {
-        let convertedValue = sourceValue;
-        
-        if (sourceType === 'D') {
-          const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
-          const codes = entries.map(entry => {
-            const parts = entry.split('|');
-            return parts[0] ? parts[0].trim() : '';
-          }).filter(Boolean);
-          convertedValue = codes.join('+');
-        } else if (sourceType === 'F') {
-          const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
-          const codes = entries.map(entry => {
-            const match = entry.match(/^([A-Z]+)/i);
-            return match ? match[1] : '';
-          }).filter(Boolean);
-          convertedValue = codes.join('+');
-        }
-        
-        loaiDatInput.value = convertedValue;
-        loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
-        return;
-      }
-      
       return;
     }
     
@@ -1832,7 +1767,9 @@ function collectGenericFormData() {
       }
     }
     
-    data[ph] = value;
+    if (value !== '' && !window._autoFilledLandFields?.has(ph)) {
+      data[ph] = value;
+    }
   });
   
   document.querySelectorAll('.address-group').forEach(addressGroup => {
@@ -1854,8 +1791,100 @@ function collectGenericFormData() {
     if (provinceSelect && provinceSelect.value) parts.push(provinceSelect.value);
     data[ph] = parts.join(', ');
   });
+  generateAllLandTypeFormats(data);
   
   return data;
+}
+
+function generateAllLandTypeFormats(data) {
+  const hasLoaiDat = data.hasOwnProperty('Loai_Dat');
+  const hasLoaiDatF = data.hasOwnProperty('Loai_Dat_F');
+  const hasLoaiDatD = data.hasOwnProperty('Loai_Dat_D');
+  
+  if (!hasLoaiDat && !hasLoaiDatF && !hasLoaiDatD) {
+    return;
+  }
+  
+  const loaiDat = data['Loai_Dat'];
+  const loaiDatF = data['Loai_Dat_F'];
+  const loaiDatD = data['Loai_Dat_D'];
+  const originalFields = [];
+  if (loaiDat && loaiDat.trim()) originalFields.push('Loai_Dat');
+  if (loaiDatF && loaiDatF.trim()) originalFields.push('Loai_Dat_F');
+  if (loaiDatD && loaiDatD.trim()) originalFields.push('Loai_Dat_D');
+  
+  data._landOriginalFields = originalFields;
+  
+  let sourceValue = null;
+  let sourceType = null;
+  
+  if (loaiDatD && loaiDatD.trim()) {
+    sourceValue = loaiDatD;
+    sourceType = 'D';
+  } else if (loaiDatF && loaiDatF.trim()) {
+    sourceValue = loaiDatF;
+    sourceType = 'F';
+  } else if (loaiDat && loaiDat.trim()) {
+    sourceValue = loaiDat;
+    sourceType = 'basic';
+  }
+  
+  if (!sourceValue) return;
+  if (!loaiDat || !loaiDat.trim()) {
+    if (sourceType === 'D') {
+      const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
+      const codes = entries.map(entry => {
+        const parts = entry.split('|');
+        return parts[0] ? parts[0].trim() : '';
+      }).filter(Boolean);
+      data['Loai_Dat'] = codes.join('+');
+    } else if (sourceType === 'F') {
+      const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
+      const codes = entries.map(entry => {
+        const match = entry.match(/^(?:\d+(?:\.\d+)?\s*m2?\s+)?([A-Z]+)/i);
+        return match ? match[1] : '';
+      }).filter(Boolean);
+      data['Loai_Dat'] = codes.join('+');
+    }
+  }
+  
+  if (!loaiDatF || !loaiDatF.trim()) {
+    if (sourceType === 'D') {
+      const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
+      const converted = entries.map(entry => {
+        const parts = entry.split('|');
+        const code = parts[0] ? parts[0].trim() : '';
+        const area = parts[2] ? parts[2].trim() : '';
+        return area ? `${code} ${area}` : code;
+      }).filter(Boolean);
+      data['Loai_Dat_F'] = converted.join('; ');
+    } else if (sourceType === 'basic') {
+      const codes = sourceValue.split('+').map(c => c.trim()).filter(Boolean);
+      data['Loai_Dat_F'] = codes.join('; ');
+    }
+  }
+  
+  if (!loaiDatD || !loaiDatD.trim()) {
+    if (sourceType === 'F') {
+      const entries = sourceValue.split(';').map(e => e.trim()).filter(Boolean);
+      const converted = entries.map(entry => {
+        let match = entry.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)/i);
+        if (match) return `${match[1]}||${match[2]}`;
+        
+        match = entry.match(/^(\d+(?:\.\d+)?)\s*m2?\s+([A-Z]+)/i);
+        if (match) return `${match[2]}||${match[1]}`;
+        
+        match = entry.match(/^([A-Z]+)$/i);
+        if (match) return `${match[1]}||`;
+        
+        return `${entry}||`;
+      });
+      data['Loai_Dat_D'] = converted.join(';');
+    } else if (sourceType === 'basic') {
+      const codes = sourceValue.split('+').map(c => c.trim()).filter(Boolean);
+      data['Loai_Dat_D'] = codes.map(code => `${code}||`).join(';');
+    }
+  }
 }
 
 if (typeof window !== 'undefined') {

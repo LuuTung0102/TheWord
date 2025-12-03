@@ -54,6 +54,15 @@
         continue;
       }
       
+      if (key === '_landOriginalFields') {
+        continue;
+      }
+      
+      // Bỏ qua các trường Loai_Dat khi so sánh
+      if (key === 'Loai_Dat' || key === 'Loai_Dat_F' || key === 'Loai_Dat_D') {
+        continue;
+      }
+      
       if (!sourceEmpty && !currentEmpty) {
         if (sourceValue !== currentValue) {
           hasModifications = true;
