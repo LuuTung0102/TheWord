@@ -23,4 +23,5 @@ Thumbs.db
 npm-debug.log*
 
 
-.templates/**/*.docx
+# Ignore all .docx files in templates folder but keep config.json
+templates/**/*.docx
