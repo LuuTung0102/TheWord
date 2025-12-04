@@ -1,48 +1,24 @@
 (function() {
-  let savedPeopleCache = null;
   async function loadSavedPeople() {
-    if (savedPeopleCache) {
-      return savedPeopleCache;
-    }
-
-    try {
-      const response = await fetch('renderer/config/local_storage.json');
-      
-      if (!response.ok) {
-        return [];
-      }
-      
-      const data = await response.json();
-      savedPeopleCache = data.saved_people || [];
-      
-      
-      return savedPeopleCache;
-    } catch (error) {
+    if (!window.personDataService) {
       return [];
     }
+    
+    await window.personDataService.loadPeople();
+    return window.personDataService.people;
   }
 
   function getPersonById(personId) {
-    if (!savedPeopleCache) {
+    if (!window.personDataService || !window.personDataService.isLoaded) {
       return null;
     }
     
-    const person = savedPeopleCache.find(p => p.id === personId);
-    
-    if (person) {
-      return person;
-    }
-    return null;
-  }
-
-  function clearSavedPeopleCache() {
-    savedPeopleCache = null;
+    return window.personDataService.getPerson(personId);
   }
 
   if (typeof window !== 'undefined') {
     window.loadSavedPeople = loadSavedPeople;
     window.getPersonById = getPersonById;
-    window.clearSavedPeopleCache = clearSavedPeopleCache;
   }
 })();
 

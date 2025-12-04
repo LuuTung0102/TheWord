@@ -9,6 +9,22 @@
 
     async loadPeople() {
       try {
+        if (window.ipcRenderer) {
+          const result = await window.ipcRenderer.invoke('read-local-storage');
+          if (result.success && result.data) {
+            const data = result.data;
+            this.people = data.saved_people || [];
+            if (data.label_config) {
+              Object.entries(data.label_config).forEach(([key, label]) => {
+                this.labels.set(key, label);
+              });
+              this.labelsLoaded = true;
+            }
+            this.isLoaded = true;
+            return this.people;
+          }
+        }
+        
         const response = await fetch('renderer/config/local_storage.json');
         if (!response.ok) {
           this.people = [];
@@ -46,7 +62,6 @@
         const result = await window.ipcRenderer.invoke('write-local-storage', data);
         if (result.success) {
           this.people = people;
-          this.clearCache();
           return true;
         } else {
           return false;
@@ -63,7 +78,7 @@
       const person = this.people.find(p => p.id === id);
       return person || null;
     }
-    addPerson(data) {
+    async addPerson(data) {
       const newId = this.generatePersonId();
       const newName = this.generatePersonName();
       const newPerson = {
@@ -72,29 +87,26 @@
         data: { ...data }
       };
       this.people.push(newPerson);
-      this.savePeople(this.people);
-      return newPerson;
+      const success = await this.savePeople(this.people);
+      return success ? newPerson : null;
     }
 
-    updatePerson(id, newData) {
+    async updatePerson(id, newData) {
       const person = this.getPerson(id);
       if (!person) {
         return false;
       }
       person.data = { ...person.data, ...newData };
-      this.savePeople(this.people);
-      return true;
+      return await this.savePeople(this.people);
     }
 
-    deletePerson(id) {
+    async deletePerson(id) {
       const index = this.people.findIndex(p => p.id === id);
       if (index === -1) {
         return false;
       }
-      const deletedPerson = this.people[index];
       this.people.splice(index, 1);
-      this.savePeople(this.people);
-      return true;
+      return await this.savePeople(this.people);
     }
 
     generatePersonId() {
@@ -149,11 +161,6 @@
 
     getLabel(key) {
       return this.labels.get(key) || key;
-    }
-    clearCache() {
-      if (window.clearSavedPeopleCache) {
-        window.clearSavedPeopleCache();
-      }
     }
   }
 

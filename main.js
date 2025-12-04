@@ -444,6 +444,30 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
 });
 
 
+ipcMain.handle("read-local-storage", async (event) => {
+  try {
+    const configDir = getConfigDir();
+    const userLocalStoragePath = path.join(configDir, "local_storage.json");
+    if (fs.existsSync(userLocalStoragePath)) {
+      const data = fs.readFileSync(userLocalStoragePath, 'utf8');
+      return { success: true, data: JSON.parse(data) };
+    }
+    const defaultPath = path.join(__dirname, "renderer", "config", "local_storage.json");
+    if (fs.existsSync(defaultPath)) {
+      const defaultData = fs.readFileSync(defaultPath, 'utf8');
+      if (!fs.existsSync(configDir)) {
+        fs.mkdirSync(configDir, { recursive: true });
+      }
+      fs.writeFileSync(userLocalStoragePath, defaultData, 'utf8');
+      
+      return { success: true, data: JSON.parse(defaultData) };
+    }
+    return { success: true, data: { saved_people: [], label_config: {} } };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
 ipcMain.handle("write-local-storage", async (event, data) => {
   try {
     const configDir = getConfigDir();

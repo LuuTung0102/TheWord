@@ -151,7 +151,7 @@
       }
     }
 
-    saveEdit() {
+    async saveEdit() {
       if (!this.currentEditId) return;
       const newData = window.FormBuilder.collectPersonFormData('edit');
       const validation = window.personDataService.validatePersonData(newData);
@@ -160,9 +160,10 @@
         return;
       }
 
-      const success = window.personDataService.updatePerson(this.currentEditId, newData);
+      const success = await window.personDataService.updatePerson(this.currentEditId, newData);
       
       if (success) {
+        await window.personDataService.loadPeople();
         showSuccess('Đã cập nhật thành công!');
         this.currentEditId = null;
         this.renderPersonList();
@@ -190,9 +191,10 @@
         return;
       }
 
-      const success = window.personDataService.deletePerson(id);
+      const success = await window.personDataService.deletePerson(id);
       
       if (success) {
+        await window.personDataService.loadPeople();
         showSuccess('Đã xóa thành công!');
         this.renderPersonList();
       } else {
@@ -220,7 +222,7 @@
       }
     }
 
-    saveAdd() {
+    async saveAdd() {
       const newData = window.FormBuilder.collectPersonFormData('add');
 
       const validation = window.personDataService.validatePersonData(newData);
@@ -229,9 +231,10 @@
         return;
       }
 
-      const newPerson = window.personDataService.addPerson(newData);
+      const newPerson = await window.personDataService.addPerson(newData);
       
       if (newPerson) {
+        await window.personDataService.loadPeople();
         showSuccess(`Đã thêm thành công: ${newPerson.id} - ${newPerson.name}`);
         this.renderPersonList();
       } else {
