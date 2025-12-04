@@ -75,9 +75,11 @@
       }
     }
 
-    if (!hasModifications && !hasAdditions) return { type: "NO_CHANGE" };
-    if (!hasModifications && hasAdditions) return { type: "ONLY_ADDITIONS" };
-    return { type: "HAS_MODIFICATIONS" };
+    const result = !hasModifications && !hasAdditions ? "NO_CHANGE" 
+                 : !hasModifications && hasAdditions ? "ONLY_ADDITIONS" 
+                 : "HAS_MODIFICATIONS";
+    
+    return { type: result };
   }
 
   function generateTimestamp(includeMilliseconds = false) {
@@ -187,32 +189,22 @@
 
         for (const [otherGroupKey, otherGroupData] of Object.entries(otherFileData.dataGroups)) {
           if (otherFile === fileName) continue;
-
-          const otherType = getGroupType(otherGroupKey);
-          if (currentType !== otherType) continue;
+          const currentBase = groupKey.replace(/_\d{8}_\d{6,9}$/, '');
+          const otherBase = otherGroupKey.replace(/_\d{8}_\d{6,9}$/, '');
+          const isExactMatch = currentBase === otherBase;
+          const currentType = getGroupType(currentBase);
+          const otherType = getGroupType(otherBase);
+          const isSameType = currentType === otherType;
+          if (!isExactMatch && !isSameType) continue;
 
           const normalizedOther = normalizeDataForComparison(otherGroupData);
           const normalizedCurrent = normalizeDataForComparison(groupData);
           const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
-          const differences = [];
-          const allKeys = new Set([...Object.keys(normalizedOther), ...Object.keys(normalizedCurrent)]);
-          const isEmpty = (v) => v === undefined || v === null || (typeof v === 'string' && v.trim() === '');
           
-          for (const key of allKeys) {
-            const otherVal = normalizedOther[key];
-            const currentVal = normalizedCurrent[key];
-            
-            if (!isEmpty(otherVal) && !isEmpty(currentVal) && otherVal !== currentVal) {
-              differences.push({ field: key, other: otherVal, current: currentVal, type: 'MODIFIED' });
-            } else if (isEmpty(otherVal) && !isEmpty(currentVal)) {
-              differences.push({ field: key, other: otherVal, current: currentVal, type: 'ADDED' });
-            } else if (!isEmpty(otherVal) && isEmpty(currentVal)) {
-              differences.push({ field: key, other: otherVal, current: currentVal, type: 'REMOVED' });
-            }
+          if (!isExactMatch && changeAnalysis.type === "HAS_MODIFICATIONS") {
+            continue;
           }
-         
-          if (differences.length > 0) {
-          }
+          
           if (changeAnalysis.type === "NO_CHANGE") {
             groupsToDelete.add(groupKey);
             break;
@@ -317,21 +309,84 @@
       }
       const oldDataGroups = existingData[fileName]?.dataGroups || {};
       const mergedDataGroups = { ...oldDataGroups };
+      const groupsToRemoveFromNew = new Set();
+      
       Object.keys(dataGroups).forEach(groupKey => {
         const newData = dataGroups[groupKey];
-        if (!mergedDataGroups[groupKey]) {
+      
+        const currentBase = groupKey.replace(/_\d{8}_\d{6,9}$/, '');
+        let matchedKey = null;
+        let isExactMatch = false;
+        let bestMatchScore = -1;
+        const candidates = [];
+        
+        if (mergedDataGroups[groupKey]) {
+          candidates.push({ key: groupKey, isExact: true });
+        }
+        
+        const currentType = getGroupType(currentBase);
+        for (const oldKey of Object.keys(mergedDataGroups)) {
+          if (oldKey === groupKey) continue;
+          const oldBase = oldKey.replace(/_\d{8}_\d{6,9}$/, '');
+          const oldType = getGroupType(oldBase);
+          if (currentType === oldType) {
+            candidates.push({ key: oldKey, isExact: false });
+          }
+        }
+        
+        for (const candidate of candidates) {
+          const oldData = mergedDataGroups[candidate.key];
+          const normalizedOld = normalizeDataForComparison(oldData);
+          const normalizedNew = normalizeDataForComparison(newData);
+          const analysis = analyzeChanges(normalizedOld, normalizedNew);
+          
+          let score = analysis.type === "NO_CHANGE" ? 100 
+                    : analysis.type === "ONLY_ADDITIONS" ? 50 
+                    : 0;
+          if (candidate.isExact) score += 10;
+          
+          if (score > bestMatchScore) {
+            bestMatchScore = score;
+            matchedKey = candidate.key;
+            isExactMatch = candidate.isExact;
+          }
+        }
+        
+        if (!matchedKey) {
           mergedDataGroups[groupKey] = newData;
         } else {
-          const oldData = mergedDataGroups[groupKey];
+          const oldData = mergedDataGroups[matchedKey];
           try {
             if (!oldData || typeof oldData !== 'object') {
               const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
               mergedDataGroups[versionedKey] = newData;
               return;
             }
+            
             const normalizedOld = normalizeDataForComparison(oldData);
             const normalizedNew = normalizeDataForComparison(newData);          
             const changeAnalysis = analyzeChanges(normalizedOld, normalizedNew);
+            
+            if (!isExactMatch && changeAnalysis.type === "HAS_MODIFICATIONS") {
+              if (typeof console !== 'undefined') {
+                console.log(`⚠️ Creating new version: ${groupKey} (matched with ${matchedKey} but has modifications)`);
+              }
+              mergedDataGroups[groupKey] = newData;
+              return;
+            }
+            
+            if (typeof console !== 'undefined') {
+              const action = changeAnalysis.type === "NO_CHANGE" ? "KEEP" 
+                           : changeAnalysis.type === "ONLY_ADDITIONS" ? "MERGE" 
+                           : "CREATE_VERSION";
+              console.log(`✅ Merge decision for ${groupKey}:`, {
+                matchedKey,
+                isExactMatch,
+                changeType: changeAnalysis.type,
+                action,
+                willMergeInto: changeAnalysis.type === "ONLY_ADDITIONS" ? matchedKey : null
+              });
+            }
             if (typeof console !== 'undefined' && console.log) {
               const differences = [];
               const allKeys = new Set([...Object.keys(normalizedOld), ...Object.keys(normalizedNew)]);
@@ -374,7 +429,11 @@
                 ...oldData,
                 ...newData
               };
-              mergedDataGroups[groupKey] = merged;
+              mergedDataGroups[matchedKey] = merged;
+              
+              if (groupKey !== matchedKey) {
+                groupsToRemoveFromNew.add(groupKey);
+              }
             } else {
               const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
               mergedDataGroups[versionedKey] = newData;

@@ -160,7 +160,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
       const clearBtn = document.createElement('button');
       clearBtn.className = 'clear-all-session-btn';
       clearBtn.innerHTML = '<span class="btn-icon">🗑️</span> Làm mới';
-      clearBtn.title = 'Xóa tất cả dữ liệu đã lưu trong session';
+      clearBtn.title = 'Xóa tất cả dữ liệu đã lưu';
       footerActions.appendChild(clearBtn);
       
       clearBtn.addEventListener('click', async () => {
@@ -174,8 +174,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
         
         if (!confirmed) return;
         
-        if (window.sessionStorageManager && window.sessionStorageManager.clearAllSessionData) {
+        if (window.sessionStorageManager) {
           window.sessionStorageManager.clearAllSessionData();
+          window.sessionStorageManager.clearPersistedSession();
         } else {
           showError('Không thể xóa dữ liệu');
           return;
@@ -183,7 +184,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
         
         clearBtn.remove();
         await renderGenericForm(placeholders, config, folderPath);
-        showSuccess('Đã xóa dữ liệu thành công');
+        showSuccess('Đã xóa tất cả dữ liệu');
       });
     }
   }
@@ -747,10 +748,19 @@ function setupReuseDataListeners() {
             delete allData[fileName];
           }
           sessionStorage.setItem('theword_session_data', JSON.stringify(allData));
+          
+          // Cập nhật persisted session trong localStorage
+          window.sessionStorageManager.persistSessionToLocalStorage();
         }
       }
-      const option = btn.closest('.reuse-option');
-      option.remove();
+      
+      // Reload form để cập nhật dropdown
+      const renderParams = window.stateManager.getRenderParams();
+      if (renderParams) {
+        const { placeholders, config, folderPath } = renderParams;
+        await renderGenericForm(placeholders, config, folderPath);
+      }
+      
       showSuccess('Đã xóa dữ liệu');
     };
     btn._clickHandler = handler;
