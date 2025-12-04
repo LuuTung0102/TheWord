@@ -613,21 +613,21 @@ function reSetupAllInputs() {
     setupNoteTextarea(textarea);
   });
   
-  document.querySelectorAll('input[data-ph="Loai_Dat"]').forEach(input => {
+  document.querySelectorAll('input[data-type="land_type"]').forEach(input => {
     const id = input.id;
     if (id) setupLandTypeInput(input, id);
   });
   
   document.querySelectorAll('.land-type-size-container').forEach(container => {
-    const ph = container.dataset.ph;
+    const type = container.dataset.type;
     
-    if (ph && ph.includes('Loai_Dat_D')) {
+    if (type === 'land_type_detail') {
       const containerId = container.id.replace('_container', '');
       if (!container.dataset.landTypeDetailSetup) {
         setupLandTypeDetailInput(container, containerId);
         container.dataset.landTypeDetailSetup = 'true';
       }
-    } else {
+    } else if (type === 'land_type_size') {
       const inputId = container.querySelector('.tag-input')?.id;
       if (inputId && !container.dataset.landTypeSizeSetup) {
         setupLandTypeSizeInput(container, inputId);
@@ -638,7 +638,7 @@ function reSetupAllInputs() {
 }
 
 function cleanupAllEventListeners() {
-  document.querySelectorAll('input[data-ph="Loai_Dat"]').forEach(input => {
+  document.querySelectorAll('input[data-type="land_type"]').forEach(input => {
     if (input._cleanupFunctions) {
       input._cleanupFunctions.forEach(fn => fn());
       input._cleanupFunctions = [];

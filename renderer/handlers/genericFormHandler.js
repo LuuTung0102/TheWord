@@ -840,22 +840,44 @@ function collectGenericFormData() {
           const tags = tagsWrapper.querySelectorAll('.land-type-tag');
           if (tags.length > 0) {
             const tagValues = [];
+            const containerType = landTypeSizeContainer.getAttribute('data-type');
+            
             tags.forEach(tagEl => {
               const codeSpan = tagEl.querySelector('.tag-code');
+              const locationSpan = tagEl.querySelector('.tag-location');
               const areaSpan = tagEl.querySelector('.tag-area');
+              
               if (codeSpan) {
                 const code = codeSpan.textContent.trim();
                 if (code) {
-                  let area = '';
-                  if (areaSpan) {
-                    const areaText = areaSpan.textContent.trim();
-                    const areaMatch = areaText.match(/(\d+(?:\.\d+)?)/);
-                    area = areaMatch ? areaMatch[1] : '';
-                  }
-                  if (area) {
-                    tagValues.push(`${code} ${area}`);
+                  if (containerType === 'land_type_detail') {
+                    let location = '';
+                    let area = '';
+                    
+                    if (locationSpan) {
+                      const locationText = locationSpan.textContent.trim();
+                      location = locationText.replace(/^-\s*/, '').trim();
+                    }
+                    
+                    if (areaSpan) {
+                      const areaText = areaSpan.textContent.trim();
+                      const areaMatch = areaText.match(/(\d+(?:\.\d+)?)/);
+                      area = areaMatch ? areaMatch[1] : '';
+                    }
+                    
+                    tagValues.push(`${code}|${location}|${area}`);
                   } else {
-                    tagValues.push(code);
+                    let area = '';
+                    if (areaSpan) {
+                      const areaText = areaSpan.textContent.trim();
+                      const areaMatch = areaText.match(/(\d+(?:\.\d+)?)/);
+                      area = areaMatch ? areaMatch[1] : '';
+                    }
+                    if (area) {
+                      tagValues.push(`${code} ${area}`);
+                    } else {
+                      tagValues.push(code);
+                    }
                   }
                 }
               }

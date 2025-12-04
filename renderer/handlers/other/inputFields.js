@@ -76,7 +76,7 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
       ${wrapperStart}
       <label for="${safeId}"${requiredClass}><b>${label}</b></label>
       <div style="position: relative;">
-        <input type="text" id="${safeId}" data-ph="${ph}" class="input-field land-type-input" placeholder="${placeholder}">
+        <input type="text" id="${safeId}" data-ph="${ph}" data-type="land_type" class="input-field land-type-input" placeholder="${placeholder}">
         <div id="${safeId}_dropdown" class="land-type-dropdown"></div>
       </div>
       ${wrapperEnd}
@@ -85,10 +85,10 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
     inputHtml = `
       ${wrapperStart}
       <label for="${safeId}"${requiredClass}><b>${label}</b></label>
-      <div class="land-type-size-container" id="${safeId}_container" data-ph="${ph}">
+      <div class="land-type-size-container" id="${safeId}_container" data-ph="${ph}" data-type="land_type_size">
         <div class="tags-wrapper" id="${safeId}_tags"></div>
         <div class="tag-input-wrapper">
-          <input type="text" id="${safeId}" class="tag-input" data-ph="${ph}" placeholder="Chọn loại đất..." autocomplete="off">
+          <input type="text" id="${safeId}" class="tag-input" data-ph="${ph}" data-type="land_type_size" placeholder="Chọn loại đất..." autocomplete="off">
           <div id="${safeId}_dropdown" class="land-type-dropdown"></div>
         </div>
         <button type="button" class="tag-add-btn" id="${safeId}_addBtn" title="Thêm loại đất">
@@ -131,8 +131,8 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
     inputHtml = `
       ${wrapperStart}
       <label for="${safeId}"${requiredClass}><b>${label}</b></label>
-      <input type="hidden" id="${safeId}" data-ph="${ph}" class="tag-input" />
-      <div class="land-type-size-container" id="${safeId}_container" data-ph="${ph}">
+      <input type="hidden" id="${safeId}" data-ph="${ph}" data-type="land_type_detail" class="tag-input" />
+      <div class="land-type-size-container" id="${safeId}_container" data-ph="${ph}" data-type="land_type_detail">
         <div class="tags-wrapper" id="${safeId}_tags"></div>
         <div class="tag-input-wrapper show" id="${safeId}_input_wrapper">
           <input type="text" id="${safeId}_type" class="tag-input" placeholder="Chọn loại đất..." autocomplete="off">

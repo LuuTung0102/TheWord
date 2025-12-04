@@ -57,7 +57,9 @@
         continue;
       }
       
-      if (key === 'Loai_Dat' || key === 'Loai_Dat_F' || key === 'Loai_Dat_D') {
+      const fieldInput = document.querySelector(`[data-ph="${key}"]`);
+      const fieldType = fieldInput?.getAttribute('data-type');
+      if (fieldType === 'land_type' || fieldType === 'land_type_size' || fieldType === 'land_type_detail') {
         continue;
       }
       

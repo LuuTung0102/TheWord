@@ -1,5 +1,8 @@
 function fillFormWithMenData(groupData, targetSuffix) {
-  const hasLoaiDatF = Object.keys(groupData).some(key => key === 'Loai_Dat_F');
+  const hasLandTypeSize = Object.keys(groupData).some(key => {
+    const input = document.querySelector(`[data-ph="${key}"]`);
+    return input && input.getAttribute('data-type') === 'land_type_size';
+  });
   populateDynamicOptions(groupData, targetSuffix);
   fillLandTypeFields(groupData, true);
   
@@ -12,7 +15,9 @@ function fillFormWithMenData(groupData, targetSuffix) {
       return;
     }
     
-    if (fieldName === 'Loai_Dat_D' || fieldName === 'Loai_Dat_F' || fieldName === 'Loai_Dat') {
+    const fieldInput = document.querySelector(`[data-ph="${fieldName}"]`);
+    const fieldType = fieldInput?.getAttribute('data-type');
+    if (fieldType === 'land_type_detail' || fieldType === 'land_type_size' || fieldType === 'land_type') {
       return;
     }
     
