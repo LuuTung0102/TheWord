@@ -187,7 +187,7 @@
         },
         {
           "name": "So_so",
-          "label": "Số sổ",
+          "label": "Số vào sổ",
           "type": "text",
           "required": true
         },
@@ -238,6 +238,7 @@
           "name": "NG",
           "label": "Nguồn gốc",
           "type": "textarea",
+          "placeholder": "VD: Công nhận QSDĐ như giao đất không thu tiền sử dụng đất",
           "required": true
         },
         {
@@ -283,6 +284,7 @@
         {
           "name": "TTGLVD",
           "label": "TT tài sản gắn liền",
+          "placeholder": "VD: Nhập thông tin tài sản gắn liền",
           "type": "textarea"
         },
         {
