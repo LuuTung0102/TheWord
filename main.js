@@ -92,9 +92,21 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1000,
     height: 900,
+    icon: path.join(__dirname, 'icon.ico'),
     autoHideMenuBar: true,
-    webPreferences: { nodeIntegration: true, contextIsolation: false },
+    frame: true,
+    show: false,
+    titleBarStyle: 'default',
+    webPreferences: { 
+      nodeIntegration: true, 
+      contextIsolation: false 
+    },
   });
+  
+  win.once('ready-to-show', () => {
+    win.show();
+  });
+  
   win.loadFile("index.html");
   win.webContents.session.webSecurity = false;
 }

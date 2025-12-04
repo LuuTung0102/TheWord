@@ -748,13 +748,10 @@ function setupReuseDataListeners() {
             delete allData[fileName];
           }
           sessionStorage.setItem('theword_session_data', JSON.stringify(allData));
-          
-          // Cập nhật persisted session trong localStorage
           window.sessionStorageManager.persistSessionToLocalStorage();
         }
       }
       
-      // Reload form để cập nhật dropdown
       const renderParams = window.stateManager.getRenderParams();
       if (renderParams) {
         const { placeholders, config, folderPath } = renderParams;
