@@ -369,6 +369,9 @@
         if (result) {
           const { templateEntry: updatedTemplateEntry, updatedFieldMappings, newGroups } = result;
           
+          let fileCopied = false;
+          let targetFilePath = null;
+          
           try {
             const targetFolder = `${templatesRoot}\\${this.selectedFolder.path.replace(/\//g, '\\')}`;
             
@@ -379,6 +382,8 @@
                 targetFolder: targetFolder,
                 fileName: fileName
               });
+              fileCopied = true;
+              targetFilePath = `${targetFolder}\\${finalFileName}`;
             } catch (copyError) {
               throw new Error(`Không thể copy file vào folder: ${copyError.message}`);
             }
@@ -441,6 +446,16 @@
             
             showSuccess(`File "${fileName}" đã được thêm và cấu hình thành công!`);
           } catch (error) {
+            if (fileCopied && targetFilePath) {
+              try {
+                const fs = require('fs');
+                if (fs.existsSync(targetFilePath)) {
+                  fs.unlinkSync(targetFilePath);
+                }
+              } catch (deleteError) {
+              }
+            }
+            
             let errorMessage = '❌ Lỗi: Không thể lưu file\n\n';
             
             if (error.message.includes('copy file')) {
@@ -451,7 +466,7 @@
               errorMessage += '- Không đủ dung lượng đĩa\n\n';
             } else if (error.message.includes('config')) {
               errorMessage += `Không thể lưu cấu hình vào config.json.\n\n`;
-              errorMessage += 'File đã được copy nhưng cấu hình chưa được lưu.\n\n';
+              errorMessage += 'File đã được rollback (xóa).\n\n';
             } else {
               errorMessage += `${error.message}\n\n`;
             }

@@ -5,9 +5,13 @@
       "filename": "Chưa kết hôn.docx",
       "name": "Chưa kết hôn",
       "description": "",
-      "groups": ["TTHN"],
+      "groups": [
+        "TTHN"
+      ],
       "placeholders": {
-        "TTHN": ["MEN1"]
+        "TTHN": [
+          "MEN1"
+        ]
       }
     },
     {
@@ -15,13 +19,16 @@
       "filename": "Ly Hôn.docx",
       "name": "Chưa kết hôn",
       "description": "",
-      "groups": ["TTHN"],
+      "groups": [
+        "TTHN"
+      ],
       "placeholders": {
-        "TTHN": ["MEN1"]
+        "TTHN": [
+          "MEN1"
+        ]
       }
     }
   ],
-
   "groups": [
     {
       "id": "TTHN",
@@ -30,37 +37,120 @@
       "description": "Thông tin người xin xác nhận"
     }
   ],
-
   "fieldSchemas": {
     "PersonalInfo": {
       "description": "Thông tin cá nhân",
-      "applicableTo": ["TTHN"],
+      "applicableTo": [
+        "TTHN"
+      ],
       "fields": [
-        { "name": "Gender", "label": "Giới tính", "type": "select", "options": ["Ông", "Bà"],"defaultValue": "Ông", "required": true },
-        { "name": "Name", "label": "Họ và tên", "placeholder": "Họ và tên", "type": "text", "required": true },
-        { "name": "Date", "label": "Ngày sinh", "type": "date", "required": true },
-        { "name": "Sex", "label": "Giới tính(Nam/Nữ)", "type": "text", "placeholder": "Nhập giới tính", "required": true},
-        { "name": "CCCD", "label": "CCCD", "type": "number", "placeholder": "Nhập CCCD","required": true },
-        { "name": "Folk", "label": "Dân tộc", "placeholder": "Dân tộc", "type": "text", "required": true },
-        { "name": "Noi_Cap", "label": "Nơi cấp CCCD", "type": "select", "options": ["Cục Cảnh sát QLHC về TTXH", "Công an T. Đắk Lắk"], "required": true },
-        { "name": "Ngay_Cap", "label": "Ngày cấp CCCD", "type": "date", "required": true },
-        { "name": "Address", "label": "Hộ khẩu thường trú", "type": "address-select", "required": true },
-        { "name": "QDLHS", "label": "Quyết định ly hôn số", "placeholder": "  ", "type": "text","required": true },
-        { "name": "Noi_CapHN", "label": "Nơi cấp giấy HN", "type": "textarea", "placeholder": "  ", "required": true },
-        { "name": "Ngay_CapHN", "label": "Ngày cấp giấy HN", "type": "date", "required": true }
+        {
+          "name": "Gender",
+          "label": "Giới tính",
+          "type": "select",
+          "options": [
+            "Ông",
+            "Bà"
+          ],
+          "defaultValue": "Ông",
+          "required": true
+        },
+        {
+          "name": "Name",
+          "label": "Họ và tên",
+          "placeholder": "Họ và tên",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Date",
+          "label": "Ngày sinh",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "Sex",
+          "label": "Giới tính(Nam/Nữ)",
+          "type": "text",
+          "placeholder": "Nhập giới tính",
+          "required": true
+        },
+        {
+          "name": "CCCD",
+          "label": "CCCD",
+          "type": "number",
+          "placeholder": "Nhập CCCD",
+          "required": true
+        },
+        {
+          "name": "Folk",
+          "label": "Dân tộc",
+          "placeholder": "Dân tộc",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Noi_Cap",
+          "label": "Nơi cấp CCCD",
+          "type": "select",
+          "options": [
+            "Cục Cảnh sát QLHC về TTXH",
+            "Công an T. Đắk Lắk"
+          ],
+          "required": true
+        },
+        {
+          "name": "Ngay_Cap",
+          "label": "Ngày cấp CCCD",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "Address",
+          "label": "Hộ khẩu thường trú",
+          "type": "address-select",
+          "required": true
+        },
+        {
+          "name": "QDLHS",
+          "label": "Quyết định ly hôn số",
+          "placeholder": "  ",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Noi_CapHN",
+          "label": "Nơi cấp giấy HN",
+          "type": "textarea",
+          "placeholder": "  ",
+          "required": true
+        },
+        {
+          "name": "Ngay_CapHN",
+          "label": "Ngày cấp giấy HN",
+          "type": "date",
+          "required": true
+        }
       ]
     }
   },
-
   "fieldMappings": [
     {
       "group": "TTHN",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN1", "label": "Thông tin cá nhân", "visible": true }
+        {
+          "id": "MEN1",
+          "label": "Thông tin cá nhân",
+          "visible": true
+        }
       ],
-      "suffixes": ["1"],
-      "defaultGenders": ["Ông"]
+      "suffixes": [
+        "1"
+      ],
+      "defaultGenders": [
+        "Ông"
+      ]
     }
   ]
 }
