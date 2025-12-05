@@ -1,16 +1,7 @@
-function getLandTypeFields() {
-  return {
-    detail: document.querySelector('input[data-type="land_type_detail"]'),
-    size: document.querySelector('input[data-type="land_type_size"]'),
-    basic: document.querySelector('input[data-type="land_type"]')
-  };
-}
-
 function setupLandTypeSync() {
-  const fields = getLandTypeFields();
-  const loaiDatDInput = fields.detail;
-  let loaiDatFInput = fields.size;
-  let loaiDatInput = fields.basic;
+  const loaiDatDInput = document.querySelector('input[data-type="land_type_detail"]');
+  let loaiDatFInput = document.querySelector('input[data-type="land_type_size"]');
+  let loaiDatInput = document.querySelector('input[data-type="land_type"]');
   
   const skipLandFields = window.stateManager.getRenderDataStructures()?.skipLandFields || new Set();
   const phMapping = window.stateManager.getRenderDataStructures()?.phMapping || {};
@@ -44,8 +35,6 @@ function setupLandTypeSync() {
     const syncDtoF = () => {
       const value = loaiDatDInput.value;
       if (!value) {
-        loaiDatFInput.value = '';
-        loaiDatFInput.dispatchEvent(new Event('change', { bubbles: true }));
         return;
       }
       
@@ -74,8 +63,6 @@ function setupLandTypeSync() {
     const syncFtoD = () => {
       const value = loaiDatFInput.value;
       if (!value) {
-        loaiDatInput.value = '';
-        loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
         return;
       }
       
@@ -99,9 +86,8 @@ function setupLandTypeSync() {
 
 function populateDynamicOptions(groupData, targetSuffix) {
   if (!groupData) {
-    const fields = getLandTypeFields();
-    const loaiDatDInput = fields.detail;
-    const loaiDatFInput = fields.size;
+    const loaiDatDInput = document.querySelector('input[data-type="land_type_detail"]');
+    const loaiDatFInput = document.querySelector('input[data-type="land_type_size"]');
     
     groupData = {};
     if (loaiDatDInput && loaiDatDInput.value) {
@@ -196,91 +182,36 @@ function populateDynamicOptions(groupData, targetSuffix) {
   }
 }
 
-function fillLandTypeFields(groupData, isFromReuse = false) {
-  const fields = getLandTypeFields();
-  const loaiDatDInput = fields.detail;
-  const loaiDatFContainer = document.querySelector('.land-type-size-container[data-type="land_type_size"]');
-  const loaiDatInput = fields.basic;
-  
-  const detailPh = loaiDatDInput?.getAttribute('data-ph');
-  const sizePh = loaiDatFContainer?.querySelector('input')?.getAttribute('data-ph');
-  const basicPh = loaiDatInput?.getAttribute('data-ph');
-  
-  let sourceDetailKey = Object.keys(groupData).find(key => {
-    const input = document.querySelector(`[data-ph="${key}"]`);
-    return input && input.getAttribute('data-type') === 'land_type_detail';
-  });
-  
-  let sourceSizeKey = Object.keys(groupData).find(key => {
-    const input = document.querySelector(`[data-ph="${key}"]`);
-    return input && input.getAttribute('data-type') === 'land_type_size';
-  });
-  
-  let sourceBasicKey = Object.keys(groupData).find(key => {
-    const input = document.querySelector(`[data-ph="${key}"]`);
-    return input && input.getAttribute('data-type') === 'land_type';
-  });
-  
-  const sourceHasD = sourceDetailKey && groupData[sourceDetailKey] && groupData[sourceDetailKey].trim();
-  const sourceHasF = sourceSizeKey && groupData[sourceSizeKey] && groupData[sourceSizeKey].trim();
-  const sourceHasBasic = sourceBasicKey && groupData[sourceBasicKey] && groupData[sourceBasicKey].trim();
-  
-  let sourceValue = null;
-  let sourceType = null;
-  
-  if (sourceHasD) {
-    sourceValue = groupData[sourceDetailKey];
-    sourceType = 'D';
-  } else if (sourceHasF) {
-    sourceValue = groupData[sourceSizeKey];
-    sourceType = 'F';
-  } else if (sourceHasBasic) {
-    sourceValue = groupData[sourceBasicKey];
-    sourceType = 'basic';
-  }
-  
-  if (!sourceValue) {
+function fillLandTypeFields(groupData) {
+  if (!groupData || Object.keys(groupData).length === 0) {
     return;
   }
   
-  if (loaiDatDInput && detailPh) {
-    if (sourceType === 'D') {
-      fillLandTypeDetailField(detailPh, sourceValue);
-    } else if (sourceType === 'F') {
-      const convertedD = convertLoaiDatFtoD(sourceValue);
-      fillLandTypeDetailField(detailPh, convertedD);
-    } else if (sourceType === 'basic') {
-      const convertedD = convertLoaiDatBasicToD(sourceValue);
-      fillLandTypeDetailField(detailPh, convertedD);
+  Object.keys(groupData).forEach(fieldName => {
+    const value = groupData[fieldName];
+    if (!value || typeof value !== 'string') return;
+    
+    const targetInput = document.querySelector(`[data-ph="${fieldName}"]`);
+    if (!targetInput) return;
+    
+    const fieldType = targetInput.getAttribute('data-type');
+    
+    if (fieldType === 'land_type') {
+      setTimeout(() => {
+        const freshInput = document.querySelector(`[data-ph="${fieldName}"]`);
+        if (freshInput) {
+          freshInput.value = value;
+          freshInput.setAttribute('value', value);
+          freshInput.dispatchEvent(new Event('input', { bubbles: true }));
+          freshInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }, 100);
+    } else if (fieldType === 'land_type_detail') {
+      fillLandTypeDetailField(fieldName, value);
+    } else if (fieldType === 'land_type_size') {
+      fillLandTypeSizeField(fieldName, value);
     }
-  }
-  
-  if (loaiDatFContainer && sizePh) {
-    if (sourceType === 'F') {
-      fillLandTypeSizeField(sizePh, sourceValue);
-    } else if (sourceType === 'D') {
-      const convertedF = convertLoaiDatDtoF(sourceValue);
-      fillLandTypeSizeField(sizePh, convertedF);
-    } else if (sourceType === 'basic') {
-      const convertedF = convertLoaiDatBasicToF(sourceValue);
-      fillLandTypeSizeField(sizePh, convertedF);
-    }
-  }
-  
-  if (loaiDatInput && basicPh) {
-    if (sourceType === 'basic') {
-      loaiDatInput.value = sourceValue;
-      loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
-    } else if (sourceType === 'D') {
-      const convertedBasic = convertLoaiDatDtoBasic(sourceValue);
-      loaiDatInput.value = convertedBasic;
-      loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
-    } else if (sourceType === 'F') {
-      const convertedBasic = convertLoaiDatFtoBasic(sourceValue);
-      loaiDatInput.value = convertedBasic;
-      loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  }
+  });
 }
 
 function convertLoaiDatDtoF(loaiDatD) {

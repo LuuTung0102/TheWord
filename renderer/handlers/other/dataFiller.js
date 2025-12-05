@@ -1,10 +1,13 @@
 function fillFormWithMenData(groupData, targetSuffix) {
-  const hasLandTypeSize = Object.keys(groupData).some(key => {
-    const input = document.querySelector(`[data-ph="${key}"]`);
-    return input && input.getAttribute('data-type') === 'land_type_size';
-  });
-  populateDynamicOptions(groupData, targetSuffix);
-  fillLandTypeFields(groupData, true);
+  setTimeout(() => {
+    if (window.LandTypeHandlers && window.LandTypeHandlers.fillLandTypeFields) {
+      window.LandTypeHandlers.fillLandTypeFields(groupData);
+    }
+    
+    if (window.LandTypeHandlers && window.LandTypeHandlers.populateDynamicOptions) {
+      window.LandTypeHandlers.populateDynamicOptions(groupData, targetSuffix);
+    }
+  }, 50);
   
   Object.keys(groupData).forEach(fieldName => {
     const value = groupData[fieldName];

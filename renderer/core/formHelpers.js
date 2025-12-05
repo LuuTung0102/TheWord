@@ -614,6 +614,7 @@ function reSetupAllInputs() {
   });
   
   document.querySelectorAll('input[data-type="land_type"]').forEach(input => {
+    delete input.dataset.landTypeSetup;
     const id = input.id;
     if (id) setupLandTypeInput(input, id);
   });
