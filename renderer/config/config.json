@@ -16,7 +16,7 @@
       "name": "Giấy Ủy Quyền",
       "path": "templates/Giấy Ủy Quyền",
       "description": "Giấy ủy quyền",
-      "icon": "📄"
+      "icon": "📝"
     },
     {
       "name": "Giấy Biến động đất đai",
@@ -28,7 +28,7 @@
       "name": "Hôn nhân",
       "path": "templates/Hôn nhân",
       "description": "Giấy tờ xác nhận hôn nhân",
-      "icon": "🕊️"
+      "icon": "👩‍❤️‍👨"
     },
 
     {
