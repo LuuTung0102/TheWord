@@ -515,7 +515,7 @@
             if (baseKey.startsWith('MEN')) {
               displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName} - ${formattedTime})`;
             } else if (baseKey === 'INFO') {
-              displayName = `TT Đất (${shortFileName} - ${formattedTime})`;
+              displayName = `${groupData.QSH || 'TT thửa đất'} (${shortFileName} - ${formattedTime})`;
             } else {
               displayName = `${baseKey} (${shortFileName} - ${formattedTime})`;
             }
@@ -523,7 +523,7 @@
             if (groupKey.startsWith('MEN')) {
               displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName})`;
             } else if (groupKey === 'INFO') {
-              displayName = `TT Đất (${shortFileName})`;
+              displayName = `${groupData.QSH || 'TT thửa đất'} (${shortFileName})`;
             } else {
               displayName = `${groupKey} (${shortFileName})`;
             }

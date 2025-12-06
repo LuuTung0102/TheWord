@@ -216,6 +216,13 @@
           "required": true
         },
         {
+          "name": "SVV",
+          "label": "Diện tích đất trồng",
+          "type": "editable-select",
+          "options": [],
+          "required": true
+        },
+        {
           "name": "NG",
           "label": "Nguồn gốc",
           "type": "textarea",

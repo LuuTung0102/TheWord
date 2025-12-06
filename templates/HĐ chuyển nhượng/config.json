@@ -75,25 +75,6 @@
           "INFO"
         ]
       }
-    },
-    {
-      "id": "gender1",
-      "filename": "Gender1.docx",
-      "name": "The TEST",
-      "description": "",
-      "groups": [
-        "BCN",
-        "LAND"
-      ],
-      "placeholders": {
-        "BCN": [
-          "MEN1",
-          "MEN2"
-        ],
-        "LAND": [
-          "INFO"
-        ]
-      }
     }
   ],
   "groups": [
