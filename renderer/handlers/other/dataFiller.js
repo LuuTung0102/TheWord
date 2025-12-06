@@ -35,6 +35,16 @@ function fillFormWithMenData(groupData, targetSuffix) {
       }
       
       element.value = cleanValue;
+      
+      if (element.classList.contains('date-picker')) {
+        const isYearOnly = /^\d{4}$/.test(cleanValue);
+        if (isYearOnly && element._flatpickr) {
+          element._flatpickr.destroy();
+          delete element._flatpickr;
+        }
+      }
+      
+      element.dispatchEvent(new Event('input', { bubbles: true }));
       element.dispatchEvent(new Event('change', { bubbles: true }));
       element.dispatchEvent(new Event('blur', { bubbles: true }));
     }

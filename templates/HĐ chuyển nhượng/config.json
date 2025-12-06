@@ -180,7 +180,7 @@
       "fields": [
         {
           "name": "QSH",
-          "label": "Quyền sử dụng đất",
+          "label": "Quyền sử dụng đất(Số sery)",
           "type": "text",
           "placeholder": "Nhập QSH đất",
           "required": true
@@ -238,8 +238,7 @@
           "name": "NG",
           "label": "Nguồn gốc",
           "type": "textarea",
-          "placeholder": "VD: Công nhận QSDĐ như giao đất không thu tiền sử dụng đất",
-          "required": true
+          "placeholder": "VD: Công nhận QSDĐ như giao đất không thu tiền sử dụng đất"
         },
         {
           "name": "Loai_Dat_F",
@@ -256,8 +255,7 @@
         {
           "name": "TDCSPL",
           "label": "Thay đổi cơ sở pháp lý",
-          "type": "date",
-          "required": true
+          "type": "date"
         },
         {
           "name": "HTSD",
@@ -266,8 +264,7 @@
           "options": [
             "Sử dụng chung",
             "Sử dụng riêng"
-          ],
-          "required": true
+          ]
         },
         {
           "name": "THSD",

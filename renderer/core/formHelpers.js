@@ -459,38 +459,65 @@ function setupDatePickers() {
         input._flatpickr.destroy();
       }
       
-      flatpickr(input, {
-        dateFormat: "d/m/Y",
-        allowInput: true,
-        altInput: false,
-        locale: {
-          firstDayOfWeek: 1,
-          weekdays: {
-            shorthand: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
-            longhand: ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'],
+      const createFlatpickr = () => {
+        return flatpickr(input, {
+          dateFormat: "d/m/Y",
+          allowInput: true,
+          altInput: false,
+          locale: {
+            firstDayOfWeek: 1,
+            weekdays: {
+              shorthand: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+              longhand: ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'],
+            },
+            months: {
+              shorthand: ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'],
+              longhand: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+            },
           },
-          months: {
-            shorthand: ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'],
-            longhand: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+          onClose: function (selectedDates, dateStr, instance) {
+            if (selectedDates && selectedDates.length) {
+              instance.input.value = instance.formatDate(
+                selectedDates[0],
+                "d/m/Y"
+              );
+              return;
+            }
+            const raw = (instance.input.value || "").trim();
+            
+            const yearOnly = raw.match(/^(\d{4})$/);
+            if (yearOnly) {
+              instance.input.value = yearOnly[1];
+              return;
+            }
+            
+            const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if (m) {
+              const dd = m[1].padStart(2, "0");
+              const mm = m[2].padStart(2, "0");
+              const yyyy = m[3];
+              instance.input.value = `${dd}/${mm}/${yyyy}`;
+            }
           },
-        },
-        onClose: function (selectedDates, dateStr, instance) {
-          if (selectedDates && selectedDates.length) {
-            instance.input.value = instance.formatDate(
-              selectedDates[0],
-              "d/m/Y"
-            );
-            return;
+        });
+      };
+      
+      createFlatpickr();
+      
+      input.addEventListener('input', function(e) {
+        const val = e.target.value.trim();
+        const isYearOnly = /^\d{4}$/.test(val);
+        
+        if (isYearOnly) {
+          if (input._flatpickr) {
+            input._flatpickr.destroy();
+            delete input._flatpickr;
           }
-          const raw = (instance.input.value || "").trim();
-          const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-          if (m) {
-            const dd = m[1].padStart(2, "0");
-            const mm = m[2].padStart(2, "0");
-            const yyyy = m[3];
-            instance.input.value = `${dd}/${mm}/${yyyy}`;
+        } else {
+          if (!input._flatpickr) {
+            createFlatpickr();
           }
-        },
+        }
       });
     });
   } catch (err) {
@@ -891,6 +918,11 @@ function formatInputValue(value, ph, map) {
   if (!value || !map) return value || '';
   let formatted = value;
   if (map.type === "date") {
+    const yearOnly = value.match(/^(\d{4})$/);
+    if (yearOnly) {
+      return yearOnly[1];
+    }
+    
     const dmMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     const isoMatch = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
     
