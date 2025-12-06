@@ -586,7 +586,70 @@ ipcMain.handle("read-folder-config", async (event, folderPath) => {
 ipcMain.handle("write-folder-config", async (event, folderPath, config) => {
   try {
     const configPath = path.join(folderPath, "config.json");
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf8");
+    
+    // Custom formatter: compact arrays of objects
+    const formatConfig = (obj, indent = 0) => {
+      const spaces = '  '.repeat(indent);
+      const nextSpaces = '  '.repeat(indent + 1);
+      
+      if (Array.isArray(obj)) {
+        if (obj.length === 0) return '[]';
+        
+        // Check if array contains only primitives (strings, numbers, booleans)
+        const isPrimitiveArray = obj.every(item => 
+          typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean' || item === null
+        );
+        
+        if (isPrimitiveArray) {
+          // Format primitive array on one line
+          return JSON.stringify(obj);
+        }
+        
+        // Check if array contains simple objects (should be on one line)
+        const isCompactArray = obj.every(item => {
+          if (typeof item !== 'object' || item === null || Array.isArray(item)) return false;
+          
+          // Check if object has nested arrays or objects
+          const values = Object.values(item);
+          const hasNestedStructure = values.some(v => 
+            (typeof v === 'object' && v !== null && !Array.isArray(v)) ||
+            (Array.isArray(v) && v.length > 0 && typeof v[0] === 'object')
+          );
+          
+          return !hasNestedStructure;
+        });
+        
+        if (isCompactArray) {
+          // Format each object on one line
+          const items = obj.map(item => {
+            return nextSpaces + JSON.stringify(item);
+          }).join(',\n');
+          return '[\n' + items + '\n' + spaces + ']';
+        } else {
+          // Regular array formatting
+          const items = obj.map(item => {
+            return nextSpaces + formatConfig(item, indent + 1);
+          }).join(',\n');
+          return '[\n' + items + '\n' + spaces + ']';
+        }
+      } else if (typeof obj === 'object' && obj !== null) {
+        const keys = Object.keys(obj);
+        if (keys.length === 0) return '{}';
+        
+        const items = keys.map(key => {
+          const value = obj[key];
+          const formattedValue = formatConfig(value, indent + 1);
+          return `${nextSpaces}"${key}": ${formattedValue}`;
+        }).join(',\n');
+        
+        return '{\n' + items + '\n' + spaces + '}';
+      } else {
+        return JSON.stringify(obj);
+      }
+    };
+    
+    const formattedConfig = formatConfig(config);
+    fs.writeFileSync(configPath, formattedConfig, "utf8");
     return true;
   } catch (err) {
     throw new Error(`Failed to write config: ${err.message}`);

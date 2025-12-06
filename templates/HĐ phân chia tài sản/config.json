@@ -1,135 +1,111 @@
 {
   "templates": [
-    { 
+    {
       "id": "hd-pc-ts",
       "filename": "Phân chia tài sản.docx",
       "name": "Hợp đồng phân chia tài sản thừa kế",
       "description": "Phân chia tài sản thừa kế",
-      "groups": ["NTK", "NM", "MP", "LAND"],
+      "groups": ["NTK","NM","MP","LAND"],
       "placeholders": {
-        "NTK": ["MEN1", "MEN2", "MEN3", "MEN4", "MEN5", "MEN6"],
+        "NTK": ["MEN1","MEN2","MEN3","MEN4","MEN5","MEN6"],
         "NM": ["MEN7"],
-        "MP": ["MEN8", "MEN9"],
+        "MP": ["MEN8","MEN9"],
         "LAND": ["INFO"]
       }
     }
   ],
-
   "groups": [
-    {
-      "id": "NTK",
-      "label": "Người thừa kế",
-      "order": 1,
-      "description": "Những người được thừa kế tài sản"
-    },
-    {
-      "id": "NM",
-      "label": "Người mất",
-      "order": 2,
-      "description": "Người để lại tài sản thừa kế"
-    },
-    {
-      "id": "MP",
-      "label": "Bố/mẹ người mất",
-      "order": 3,
-      "description": "Bố mẹ của người mất (nếu có)"
-    },
-    {
-      "id": "LAND",
-      "label": "Thông tin thửa đất",
-      "order": 4,
-      "description": "Thông tin đất đai"
-    }
+    {"id":"NTK","label":"Người thừa kế","order":1,"description":"Những người được thừa kế tài sản"},
+    {"id":"NM","label":"Người mất","order":2,"description":"Người để lại tài sản thừa kế"},
+    {"id":"MP","label":"Bố/mẹ người mất","order":3,"description":"Bố mẹ của người mất (nếu có)"},
+    {"id":"LAND","label":"Thông tin thửa đất","order":4,"description":"Thông tin đất đai"}
   ],
-
   "fieldSchemas": {
     "PersonalInfo": {
       "description": "Thông tin cá nhân",
-      "applicableTo": ["NTK", "NM", "MP"],
+      "applicableTo": ["NTK","NM","MP"],
       "fields": [
-        { "name": "Gender", "label": "Giới tính", "type": "select", "options": ["Ông", "Bà"], "required": true },
-        { "name": "Name", "label": "Họ và tên", "type": "text", "required": true },
-        { "name": "Date", "label": "Ngày sinh", "type": "date", "required": true },
-        { "name": "CCCD", "label": "CCCD", "type": "number", "required": true },
-        { "name": "Relation", "label": "Quan hệ", "type": "select", "options": ["Con", "Vợ", "Chồng"], "required": true },
-        { "name": "Noi_Cap", "label": "Nơi cấp CCCD", "type": "select", "options": ["Cục Cảnh sát QLHC về TTXH", "Công an T. Đắk Lắk"], "required": true },
-        { "name": "Ngay_Cap", "label": "Ngày cấp CCCD", "type": "date", "required": true },
-        { "name": "Address", "label": "Hộ khẩu thường trú", "type": "address-select", "required": true },
-        { "name": "Noi_CapDie", "label": "Nơi cấp giấy tử", "type": "textarea", "required": true },
-        { "name": "TLKT", "label": "Trích lục khai tử", "type": "textarea", "required": true },
-        { "name": "Noi_CapDie", "label": "Nơi cấp giấy tử", "type": "textarea", "required": true },
-        { "name": "Date_Die", "label": "Ngày mất", "type": "date", "required": true },
-        { "name": "Ngay_CapDie", "label": "Ngày cấp giấy tử", "type": "date", "required": true }
+        {"name":"Gender","label":"Giới tính","type":"select","options":["Ông","Bà"],"required":true},
+        {"name":"Name","label":"Họ và tên","type":"text","required":true},
+        {"name":"Date","label":"Ngày sinh","type":"date","required":true},
+        {"name":"CCCD","label":"CCCD","type":"number","required":true},
+        {"name":"Relation","label":"Quan hệ","type":"select","options":["Con","Vợ","Chồng"],"required":true},
+        {"name":"Noi_Cap","label":"Nơi cấp CCCD","type":"select","options":["Cục Cảnh sát QLHC về TTXH","Công an T. Đắk Lắk"],"required":true},
+        {"name":"Ngay_Cap","label":"Ngày cấp CCCD","type":"date","required":true},
+        {"name":"Address","label":"Hộ khẩu thường trú","type":"address-select","required":true},
+        {"name":"Noi_CapDie","label":"Nơi cấp giấy tử","type":"textarea","required":true},
+        {"name":"TLKT","label":"Trích lục khai tử","type":"textarea","required":true},
+        {"name":"Noi_CapDie","label":"Nơi cấp giấy tử","type":"textarea","required":true},
+        {"name":"Date_Die","label":"Ngày mất","type":"date","required":true},
+        {"name":"Ngay_CapDie","label":"Ngày cấp giấy tử","type":"date","required":true}
       ]
     },
-
     "LandInfo": {
       "description": "Thông tin đất đai",
       "applicableTo": ["LAND"],
       "fields": [
-        { "name": "QSH", "label": "Quyền sử dụng đất", "type": "text", "required": true },
-        { "name": "So_so", "label": "Số vào sổ", "type": "text", "required": true },
-        { "name": "Ngay_CapD", "label": "Ngày cấp", "type": "date", "required": true },
-        { "name": "Thua_dat_so", "label": "Thửa đất số", "type": "text", "required": true },
-        { "name": "Ban_do_so", "label": "Bản đồ số", "type": "text", "required": true },
-        { "name": "S", "label": "Diện tích (m²)", "type": "number", "required": true },
-        { "name": "Loai_Dat", "label": "Loại đất", "type": "land_type", "placeholder": "VD: XXX+XXX", "required": true },
-        { "name": "Loai_Dat_F", "label": "Loại đất (có diện tích)", "type": "land_type_size", "required": true },
-        { "name": "Loai_Dat_D", "label": "Loại đất chi tiết", "type": "land_type_detail", "required": true },
-        { "name": "NG", "label": "Nguồn gốc", "type": "textarea", "placeholder": "VD: Công nhận QSDĐ như giao đất không thu tiền sử dụng đất"},
-        { "name": "HTSD", "label": "Hình thức sử dụng", "type": "select", "options": ["Sử dụng chung","Sử dụng riêng"]},
-        { "name": "HTSD_R", "label": "Sử dụng riêng (m²)", "type": "number" },
-        { "name": "HTSD_C", "label": "Sử dụng chung (m²)", "type": "number"},
-        { "name": "THSD", "label": "Thời hạn sử dụng", "type": "textarea", "required": false },
-        { "name": "AddressD", "label": "Địa chỉ thửa đất", "type": "address-select", "required": true },
-        { "name": "TTGLVD", "label": "TT tài sản gắn liền", "type": "textarea", "required": false },
-        { "name": "Money", "label": "Giá chuyển nhượng", "type": "currency", "required": true },
-        { "name": "MoneyText", "label": "Giá chuyển nhượng (chữ)", "type": "text", "hidden": true, "required": false },
-        { "name": "Responsibility", "label": "Bên chịu trách nhiệm thuế phí", "type": "select", "options": ["A", "B"], "required": true },
-        { "name": "Note", "label": "Ghi chú", "type": "textarea", "required": false }
+        {"name":"QSH","label":"Quyền sử dụng đất","type":"text","required":true},
+        {"name":"So_so","label":"Số vào sổ","type":"text","required":true},
+        {"name":"Ngay_CapD","label":"Ngày cấp","type":"date","required":true},
+        {"name":"Thua_dat_so","label":"Thửa đất số","type":"text","required":true},
+        {"name":"Ban_do_so","label":"Bản đồ số","type":"text","required":true},
+        {"name":"S","label":"Diện tích (m²)","type":"number","required":true},
+        {"name":"Loai_Dat","label":"Loại đất","type":"land_type","placeholder":"VD: XXX+XXX","required":true},
+        {"name":"Loai_Dat_F","label":"Loại đất (có diện tích)","type":"land_type_size","required":true},
+        {"name":"Loai_Dat_D","label":"Loại đất chi tiết","type":"land_type_detail","required":true},
+        {"name":"NG","label":"Nguồn gốc","type":"textarea","placeholder":"VD: Công nhận QSDĐ như giao đất không thu tiền sử dụng đất"},
+        {"name":"HTSD","label":"Hình thức sử dụng","type":"select","options":["Sử dụng chung","Sử dụng riêng"]},
+        {"name":"HTSD_R","label":"Sử dụng riêng (m²)","type":"number"},
+        {"name":"HTSD_C","label":"Sử dụng chung (m²)","type":"number"},
+        {"name":"THSD","label":"Thời hạn sử dụng","type":"textarea","required":false},
+        {"name":"AddressD","label":"Địa chỉ thửa đất","type":"address-select","required":true},
+        {"name":"TTGLVD","label":"TT tài sản gắn liền","type":"textarea","required":false},
+        {"name":"Money","label":"Giá chuyển nhượng","type":"currency","required":true},
+        {"name":"MoneyText","label":"Giá chuyển nhượng (chữ)","type":"text","hidden":true,"required":false},
+        {"name":"Responsibility","label":"Bên chịu trách nhiệm thuế phí","type":"select","options":["A","B"],"required":true},
+        {"name":"Note","label":"Ghi chú","type":"textarea","required":false}
       ]
     }
   },
-
   "fieldMappings": [
     {
       "group": "NTK",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN1", "label": "Người thừa kế", "visible": true },
-        { "id": "MEN2", "label": "Người thừa kế", "visible": false },
-        { "id": "MEN3", "label": "Người thừa kế", "visible": false },
-        { "id": "MEN4", "label": "Người thừa kế", "visible": false },
-        { "id": "MEN5", "label": "Người thừa kế", "visible": false },
-        { "id": "MEN6", "label": "Người thừa kế", "visible": false }
+        {"id":"MEN1","label":"Người thừa kế","visible":true},
+        {"id":"MEN2","label":"Người thừa kế","visible":false},
+        {"id":"MEN3","label":"Người thừa kế","visible":false},
+        {"id":"MEN4","label":"Người thừa kế","visible":false},
+        {"id":"MEN5","label":"Người thừa kế","visible":false},
+        {"id":"MEN6","label":"Người thừa kế","visible":false}
       ],
-      "suffixes": ["1", "2", "3", "4", "5", "6"],
-       "defaultGenders": ["Ông"]
+      "suffixes": ["1","2","3","4","5","6"],
+      "defaultGenders": ["Ông"]
     },
     {
       "group": "NM",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN7", "label": "Người mất", "visible": true}
+        {"id":"MEN7","label":"Người mất","visible":true}
       ],
       "suffixes": ["7"],
-       "defaultGenders": ["Ông"]
+      "defaultGenders": ["Ông"]
     },
     {
       "group": "MP",
       "schema": "PersonalInfo",
       "subgroups": [
-        { "id": "MEN8", "label": "Phụ huynh người mất", "visible": true },
-        { "id": "MEN9", "label": "Phụ huynh người mất", "visible": true }
+        {"id":"MEN8","label":"Phụ huynh người mất","visible":true},
+        {"id":"MEN9","label":"Phụ huynh người mất","visible":true}
       ],
-      "suffixes": ["8", "9"],
-      "defaultGenders": ["Ông", "Bà"]
+      "suffixes": ["8","9"],
+      "defaultGenders": ["Ông","Bà"]
     },
     {
       "group": "LAND",
       "schema": "LandInfo",
       "subgroups": [
-        { "id": "INFO", "label": "Thông tin đất đai", "visible": true }
+        {"id":"INFO","label":"Thông tin đất đai","visible":true}
       ]
     }
   ]
