@@ -222,11 +222,7 @@ class MainApp {
           if (folder) {
             this.expandedFolder = folderName;
             this.selectedFolder = folderName;
-            this.files = (folder.files || []).map(fileName => ({
-              name: fileName,
-              displayName: fileName.replace('.docx', ''),
-              icon: '📄'
-            }));
+            await this.loadFilesInFolder(folderName);
             
             this.renderTemplates();
             showSuccess(`Folder "${folderName}" đã được cập nhật. Click vào file để xem form.`);
@@ -303,15 +299,38 @@ class MainApp {
     try {
       const template = this.templates.find(t => t.name === folderName);
       if (template) {
-        this.files = template.files.map(fileName => ({
-          name: fileName,
-          displayName: fileName.replace('.docx', ''),
-          icon: '📄'
-        }));
+        const folderPath = template.path;
+        let config = null;
+        
+        try {
+          if (window.loadFolderConfig) {
+            config = await window.loadFolderConfig(folderPath, true);
+          }
+        } catch (error) {
+          console.error('Error loading config:', error);
+        }
+        
+        this.files = template.files.map(fileName => {
+          let displayName = fileName.replace('.docx', '');
+          
+          if (config && config.templates) {
+            const templateConfig = config.templates.find(t => t.filename === fileName);
+            if (templateConfig && templateConfig.name) {
+              displayName = templateConfig.name;
+            }
+          }
+          
+          return {
+            name: fileName,
+            displayName: displayName,
+            icon: '📄'
+          };
+        });
       } else {
         this.files = [];
       }
     } catch (error) {
+      console.error('Error in loadFilesInFolder:', error);
       this.files = [];
     }
   }

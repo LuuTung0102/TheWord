@@ -55,10 +55,6 @@
                 <label for="templateName">Tên:</label>
                 <input type="text" id="templateName" class="config-wizard-input" placeholder="Nhập tên" value="${this.templateEntry?.name || ''}"/>
               </div>
-              <div class="config-wizard-field">
-                <label for="templateDescription">Mô tả:</label>
-                <textarea id="templateDescription" class="config-wizard-textarea" placeholder="Nhập mô tả" rows="2">${this.templateEntry?.description || ''}</textarea>
-              </div>
             </div>
           </div>
 
@@ -286,10 +282,7 @@
         warnings.push('Template không có placeholder nào. Bạn có chắc muốn tiếp tục?');
       }
 
-      const templateDescription = this.querySelector('#templateDescription')?.value?.trim();
-      if (templateDescription && /<script[^>]*>/gi.test(templateDescription)) {
-        errors.push('Mô tả không được chứa script tags');
-      }
+
 
       return {
         valid: errors.length === 0,
@@ -301,7 +294,7 @@
     collectFormData() {
       try {
         const templateName = this.querySelector('#templateName')?.value?.trim();
-        const templateDescription = this.querySelector('#templateDescription')?.value?.trim();
+        const templateDescription = '';
 
         if (!templateName) {
           throw new Error('Template name is required');
@@ -337,7 +330,7 @@
     collectFormDataWithFieldMappings(existingConfig) {
       try {
         const templateName = this.querySelector('#templateName')?.value?.trim();
-        const templateDescription = this.querySelector('#templateDescription')?.value?.trim();
+        const templateDescription = '';
 
         if (!templateName) {
           throw new Error('Template name is required');

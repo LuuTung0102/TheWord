@@ -3,7 +3,7 @@
     {
       "id": "hop-dong-chuyen-nhuong-bia-2024",
       "filename": "Hop dong chuyen nhuong bia 2024.docx",
-      "name": "HĐ chuyển nhượng(HGĐ)",
+      "name": "Hop dong chuyen nhuong bia 2024",
       "description": "",
       "groups": [
         "BCN",
@@ -55,7 +55,7 @@
     {
       "id": "h-chuy-n-nh-ng-1",
       "filename": "HĐ chuyển nhượng(1).docx",
-      "name": "HĐ chuyển nhượng(HGĐ)",
+      "name": "HĐ chuyển nhượng(1)",
       "description": "",
       "groups": [
         "BCN",
@@ -70,6 +70,25 @@
         "BNCN": [
           "MEN7",
           "MEN8"
+        ],
+        "LAND": [
+          "INFO"
+        ]
+      }
+    },
+    {
+      "id": "gender1",
+      "filename": "Gender1.docx",
+      "name": "The TEST",
+      "description": "",
+      "groups": [
+        "BCN",
+        "LAND"
+      ],
+      "placeholders": {
+        "BCN": [
+          "MEN1",
+          "MEN2"
         ],
         "LAND": [
           "INFO"
