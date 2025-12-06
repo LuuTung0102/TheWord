@@ -613,7 +613,11 @@
           const number = nameTMatch[1];
           const baseNamePh = `Name${number}`;
           const baseValue = data[baseNamePh] || fullData[baseNamePh] || '';
-          fullData[ph] = toTitleCase(baseValue);
+          if (baseValue && baseValue.trim()) {
+            fullData[ph] = toTitleCase(baseValue);
+          } else {
+            delete fullData[ph];
+          }
         }
       });
       

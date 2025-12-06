@@ -54,12 +54,40 @@ async function renderGenericForm(placeholders, config, folderPath) {
     await window.personDataService.loadPeople();
   }
   
-  window.stateManager.setRenderParams({ placeholders, config, folderPath });
-  const phMapping = window.buildPlaceholderMapping(config, placeholders);
+  const expandedPlaceholders = [];
+  const nameTToRemove = new Set();
+  
+  placeholders.forEach(ph => {
+    const nameTMatch = ph.match(/^NameT(\d+)$/);
+    if (nameTMatch) {
+      const number = nameTMatch[1];
+      const namePlaceholder = `Name${number}`;
+      
+      if (placeholders.includes(namePlaceholder)) {
+        nameTToRemove.add(ph);
+      } else {
+        if (!expandedPlaceholders.includes(namePlaceholder)) {
+          expandedPlaceholders.push(namePlaceholder);
+        }
+        nameTToRemove.add(ph);
+      }
+    }
+  });
+  
+  placeholders.forEach(ph => {
+    if (!nameTToRemove.has(ph)) {
+      expandedPlaceholders.push(ph);
+    }
+  });
+  
+  const allPlaceholders = [...new Set([...expandedPlaceholders, ...placeholders])];
+  
+  window.stateManager.setRenderParams({ placeholders: expandedPlaceholders, config, folderPath });
+  const phMapping = window.buildPlaceholderMapping(config, allPlaceholders);
   const groupLabels = window.getGroupLabels(config);
   const subgroupLabels = window.getSubgroupLabels(config);
   const grouped = {};
-  placeholders.forEach(ph => {
+  expandedPlaceholders.forEach(ph => {
     const def = phMapping[ph];
     if (!def) {
       return;
@@ -74,7 +102,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
     grouped[groupKey][subKey].push({ ph, def });
   });
   
-  const skipLandFields = getLandFieldsToSkip(placeholders);
+  const skipLandFields = getLandFieldsToSkip(expandedPlaceholders);
   
   window.stateManager.setRenderDataStructures({ phMapping, grouped, groupLabels, subgroupLabels, skipLandFields });
   window.stateManager.resetReuse();

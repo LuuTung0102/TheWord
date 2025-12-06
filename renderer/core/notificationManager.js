@@ -42,19 +42,19 @@
       return notification;
     }
 
-    success(message, duration = 4000) {
+    success(message, duration = 1500) {
       return this.show(message, 'success', duration);
     }
 
-    error(message, duration = 6000) {
+    error(message, duration = 2500) {
       return this.show(message, 'error', duration);
     }
 
-    warning(message, duration = 5000) {
+    warning(message, duration = 2500) {
       return this.show(message, 'warning', duration);
     }
 
-    info(message, duration = 4000) {
+    info(message, duration = 1500) {
       return this.show(message, 'info', duration);
     }
 
