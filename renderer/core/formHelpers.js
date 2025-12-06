@@ -498,69 +498,298 @@ function setupDatePickers() {
 }
 
 function setupAddressSelects() {
-  document.querySelectorAll(".address-select").forEach((select) => {
-    select.addEventListener("change", (e) => {
-      const level = e.target.dataset.level;
-      let mainId = e.target.dataset.main;
-      if (!mainId) {
-        const idParts = e.target.id.split("_");
-        mainId = idParts.slice(0, -1).join("_");
+  document.querySelectorAll(".address-group").forEach((group) => {
+    const groupId = group.id.replace('_address_group', '');
+    const provinceInput = document.getElementById(`${groupId}_province`);
+    const wardInput = document.getElementById(`${groupId}_ward`);
+    const villageInput = document.getElementById(`${groupId}_village`);
+    
+    if (!provinceInput || !wardInput || !villageInput) return;
+    
+    setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId);
+  });
+}
+
+function findNextInput(currentInput) {
+  const allInputs = Array.from(document.querySelectorAll('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])'));
+  const currentIndex = allInputs.indexOf(currentInput);
+  if (currentIndex >= 0 && currentIndex < allInputs.length - 1) {
+    return allInputs[currentIndex + 1];
+  }
+  return null;
+}
+
+function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId) {
+  const provinceDropdown = document.getElementById(`${groupId}_province_dropdown`);
+  const wardDropdown = document.getElementById(`${groupId}_ward_dropdown`);
+  const villageDropdown = document.getElementById(`${groupId}_village_dropdown`);
+  
+  const addressSetup = {
+    selectedProvince: null,
+    selectedWard: null
+  };
+  
+  provinceInput._addressSetup = addressSetup;
+  wardInput._addressSetup = addressSetup;
+  villageInput._addressSetup = addressSetup;
+  
+  let selectedIndex = -1;
+  
+  function filterProvinces(query) {
+    if (!window.addressData) return [];
+    return window.addressData.filter(p => 
+      p.name.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+  
+  function filterWards(query) {
+    if (!addressSetup.selectedProvince || !addressSetup.selectedProvince.wards) return [];
+    return addressSetup.selectedProvince.wards.filter(w => 
+      w.name.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+  
+  function filterVillages(query) {
+    if (!addressSetup.selectedWard || !addressSetup.selectedWard.villages) return [];
+    return addressSetup.selectedWard.villages.filter(v => 
+      v.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+  
+  function showDropdown(dropdown, items, onSelect) {
+    selectedIndex = -1;
+    dropdown.innerHTML = items.map((item, idx) => 
+      `<div class="suggestion-item" data-index="${idx}">${typeof item === 'string' ? item : item.name}</div>`
+    ).join('');
+    dropdown.style.display = items.length > 0 ? 'block' : 'none';
+    
+    dropdown.querySelectorAll('.suggestion-item').forEach((el, idx) => {
+      el.onclick = () => onSelect(items[idx]);
+    });
+  }
+  
+  function hideDropdown(dropdown) {
+    dropdown.style.display = 'none';
+    selectedIndex = -1;
+  }
+  
+  provinceInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    const filtered = filterProvinces(query);
+    
+    showDropdown(provinceDropdown, filtered, (province) => {
+      addressSetup.selectedProvince = province;
+      provinceInput.value = province.name;
+      wardInput.value = '';
+      wardInput.disabled = false;
+      villageInput.value = '';
+      villageInput.disabled = true;
+      hideDropdown(provinceDropdown);
+      wardInput.focus();
+    });
+  });
+  
+  provinceInput.addEventListener('focus', () => {
+    const query = provinceInput.value.trim();
+    const filtered = filterProvinces(query);
+    showDropdown(provinceDropdown, filtered, (province) => {
+      addressSetup.selectedProvince = province;
+      provinceInput.value = province.name;
+      wardInput.value = '';
+      wardInput.disabled = false;
+      villageInput.value = '';
+      villageInput.disabled = true;
+      hideDropdown(provinceDropdown);
+      wardInput.focus();
+    });
+  });
+  
+  provinceInput.addEventListener('keydown', (e) => {
+    const items = provinceDropdown.querySelectorAll('.suggestion-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (items.length > 0) {
+        selectedIndex = (selectedIndex + 1) % items.length;
+        items.forEach((item, i) => {
+          item.classList.toggle('selected', i === selectedIndex);
+          if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+        });
       }
-      const provinceSelect = document.getElementById(`${mainId}_province`);
-      const districtSelect = document.getElementById(`${mainId}_district`);
-      const wardSelect = document.getElementById(`${mainId}_ward`);
-      const villageSelect = document.getElementById(`${mainId}_village`);
-
-      if (level === "province") {
-        districtSelect.innerHTML =
-          '<option value="">-- Chọn quận/huyện --</option>';
-        wardSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
-        villageSelect.innerHTML = '<option value="">-- Chọn--</option>';
-
-        const province = window.addressData.find((p) => p.name === e.target.value);
-        if (province && province.districts) {
-          districtSelect.innerHTML += province.districts
-            .map((d) => `<option value="${d.name}">${d.name}</option>`)
-            .join("");
-        }
-      } else if (level === "district") {
-        wardSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
-        villageSelect.innerHTML = '<option value="">-- Chọn--</option>';
-
-        const province = window.addressData.find(
-          (p) => p.name === provinceSelect.value
-        );
-        if (province) {
-          const district = province.districts.find(
-            (d) => d.name === e.target.value
-          );
-          if (district && district.wards) {
-            wardSelect.innerHTML += district.wards
-              .map((w) => `<option value="${w.name}">${w.name}</option>`)
-              .join("");
-          }
-        }
-      } else if (level === "ward") {
-        villageSelect.innerHTML = '<option value="">-- Chọn --</option>';
-
-        const province = window.addressData.find(
-          (p) => p.name === provinceSelect.value
-        );
-        if (province) {
-          const district = province.districts.find(
-            (d) => d.name === districtSelect.value
-          );
-          if (district) {
-            const ward = district.wards.find((w) => w.name === e.target.value);
-            if (ward && ward.villages) {
-              villageSelect.innerHTML += ward.villages
-                .map((v) => `<option value="${v}">${v}</option>`)
-                .join("");
-            }
-          }
-        }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (items.length > 0) {
+        selectedIndex = selectedIndex <= 0 ? items.length - 1 : selectedIndex - 1;
+        items.forEach((item, i) => {
+          item.classList.toggle('selected', i === selectedIndex);
+          if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+        });
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && items[selectedIndex]) {
+        items[selectedIndex].click();
+      } else if (provinceInput.value.trim()) {
+        hideDropdown(provinceDropdown);
+        wardInput.focus();
+      }
+    } else if (e.key === 'Escape') {
+      hideDropdown(provinceDropdown);
+    } else if (e.key === 'Tab') {
+      hideDropdown(provinceDropdown);
+    }
+  });
+  
+  wardInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    const filtered = filterWards(query);
+    
+    showDropdown(wardDropdown, filtered, (ward) => {
+      addressSetup.selectedWard = ward;
+      wardInput.value = ward.name;
+      villageInput.value = '';
+      villageInput.disabled = !ward.villages || ward.villages.length === 0;
+      hideDropdown(wardDropdown);
+      
+      if (!villageInput.disabled) {
+        villageInput.focus();
+      } else {
+        const nextInput = findNextInput(wardInput);
+        if (nextInput) nextInput.focus();
       }
     });
+  });
+  
+  wardInput.addEventListener('focus', () => {
+    if (!addressSetup.selectedProvince) return;
+    const query = wardInput.value.trim();
+    const filtered = filterWards(query);
+    showDropdown(wardDropdown, filtered, (ward) => {
+      addressSetup.selectedWard = ward;
+      wardInput.value = ward.name;
+      villageInput.value = '';
+      villageInput.disabled = !ward.villages || ward.villages.length === 0;
+      hideDropdown(wardDropdown);
+      if (!villageInput.disabled) villageInput.focus();
+    });
+  });
+  
+  wardInput.addEventListener('click', () => {
+    if (!addressSetup.selectedProvince) return;
+    const query = wardInput.value.trim();
+    const filtered = filterWards(query);
+    showDropdown(wardDropdown, filtered, (ward) => {
+      addressSetup.selectedWard = ward;
+      wardInput.value = ward.name;
+      villageInput.value = '';
+      villageInput.disabled = !ward.villages || ward.villages.length === 0;
+      hideDropdown(wardDropdown);
+      if (!villageInput.disabled) villageInput.focus();
+    });
+  });
+  
+  wardInput.addEventListener('keydown', (e) => {
+    const items = wardDropdown.querySelectorAll('.suggestion-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (items.length > 0) {
+        selectedIndex = (selectedIndex + 1) % items.length;
+        items.forEach((item, i) => {
+          item.classList.toggle('selected', i === selectedIndex);
+          if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+        });
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (items.length > 0) {
+        selectedIndex = selectedIndex <= 0 ? items.length - 1 : selectedIndex - 1;
+        items.forEach((item, i) => {
+          item.classList.toggle('selected', i === selectedIndex);
+          if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+        });
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && items[selectedIndex]) {
+        items[selectedIndex].click();
+      }
+    } else if (e.key === 'Escape') {
+      hideDropdown(wardDropdown);
+    }
+  });
+  
+  villageInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    const filtered = filterVillages(query);
+    
+    showDropdown(villageDropdown, filtered, (village) => {
+      villageInput.value = village;
+      hideDropdown(villageDropdown);
+      
+      const nextInput = findNextInput(villageInput);
+      if (nextInput) nextInput.focus();
+    });
+  });
+  
+  villageInput.addEventListener('focus', () => {
+    if (!addressSetup.selectedWard) return;
+    const query = villageInput.value.trim();
+    const filtered = filterVillages(query);
+    showDropdown(villageDropdown, filtered, (village) => {
+      villageInput.value = village;
+      hideDropdown(villageDropdown);
+    });
+  });
+  
+  villageInput.addEventListener('click', () => {
+    if (!addressSetup.selectedWard) return;
+    const query = villageInput.value.trim();
+    const filtered = filterVillages(query);
+    showDropdown(villageDropdown, filtered, (village) => {
+      villageInput.value = village;
+      hideDropdown(villageDropdown);
+    });
+  });
+  
+  villageInput.addEventListener('keydown', (e) => {
+    const items = villageDropdown.querySelectorAll('.suggestion-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (items.length > 0) {
+        selectedIndex = (selectedIndex + 1) % items.length;
+        items.forEach((item, i) => {
+          item.classList.toggle('selected', i === selectedIndex);
+          if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+        });
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (items.length > 0) {
+        selectedIndex = selectedIndex <= 0 ? items.length - 1 : selectedIndex - 1;
+        items.forEach((item, i) => {
+          item.classList.toggle('selected', i === selectedIndex);
+          if (i === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+        });
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && items[selectedIndex]) {
+        items[selectedIndex].click();
+      }
+    } else if (e.key === 'Escape') {
+      hideDropdown(villageDropdown);
+    }
+  });
+  
+  document.addEventListener('click', (e) => {
+    if (!provinceInput.contains(e.target) && !provinceDropdown.contains(e.target)) {
+      hideDropdown(provinceDropdown);
+    }
+    if (!wardInput.contains(e.target) && !wardDropdown.contains(e.target)) {
+      hideDropdown(wardDropdown);
+    }
+    if (!villageInput.contains(e.target) && !villageDropdown.contains(e.target)) {
+      hideDropdown(villageDropdown);
+    }
   });
 }
 

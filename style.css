@@ -797,9 +797,9 @@ label.required::after {
   left: 0;
   right: 0;
   background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 2px solid #3b82f6;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
   max-height: 200px;
   overflow-y: auto;
   z-index: 9999;
@@ -811,12 +811,21 @@ label.required::after {
   padding: 0.5rem 0.75rem;
   cursor: pointer;
   font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e293b;
+  transition: all 0.15s ease;
   border-bottom: 1px solid #f3f4f6;
 }
 
-.suggestion-item:hover,
+.suggestion-item:hover {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
 .suggestion-item.selected {
-  background: #e0f2fe;
+  background: #3b82f6;
+  color: white;
+  font-weight: 600;
 }
 
 .land-type-size-container {
@@ -826,7 +835,7 @@ label.required::after {
   gap: 0.5rem;
   padding: 0.5rem;
   min-height: 2.75rem;
-  border: 1px solid #d1d5db;
+  border: 2px solid #d1d5db;
   border-radius: 0.375rem;
   background: white;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -967,6 +976,7 @@ label.required::after {
   font-size: 0.875rem;
   background: transparent;
   color: #1e293b;
+  font-weight: 500;
   min-width: 120px;
   position: relative;
   z-index: 10;
@@ -974,6 +984,7 @@ label.required::after {
 
 .tag-input::placeholder {
   color: #9ca3af;
+  font-weight: 400;
 }
 
 .tag-add-btn {
@@ -3093,3 +3104,91 @@ label.required::after {
     background: #f8fbff;
 }
 
+
+/* Address Select Styles */
+.address-field-wrapper {
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.editable-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.editable-select-wrapper .editable-select-input {
+  padding-right: 2rem;
+  cursor: text;
+  background-color: white;
+  border: 2px solid #d1d5db;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.editable-select-wrapper .editable-select-input:focus {
+  border-color: #3b82f6;
+  background-color: white;
+}
+
+.editable-select-wrapper .editable-select-input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+}
+
+.editable-select-arrow {
+  position: absolute;
+  right: 0.75rem;
+  pointer-events: none;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.address-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  background: white;
+  border: 2px solid #3b82f6;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+  z-index: 1000;
+  display: none;
+  margin-bottom: 0.25rem;
+}
+
+.address-dropdown .suggestion-item {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e293b;
+  transition: all 0.15s ease;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.address-dropdown .suggestion-item:hover {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.address-dropdown .suggestion-item.selected {
+  background: #3b82f6;
+  color: white;
+  font-weight: 600;
+}
+
+.address-dropdown .suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.address-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

@@ -1,966 +1,415 @@
 [
   {
-    "name": "T. Đắk Lắk",
-    "districts": [
-      {
-        "name": "TP Buôn Ma Thuột",
-        "wards": [
-          {
-            "name": "Phường Tân Lập",
-            "villages": [
-              "Phước Minh",
-              "Phước Hòa",
-              "Phước Trung",
-              "Phước Khánh",
-              "Phước Tân",
-              "Phước Bình"
-            ]
-          },
-          {
-            "name": "Phường Tân Hòa",
-            "villages": [
-              "Bình Thuận",
-              "Bình Thạnh",
-              "An Thạch",
-              "Hòa Bình",
-              "Tân Phú 1",
-              "Tân Phú 2",
-              "Tân Phú 3",
-              "Quyết Thắng"
-            ]
-          },
-          {
-            "name": "Phường Tân An",
-            "villages": [
-              "Tân Định",
-              "Xuân Minh",
-              "Thắng Tam",
-              "Hóa An 1",
-              "Hóa An 2",
-              "Hóa An 3"
-            ]
-          },
-          {
-            "name": "Phường Thành Nhất",
-            "villages": [
-              "TDP 1",
-              "TDP 2",
-              "TDP 3",
-              "TDP 4",
-              "TDP 5",
-              "TDP 6",
-              "TDP 7",
-              "TDP 1A",
-              "TDP 2A",
-              "TDP 3A",
-              "TDP 4A",
-              "TDP 5A",
-              "TDP 6A",
-              "TDP 7A",
-              "TDP 8",
-              "TDP 9",
-              "TDP 10",
-              "TDP 11",
-              "TDP 12",
-              "TDP 13",
-              "TDP 14",
-              "TDP 15",
-              "buôn Êrang",
-              "buôn Ky"
-            ]
-          },
-          {
-            "name": "Phường Thành Công",
-            "villages": [
-              "Phước Thái",
-              "Hòa Minh",
-              "Tân Trung",
-              "An Trung",
-              "Yang Tăng",
-              "Tlăng Bliết"
-            ]
-          },
-          {
-            "name": "Phường Tân Lợi",
-            "villages": [
-              "Thắng Lợi",
-              "Trung Lợi",
-              "Ngãi Lợi",
-              "Hiệp Lợi"
-            ]
-          },
-          {
-            "name": "Phường Tân Thành",
-            "villages": [
-              "Bình Phước",
-              "Tiến Hưng",
-              "Tân Trung",
-              "An Khánh"
-            ]
-          },
-          {
-            "name": "Phường Tân Tiến",
-            "villages": [
-              "Tiến Lâm",
-              "Tiến Hà",
-              "Đông Chiêu",
-              "Bắc Chiêu",
-              "Hải Lân",
-              "Đông Tác 1",
-              "Đông Tác 2",
-              "Thuận An",
-              "Vĩnh An"
-            ]
-          },
-          {
-            "name": "Phường Tự An",
-            "villages": [
-              "Tiến Lâm",
-              "Tiến Hà",
-              "Đông Chiêu",
-              "Bắc Chiêu",
-              "Hải Lân",
-              "Đông Tác 1",
-              "Đông Tác 2",
-              "Thuận An",
-              "Vĩnh An"
-            ]
-          },
-          {
-            "name": "Phường Ea Tam",
-            "villages": [
-              "buôn Tân",
-              "A Trung",
-              "Tùng Toét",
-              "Tùng Tủh",
-              "Tăng"
-            ]
-          },
-          {
-            "name": "Phường Khánh Xuân",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Thuận",
-            "villages": []
-          },
-          {
-            "name": "xã Cư ÊBur",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Tu",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Thắng",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Kao",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Phú",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Khánh",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Xuân",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "Thị xã buôn Hồ",
-        "wards": [
-          {
-            "name": "Phường An Lạc",
-            "villages": []
-          },
-          {
-            "name": "Phường An Bình",
-            "villages": []
-          },
-          {
-            "name": "Phường Thiện An",
-            "villages": []
-          },
-          {
-            "name": "Phường Đạt Hiếu",
-            "villages": []
-          },
-          {
-            "name": "Phường Đoàn Kết",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Drông",
-            "villages": []
-          },
-          {
-            "name": "Phường Thống Nhất",
-            "villages": []
-          },
-          {
-            "name": "Phường Bình Tân",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Siên",
-            "villages": []
-          },
-          {
-            "name": "xã Bình Thuận",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Bao",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H. Ea H'leo",
-        "wards": [
-          {
-            "name": "TT.Ea Drăng",
-            "villages": []
-          },
-          {
-            "name": "xã Ea H'leo",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Sol",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Ral",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Wy",
-            "villages": []
-          },
-          {
-            "name": "xã Cư A Mung",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Mốt",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Hiao",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Khal",
-            "villages": []
-          },
-          {
-            "name": "xã Dliê Yang",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Tir",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Nam",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H.Ea Súp",
-        "wards": [
-          {
-            "name": "TT.Ea Súp",
-            "villages": []
-          },
-          {
-            "name": "xã Ia Lốp",
-            "villages": []
-          },
-          {
-            "name": "xã Ia JLơi",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Rốk",
-            "villages": []
-          },
-          {
-            "name": "xã Ya Tờ Mốt",
-            "villages": []
-          },
-          {
-            "name": "xã Ia RVê",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Lê",
-            "villages": []
-          },
-          {
-            "name": "xã Cư KBang",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Bung",
-            "villages": []
-          },
-          {
-            "name": "xã Cư M'Lan",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H.buôn Đôn",
-        "wards": [
-          {
-            "name": "xã Krông Na",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Huar",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Wer",
-            "villages": []
-          },
-          {
-            "name": "xã Tân Hoà",
-            "villages": []
-          },
-          {
-            "name": "xã Cuôr KNia",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Bar",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Nuôl",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H. Cư M'gar",
-        "wards": [
-          {
-            "name": "TT.Ea Pốk",
-            "villages": []
-          },
-          {
-            "name": "TT.Quảng Phú",
-            "villages": []
-          },
-          {
-            "name": "xã Quảng Tiến",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Kuêh",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Kiết",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Tar",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Dliê M'nông",
-            "villages": []
-          },
-          {
-            "name": "xã Ea H'đinh",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Tul",
-            "villages": []
-          },
-          {
-            "name": "xã Ea KPam",
-            "villages": []
-          },
-          {
-            "name": "xã Ea M'DRóh",
-            "villages": []
-          },
-          {
-            "name": "xã Quảng Hiệp",
-            "villages": []
-          },
-          {
-            "name": "xã Cư M'gar",
-            "villages": []
-          },
-          {
-            "name": "xã Ea D'Rơng",
-            "villages": []
-          },
-          {
-            "name": "xã Ea M'nang",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Suê",
-            "villages": []
-          },
-          {
-            "name": "xã Cuor Đăng",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H. Krông Búk",
-        "wards": [
-          {
-            "name": "xã Cư Né",
-            "villages": []
-          },
-          {
-            "name": "xã Chư KBô",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Pơng",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Sin",
-            "villages": []
-          },
-          {
-            "name": "TT.Pơng Drang",
-            "villages": []
-          },
-          {
-            "name": "xã Tân Lập",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Ngai",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H. Krông Năng",
-        "wards": [
-          {
-            "name": "TT.Krông Năng",
-            "villages": []
-          },
-          {
-            "name": "xã ĐLiê Ya",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Tóh",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Tam",
-            "villages": []
-          },
-          {
-            "name": "xã Phú Lộc",
-            "villages": []
-          },
-          {
-            "name": "xã Tam Giang",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Puk",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Dăh",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Hồ",
-            "villages": []
-          },
-          {
-            "name": "xã Phú Xuân",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Klông",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Tân",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H.Ea Kar",
-        "wards": [
-          {
-            "name": "TT.Ea Kar",
-            "villages": [
-              "TDP 1",
-              "TDP 2",
-              "TDP 3A",
-              "TDP 4",
-              "TDP 5",
-              "TDP 6",
-              "TDP 7",
-              "TDP 8",
-              "TDP 9",
-              "TDP 10",
-              "TDP 11",
-              "TDP 12",
-              "buôn Krông Pách",
-              "buôn Ma Đê",
-              "buôn Ea Tung",
-              "buôn Ea Ô"
-            ]
-          },
-          {
-            "name": "TT.Ea Knốp",
-            "villages": [
-              "TDP 1",
-              "TDP 2",
-              "TDP 3",
-              "TDP 4",
-              "TDP 5",
-              "TDP 6",
-              "TDP 7",
-              "TDP 8",
-              "TDP 9",
-              "TDP 10",
-              "TDP 11",
-              "TDP 12"
-            ]
-          },
-          {
-            "name": "xã Ea Sô",
-            "villages": [
-              "thôn 1",
-              "thôn 2",
-              "thôn 3",
-              "thôn 4",
-              "thôn 5",
-              "thôn 6",
-              "thôn 7",
-              "thôn 8",
-              "thôn 9",
-              "thôn 10",
-              "buôn Ea Puk"
-            ]
-          },
-          {
-            "name": "xã Ea Sar",
-            "villages": []
-          },
-          {
-            "name": "xã Xuân Phú",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Huê",
-            "villages": [
-              "Cư Nghĩa",
-              "Cư An",
-              "An Cư",
-              "Hợp Thành",
-              "buôn M’Oa",
-              "buôn Duôn Tại",
-              "buôn M’ar",
-              "buôn M’hăng",
-              "buôn M’Briu",
-              "buôn Dja"
-            ]
-          },
-          {
-            "name": "xã Ea Tih",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Đar",
-            "villages": [
-              "buôn Sứk",
-              "buôn Tăng Sinh",
-              "thôn 1",
-              "thôn 2",
-              "thôn 3",
-              "thôn 4",
-              "thôn 5",
-              "thôn 6",
-              "thôn 7",
-              "thôn 8",
-              "thôn 9",
-              "thôn 10",
-              "thôn 11",
-              "thôn 12",
-              "thôn 13",
-              "thôn 14",
-              "thôn 15",
-              "thôn 16",
-              "thôn Hữu Nghị"
-            ]
-          },
-          {
-            "name": "xã Ea Kmút",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Ni",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Păl",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Prông",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Ô",
-            "villages": []
-          },
-          {
-            "name": "xã Cư ELang",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Bông",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Jang",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H. M'Đrắk",
-        "wards": [
-          {
-            "name": "TT.M'Đrắk",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Prao",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Pil",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Lai",
-            "villages": []
-          },
-          {
-            "name": "xã Ea H'MLay",
-            "villages": []
-          },
-          {
-            "name": "xã Krông Jing",
-            "villages": []
-          },
-          {
-            "name": "xã Ea M' Doal",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Riêng",
-            "villages": []
-          },
-          {
-            "name": "xã Cư M'ta",
-            "villages": []
-          },
-          {
-            "name": "xã Cư K Róa",
-            "villages": []
-          },
-          {
-            "name": "xã Krông Á",
-            "villages": []
-          },
-          {
-            "name": "xã Cư San",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Trang",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H. Krông Bông",
-        "wards": [
-          {
-            "name": "TT.Krông Kmar",
-            "villages": []
-          },
-          {
-            "name": "xã Dang Kang",
-            "villages": []
-          },
-          {
-            "name": "xã Cư KTy",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Thành",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Phong",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Lễ",
-            "villages": []
-          },
-          {
-            "name": "xã Yang Reh",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Trul",
-            "villages": []
-          },
-          {
-            "name": "xã Khuê Ngọc Điền",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Pui",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Sơn",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Drăm",
-            "villages": []
-          },
-          {
-            "name": "xã Yang Mao",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H. Krông Pắc",
-        "wards": [
-          {
-            "name": "TT.Phước An",
-            "villages": []
-          },
-          {
-            "name": "xã KRông Búk",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Kly",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Kênh",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Phê",
-            "villages": []
-          },
-          {
-            "name": "xã Ea KNuec",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Yông",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa An",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Kuăng",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Đông",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Hiu",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Tiến",
-            "villages": []
-          },
-          {
-            "name": "xã Tân Tiến",
-            "villages": []
-          },
-          {
-            "name": "xã Vụ Bổn",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Uy",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Yiêng",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H. Krông A Na",
-        "wards": [
-          {
-            "name": "TT.buôn Trấp",
-            "villages": []
-          },
-          {
-            "name": "xã Dray Sáp",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Na",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Bông",
-            "villages": []
-          },
-          {
-            "name": "xã Băng A Drênh",
-            "villages": []
-          },
-          {
-            "name": "xã Dur KMăl",
-            "villages": []
-          },
-          {
-            "name": "xã Bình Hòa",
-            "villages": []
-          },
-          {
-            "name": "xã Quảng Điền",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H. Lắk",
-        "wards": [
-          {
-            "name": "TT.Liên Sơn",
-            "villages": []
-          },
-          {
-            "name": "xã Yang Tao",
-            "villages": []
-          },
-          {
-            "name": "xã Bông Krang",
-            "villages": []
-          },
-          {
-            "name": "xã Đắk Liêng",
-            "villages": []
-          },
-          {
-            "name": "xã buôn Triết",
-            "villages": []
-          },
-          {
-            "name": "xã buôn Tría",
-            "villages": []
-          },
-          {
-            "name": "xã Đắk Phơi",
-            "villages": []
-          },
-          {
-            "name": "xã Đắk Nuê",
-            "villages": []
-          },
-          {
-            "name": "xã Krông Nô",
-            "villages": []
-          },
-          {
-            "name": "xã Nam Ka",
-            "villages": []
-          },
-          {
-            "name": "xã Ea R'Bin",
-            "villages": []
-          }
-        ]
-      },
-      {
-        "name": "H. Cư Kuin",
-        "wards": [
-          {
-            "name": "xã Ea Ning",
-            "villages": []
-          },
-          {
-            "name": "xã Cư Ê Wi",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Ktur",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Tiêu",
-            "villages": []
-          },
-          {
-            "name": "xã Ea BHốk",
-            "villages": []
-          },
-          {
-            "name": "xã Ea Hu",
-            "villages": []
-          },
-          {
-            "name": "xã Dray Bhăng",
-            "villages": []
-          },
-          {
-            "name": "xã Hòa Hiệp",
-            "villages": []
-          }
-        ]
-      }
-    ]
+      "name": "T. Đắk Lắk",
+      "wards": [
+        {
+          "name": "P. Bình Kiến",
+          "villages": ["thôn 9","thôn 10"]
+        },
+        {
+          "name": "X. Buôn Đôn",
+          "villages": []
+        },
+        {
+          "name": "P. Buôn Hồ",
+          "villages": []
+        },
+        {
+          "name": "P. Buôn Ma Thuột",
+          "villages": []
+        },
+        {
+          "name": "X. Cuôr Đăng",
+          "villages": []
+        },
+        {
+          "name": "P. Cư Bao",
+          "villages": []
+        },
+        {
+          "name": "X. Cư M’gar",
+          "villages": []
+        },
+        {
+          "name": "X. Cư M’ta",
+          "villages": []
+        },
+        {
+          "name": "X. Cư Pơng",
+          "villages": []
+        },
+        {
+          "name": "X. Cư Prao",
+          "villages": []
+        },
+        {
+          "name": "X. Cư Pui",
+          "villages": []
+        },
+        {
+          "name": "X. Cư Yang",
+          "villages": []
+        },
+        {
+          "name": "X. Dang Kang",
+          "villages": []
+        },
+        {
+          "name": "X. Dliê Ya",
+          "villages": []
+        },
+        {
+          "name": "X. Dray Bhăng",
+          "villages": []
+        },
+        {
+          "name": "X. Dur Kmăl",
+          "villages": []
+        },
+        {
+          "name": "X. Đắk Liêng",
+          "villages": []
+        },
+        {
+          "name": "X. Đắk Phơi",
+          "villages": []
+        },
+        {
+          "name": "P. Đông Hòa",
+          "villages": []
+        },
+        {
+          "name": "X. Đồng Xuân",
+          "villages": []
+        },
+        {
+          "name": "X. Đức Bình",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Bá",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Bung",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Drăng",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Drông",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Hiao",
+          "villages": []
+        },
+        {
+          "name": "X. Ea H’leo",
+          "villages": []
+        },
+        {
+          "name": "P. Ea Kao",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Kar",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Khăl",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Kiết",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Kly",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Knốp",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Knuếc",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Ktur",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Ly",
+          "villages": []
+        },
+        {
+          "name": "X. Ea M’Droh",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Na",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Ning",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Nuôl",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Ô",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Păl",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Phê",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Riêng",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Rốk",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Súp",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Trang",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Tul",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Wer",
+          "villages": []
+        },
+        {
+          "name": "X. Ea Wy",
+          "villages": []
+        },
+        {
+          "name": "P. Hòa Hiệp",
+          "villages": []
+        },
+        {
+          "name": "X. Hòa Mỹ",
+          "villages": []
+        },
+        {
+          "name": "X. Hòa Phú",
+          "villages": []
+        },
+        {
+          "name": "X. Hòa Sơn",
+          "villages": []
+        },
+        {
+          "name": "X. Hòa Thịnh",
+          "villages": []
+        },
+        {
+          "name": "X. Hòa Xuân",
+          "villages": []
+        },
+        {
+          "name": "X. Ia Lốp",
+          "villages": []
+        },
+        {
+          "name": "X. Ia Rvê",
+          "villages": []
+        },
+        {
+          "name": "X. Krông Ana",
+          "villages": []
+        },
+        {
+          "name": "X. Krông Á",
+          "villages": []
+        },
+        {
+          "name": "X. Krông Bông",
+          "villages": []
+        },
+        {
+          "name": "X. Krông Búk",
+          "villages": []
+        },
+        {
+          "name": "X. Krông Năng",
+          "villages": []
+        },
+        {
+          "name": "X. Krông Nô",
+          "villages": []
+        },
+        {
+          "name": "X. Krông Pắc",
+          "villages": []
+        },
+        {
+          "name": "X. Liên Sơn Lắk",
+          "villages": []
+        },
+        {
+          "name": "X. M’Drắk",
+          "villages": []
+        },
+        {
+          "name": "X. Nam Ka",
+          "villages": []
+        },
+        {
+          "name": "X. Ô Loan",
+          "villages": []
+        },
+        {
+          "name": "X. Phú Hòa 1",
+          "villages": []
+        },
+        {
+          "name": "X. Phú Hòa 2",
+          "villages": []
+        },
+        {
+          "name": "X. Phú Mỡ",
+          "villages": []
+        },
+        {
+          "name": "X. Phú Xuân",
+          "villages": []
+        },
+        {
+          "name": "P. Phú Yên",
+          "villages": []
+        },
+        {
+          "name": "X. Pơng Drang",
+          "villages": []
+        },
+        {
+          "name": "X. Quảng Phú",
+          "villages": []
+        },
+        {
+          "name": "P. Sông Cầu",
+          "villages": []
+        },
+        {
+          "name": "X. Sông Hinh",
+          "villages": []
+        },
+        {
+          "name": "X. Sơn Hòa",
+          "villages": []
+        },
+        {
+          "name": "X. Sơn Thành",
+          "villages": []
+        },
+        {
+          "name": "X. Suối Trai",
+          "villages": []
+        },
+        {
+          "name": "X. Tam Giang",
+          "villages": []
+        },
+        {
+          "name": "P. Tân An",
+          "villages": []
+        },
+        {
+          "name": "P. Tân Lập",
+          "villages": []
+        },
+        {
+          "name": "X. Tân Tiến",
+          "villages": []
+        },
+        {
+          "name": "X. Tây Hòa",
+          "villages": []
+        },
+        {
+          "name": "X. Tây Sơn",
+          "villages": []
+        },
+        {
+          "name": "P. Thành Nhất",
+          "villages": []
+        },
+        {
+          "name": "X. Tuy An Bắc",
+          "villages": []
+        },
+        {
+          "name": "X. Tuy An Đông",
+          "villages": []
+        },
+        {
+          "name": "X. Tuy An Nam",
+          "villages": []
+        },
+        {
+          "name": "X. Tuy An Tây",
+          "villages": []
+        },
+        {
+          "name": "P. Tuy Hòa",
+          "villages": []
+        },
+        {
+          "name": "X. Vân Hòa",
+          "villages": []
+        },
+        {
+          "name": "X. Vụ Bổn",
+          "villages": []
+        },
+        {
+          "name": "X. Xuân Cảnh",
+          "villages": []
+        },
+        {
+          "name": "P. Xuân Đài",
+          "villages": []
+        },
+        {
+          "name": "X. Xuân Lãnh",
+          "villages": []
+        },
+        {
+          "name": "X. Xuân Lộc",
+          "villages": []
+        },
+        {
+          "name": "X. Xuân Phước",
+          "villages": []
+        },
+        {
+          "name": "X. Xuân Thọ",
+          "villages": []
+        },
+        {
+          "name": "X. Yang Mao",
+          "villages": []
+        }
+      ]
   }
 ]

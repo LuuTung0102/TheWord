@@ -115,8 +115,8 @@ function highlightErrorFields(errors) {
     if (!inputElement && fieldName.includes('Address')) {
       const allAddressGroups = document.querySelectorAll('.address-group');
       allAddressGroups.forEach(group => {
-        const provinceSelect = group.querySelector('select[data-level="province"]');
-        if (provinceSelect && provinceSelect.id && provinceSelect.id.includes(fieldName)) {
+        const provinceInput = group.querySelector('input[data-level="province"]');
+        if (provinceInput && provinceInput.id && provinceInput.id.includes(fieldName)) {
           highlightAddressGroup(group);
         }
       });
@@ -149,26 +149,28 @@ function highlightElement(element) {
 }
 
 function highlightAddressGroup(addressGroup) {
-  const selects = addressGroup.querySelectorAll('select.address-select');
-  selects.forEach(select => {
-    select.style.borderColor = '#dc3545';
-    select.style.borderWidth = '2px';
-    select.style.backgroundColor = '#fff5f5';
-    select.classList.add('validation-error');
+  const inputs = addressGroup.querySelectorAll('input.editable-select-input');
+  inputs.forEach(input => {
+    input.style.borderColor = '#dc3545';
+    input.style.borderWidth = '2px';
+    input.style.backgroundColor = '#fff5f5';
+    input.classList.add('validation-error');
   });
   
   const removeErrorStyle = () => {
-    selects.forEach(s => {
-      s.style.borderColor = '';
-      s.style.borderWidth = '';
-      s.style.backgroundColor = '';
-      s.classList.remove('validation-error');
-      s.removeEventListener('change', removeErrorStyle);
+    inputs.forEach(inp => {
+      inp.style.borderColor = '';
+      inp.style.borderWidth = '';
+      inp.style.backgroundColor = '';
+      inp.classList.remove('validation-error');
+      inp.removeEventListener('input', removeErrorStyle);
+      inp.removeEventListener('change', removeErrorStyle);
     });
   };
   
-  selects.forEach(select => {
-    select.addEventListener('change', removeErrorStyle, { once: true });
+  inputs.forEach(input => {
+    input.addEventListener('input', removeErrorStyle, { once: true });
+    input.addEventListener('change', removeErrorStyle, { once: true });
   });
 }
 
@@ -211,9 +213,9 @@ function scrollToFirstError(errors) {
   if (!inputElement && fieldName.includes('Address')) {
     const allAddressGroups = document.querySelectorAll('.address-group');
     for (const group of allAddressGroups) {
-      const provinceSelect = group.querySelector('select[data-level="province"]');
-      if (provinceSelect && provinceSelect.id && provinceSelect.id.includes(fieldName)) {
-        inputElement = provinceSelect;
+      const provinceInput = group.querySelector('input[data-level="province"]');
+      if (provinceInput && provinceInput.id && provinceInput.id.includes(fieldName)) {
+        inputElement = provinceInput;
         break;
       }
     }

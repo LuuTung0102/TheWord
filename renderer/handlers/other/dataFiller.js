@@ -42,70 +42,92 @@ function fillFormWithMenData(groupData, targetSuffix) {
 }
 
 function fillAddressField(placeholder, addressString) {
-  const provinceSelect = document.querySelector(`select[data-main*="${placeholder}"][data-level="province"]`);
-  if (!provinceSelect) return;
+  const provinceInput = document.querySelector(`input[data-main*="${placeholder}"][data-level="province"]`);
+  if (!provinceInput) return;
   
-  const addressGroup = provinceSelect.closest('.address-group');
+  const addressGroup = provinceInput.closest('.address-group');
   if (!addressGroup) return;
   
   const parts = addressString.split(',').map(p => p.trim());
-  if (parts.length < 3) return;
+  if (parts.length < 2) return;
   
-  const districtSelect = addressGroup.querySelector('select[data-level="district"]');
-  const wardSelect = addressGroup.querySelector('select[data-level="ward"]');
-  const villageElement = addressGroup.querySelector('select[data-level="village"], input[data-level="village"]');
+  const wardInput = addressGroup.querySelector('input[data-level="ward"]');
+  const villageInput = addressGroup.querySelector('input[data-level="village"]');
+  
+  if (!window.addressData) return;
   
   const provinceName = parts[parts.length - 1];
-  const provinceOption = Array.from(provinceSelect.options).find(opt => 
-    opt.text.includes(provinceName.replace('T. ', '').replace('TP. ', ''))
-  );
-  if (provinceOption) {
-    provinceSelect.value = provinceOption.value;
-    provinceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  const cleanProvinceName = provinceName.replace(/^(T\.|TP\.|Tỉnh|Thành phố)\s*/i, '').trim();
+  const province = window.addressData.find(p => {
+    const cleanPName = p.name.replace(/^(T\.|TP\.|Tỉnh|Thành phố)\s*/i, '').trim();
+    return cleanPName.toLowerCase().includes(cleanProvinceName.toLowerCase()) ||
+           cleanProvinceName.toLowerCase().includes(cleanPName.toLowerCase());
+  });
+  
+  if (!province) {
+    console.warn('Province not found:', provinceName);
+    return;
+  }
+  
+  if (!provinceInput._addressSetup) {
+    console.warn('Address setup not initialized for province input');
+  }
+  
+  provinceInput.value = province.name;
+  
+  if (provinceInput._addressSetup) {
+    provinceInput._addressSetup.selectedProvince = province;
+  }
+  
+  if (wardInput) {
+    wardInput.disabled = false;
   }
   
   setTimeout(() => {
-    const districtName = parts[parts.length - 2];
-    const districtOption = Array.from(districtSelect.options).find(opt => 
-      opt.text.includes(districtName.replace('H. ', '').replace('Q. ', '').replace('TX. ', '').replace('TP. ', ''))
-    );
-    if (districtOption) {
-      districtSelect.value = districtOption.value;
-      districtSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    if (parts.length < 2) return;
+    
+    const wardName = parts[parts.length - 2];
+    const cleanWardName = wardName.replace(/^(Xã|Phường|TT\.|Thị trấn|P\.|X\.)\s*/i, '').trim();
+    const ward = province.wards?.find(w => {
+      const cleanWName = w.name.replace(/^(Xã|Phường|TT\.|Thị trấn|P\.|X\.)\s*/i, '').trim();
+      return cleanWName.toLowerCase().includes(cleanWardName.toLowerCase()) ||
+             cleanWardName.toLowerCase().includes(cleanWName.toLowerCase());
+    });
+    
+    if (!ward) {
+      console.warn('Ward not found:', wardName, 'in province:', province.name);
+      return;
     }
     
-    setTimeout(() => {
-      const wardIndex = parts.length === 4 ? 1 : 0;
-      const villageIndex = 0;
-      
-      const wardName = parts[wardIndex];
-      const wardOption = Array.from(wardSelect.options).find(opt => 
-        opt.text.includes(wardName.replace('Xã ', '').replace('Phường ', '').replace('TT. ', ''))
-      );
-      if (wardOption) {
-        wardSelect.value = wardOption.value;
-        wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-      
-      if (parts.length === 4 && villageElement) {
-        setTimeout(() => {
-          const villageName = parts[villageIndex];
-          
-          if (villageElement.tagName === 'SELECT') {
-            const villageOption = Array.from(villageElement.options).find(opt => 
-              opt.text.includes(villageName.replace('Thôn ', '').replace('Buôn ', ''))
-            );
-            if (villageOption) {
-              villageElement.value = villageOption.value;
-              villageElement.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-          } else {
-            villageElement.value = villageName;
-            villageElement.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-        }, 100);
-      }
-    }, 100);
+    if (!wardInput) return;
+    
+    wardInput.value = ward.name;
+    
+    if (wardInput._addressSetup) {
+      wardInput._addressSetup.selectedWard = ward;
+    }
+    
+    if (villageInput) {
+      villageInput.disabled = !ward.villages || ward.villages.length === 0;
+    }
+    
+    if (parts.length >= 3 && villageInput && ward.villages && ward.villages.length > 0) {
+      setTimeout(() => {
+        const villageName = parts[0];
+        const cleanVillageName = villageName.replace(/^(Thôn|Buôn|Xóm)\s*/i, '').trim();
+        const village = ward.villages.find(v => {
+          const cleanVName = v.replace(/^(Thôn|Buôn|Xóm)\s*/i, '').trim();
+          return cleanVName.toLowerCase().includes(cleanVillageName.toLowerCase()) ||
+                 cleanVillageName.toLowerCase().includes(cleanVName.toLowerCase());
+        });
+        
+        if (village) {
+          villageInput.value = village;
+        } else {
+          console.warn('Village not found:', villageName, 'in ward:', ward.name);
+        }
+      }, 100);
+    }
   }, 100);
 }
 

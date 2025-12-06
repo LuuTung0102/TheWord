@@ -971,21 +971,19 @@ function collectGenericFormData() {
     }
   });
   document.querySelectorAll('.address-group').forEach(addressGroup => {
-    const provinceSelect = addressGroup.querySelector('select[data-level="province"]');
-    const districtSelect = addressGroup.querySelector('select[data-level="district"]');
-    const wardSelect = addressGroup.querySelector('select[data-level="ward"]');
-    const villageSelect = addressGroup.querySelector('select[data-level="village"]');
-    if (!provinceSelect) return;
-    const mainId = provinceSelect.getAttribute('data-main');
+    const provinceInput = addressGroup.querySelector('input[data-level="province"]');
+    const wardInput = addressGroup.querySelector('input[data-level="ward"]');
+    const villageInput = addressGroup.querySelector('input[data-level="village"]');
+    if (!provinceInput) return;
+    const mainId = provinceInput.getAttribute('data-main');
     if (!mainId) return;
     const phMatch = mainId.match(/input-([^-]+)/);
     if (!phMatch) return;
     const ph = phMatch[1];
     const parts = [];
-    if (villageSelect && villageSelect.value) parts.push(villageSelect.value);
-    if (wardSelect && wardSelect.value) parts.push(wardSelect.value);
-    if (districtSelect && districtSelect.value) parts.push(districtSelect.value);
-    if (provinceSelect && provinceSelect.value) parts.push(provinceSelect.value);
+    if (villageInput && villageInput.value.trim()) parts.push(villageInput.value.trim());
+    if (wardInput && wardInput.value.trim()) parts.push(wardInput.value.trim());
+    if (provinceInput && provinceInput.value.trim()) parts.push(provinceInput.value.trim());
     data[ph] = parts.join(', ');
   });
   

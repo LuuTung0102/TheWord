@@ -42,21 +42,28 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
     inputHtml = `
       ${wrapperStart}
       <label for="${safeId}"${requiredClass}><b>${label}</b></label>
-      <div class="address-group">
-        <select id="${safeId}_province" data-main="${safeId}" data-level="province" class="address-select input-field">
-          <option value="">-- Chọn tỉnh/thành --</option>
-          ${window.addressData ? window.addressData.map(p => `<option value="${p.name}">${p.name}</option>`).join('') : ''}
-        </select>
-        <select id="${safeId}_district" data-main="${safeId}" data-level="district" class="address-select input-field">
-          <option value="">-- Chọn quận/huyện --</option>
-        </select>
-        <select id="${safeId}_ward" data-main="${safeId}" data-level="ward" class="address-select input-field">
-          <option value="">-- Chọn phường/xã --</option>
-        </select>
-        <select id="${safeId}_village" data-main="${safeId}" data-level="village" class="address-select input-field">
-          <option value="">-- Chọn thôn/buôn --</option>
-        </select>
-  
+      <div class="address-group" id="${safeId}_address_group">
+        <div class="address-field-wrapper">
+          <div class="editable-select-wrapper">
+            <input type="text" id="${safeId}_province" data-main="${safeId}" data-level="province" class="editable-select-input input-field" placeholder="Chọn tỉnh/thành..." autocomplete="off"/>
+            <span class="editable-select-arrow">▼</span>
+          </div>
+          <div id="${safeId}_province_dropdown" class="address-dropdown"></div>
+        </div>
+        <div class="address-field-wrapper">
+          <div class="editable-select-wrapper">
+            <input type="text" id="${safeId}_ward" data-main="${safeId}" data-level="ward" class="editable-select-input input-field" placeholder="Chọn xã/phường..." autocomplete="off" disabled/>
+            <span class="editable-select-arrow">▼</span>
+          </div>
+          <div id="${safeId}_ward_dropdown" class="address-dropdown"></div>
+        </div>
+        <div class="address-field-wrapper">
+          <div class="editable-select-wrapper">
+            <input type="text" id="${safeId}_village" data-main="${safeId}" data-level="village" class="editable-select-input input-field" placeholder="Chọn thôn/xóm..." autocomplete="off" disabled/>
+            <span class="editable-select-arrow">▼</span>
+          </div>
+          <div id="${safeId}_village_dropdown" class="address-dropdown"></div>
+        </div>
       </div>
       ${wrapperEnd}
     `;
