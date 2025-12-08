@@ -39,7 +39,7 @@
       "description": "Thông tin đất đai",
       "applicableTo": ["LAND"],
       "fields": [
-        {"name":"QSH","label":"Quyền sử dụng đất","type":"text","placeholder":"Nhập QSH đất","required":true},
+        {"name":"QSH","label":"QSH đất(Số sery)","type":"text","placeholder":"Nhập QSH đất","required":true},
         {"name":"So_so","label":"Số sổ","type":"text","required":true},
         {"name":"Ngay_CapD","label":"Ngày cấp","type":"date","required":true},
         {"name":"Thua_dat_so","label":"Thửa đất số","type":"text","required":true},
@@ -88,8 +88,13 @@
       "group": "LAND",
       "schema": "LandInfo",
       "subgroups": [
-        {"id":"INFO","label":"Thông tin đất đai","visible":true}
-      ]
+        {"id":"INFO","label":"Thửa đất 1","visible":true},
+        {"id":"INFO2","label":"Thửa đất 2","visible":false},
+        {"id":"INFO3","label":"Thửa đất 3","visible":false},
+        {"id":"INFO4","label":"Thửa đất 4","visible":false},
+        {"id":"INFO5","label":"Thửa đất 5","visible":false}
+      ],
+      "suffixes": ["","2","3","4","5"]
     }
   ]
 }

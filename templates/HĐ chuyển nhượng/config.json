@@ -35,6 +35,17 @@
         "BNCN": ["MEN7","MEN8"],
         "LAND": ["INFO"]
       }
+    },
+    {
+      "id": "gender1",
+      "filename": "Gender1.docx",
+      "name": "Gender1",
+      "description": "",
+      "groups": ["BCN","LAND"],
+      "placeholders": {
+        "BCN": ["MEN1","MEN2"],
+        "LAND": ["INFO","INFO2"]
+      }
     }
   ],
   "groups": [
@@ -63,20 +74,21 @@
       "description": "Thông tin đất đai",
       "applicableTo": ["LAND"],
       "fields": [
-        {"name":"QSH","label":"Quyền sử dụng đất(Số sery)","type":"text","placeholder":"Nhập QSH đất","required":true},
+        {"name":"QSH","label":"QSH đất(Số sery)","type":"text","placeholder":"Nhập QSH đất","required":true},
         {"name":"So_so","label":"Số vào sổ","type":"text","required":true},
         {"name":"Ngay_CapD","label":"Ngày cấp","type":"date","required":true},
         {"name":"Thua_dat_so","label":"Thửa đất số","type":"text","required":true},
         {"name":"Ban_do_so","label":"Bản đồ số","type":"text","required":true},
         {"name":"S","label":"Diện tích (m²)","type":"number","required":true},
         {"name":"S_Text","label":"Diện tích (chữ)","type":"text","hidden":true},
+        {"name":"SV","label":"Diện tích đất trồng","type":"editable-select","options":[],"required":true},
         {"name":"Loai_Dat","label":"Loại đất","type":"land_type","placeholder":"VD: XXX+XXX","required":true},
         {"name":"Noi_CapD","label":"Nơi cấp","type":"textarea","required":true},
         {"name":"NG","label":"Nguồn gốc","type":"textarea","placeholder":"VD: Công nhận QSDĐ như giao đất không thu tiền sử dụng đất"},
         {"name":"Loai_Dat_F","label":"Loại đất (có diện tích)","type":"land_type_size","required":true},
         {"name":"Loai_Dat_D","label":"Loại đất chi tiết","type":"land_type_detail","required":true},
         {"name":"TDCSPL","label":"Thay đổi cơ sở pháp lý","type":"date"},
-        {"name":"HTSD","label":"Hình thức sử dụng","type":"htsd_custom"},
+        {"name":"HTSD","label":"Hình thức sử dụng","type":"htsd_custom","required":true},
         {"name":"THSD","label":"Thời hạn sử dụng","type":"textarea","required":true},
         {"name":"AddressD","label":"Địa chỉ thửa đất","type":"address-select","required":true},
         {"name":"TTGLVD","label":"TT tài sản gắn liền","placeholder":"VD: Nhập thông tin tài sản gắn liền","type":"textarea"},
@@ -117,8 +129,13 @@
       "group": "LAND",
       "schema": "LandInfo",
       "subgroups": [
-        {"id":"INFO","label":"Thông tin đất đai","visible":true}
-      ]
+        {"id":"INFO","label":"Thửa đất 1","visible":true},
+        {"id":"INFO2","label":"Thửa đất 2","visible":false},
+        {"id":"INFO3","label":"Thửa đất 3","visible":false},
+        {"id":"INFO4","label":"Thửa đất 4","visible":false},
+        {"id":"INFO5","label":"Thửa đất 5","visible":false}
+      ],
+      "suffixes": ["","2","3","4","5"]
     }
   ]
 }

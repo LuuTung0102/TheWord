@@ -1,15 +1,23 @@
 function setupLandTypeSync() {
-  const loaiDatDInput = document.querySelector('input[data-type="land_type_detail"]');
-  let loaiDatFInput = document.querySelector('input[data-type="land_type_size"]');
-  let loaiDatInput = document.querySelector('input[data-type="land_type"]');
-  
   const skipLandFields = window.stateManager.getRenderDataStructures()?.skipLandFields || new Set();
   const phMapping = window.stateManager.getRenderDataStructures()?.phMapping || {};
   
-  if (loaiDatDInput && !loaiDatFInput) {
+  // Find all land type detail inputs (including suffixed ones)
+  const allLoaiDatDInputs = document.querySelectorAll('input[data-type="land_type_detail"]');
+  
+  allLoaiDatDInputs.forEach(loaiDatDInput => {
     const detailPh = loaiDatDInput.getAttribute('data-ph');
-    const sizePh = Object.keys(phMapping).find(ph => phMapping[ph].type === 'land_type_size');
-    if (sizePh && skipLandFields.has(sizePh)) {
+    const suffix = detailPh.replace('Loai_Dat_D', '');
+    
+    // Find or create corresponding F and basic inputs
+    const sizePh = suffix ? `Loai_Dat_F${suffix}` : 'Loai_Dat_F';
+    const basicPh = suffix ? `Loai_Dat${suffix}` : 'Loai_Dat';
+    
+    let loaiDatFInput = document.querySelector(`[data-ph="${sizePh}"]`);
+    let loaiDatInput = document.querySelector(`[data-ph="${basicPh}"]`);
+    
+    // Create hidden F input if needed
+    if (!loaiDatFInput && skipLandFields.has(sizePh)) {
       loaiDatFInput = document.createElement('input');
       loaiDatFInput.type = 'hidden';
       loaiDatFInput.setAttribute('data-ph', sizePh);
@@ -17,11 +25,9 @@ function setupLandTypeSync() {
       loaiDatFInput.id = `hidden-${sizePh}`;
       document.body.appendChild(loaiDatFInput);
     }
-  }
-  
-  if ((loaiDatDInput || loaiDatFInput) && !loaiDatInput) {
-    const basicPh = Object.keys(phMapping).find(ph => phMapping[ph].type === 'land_type');
-    if (basicPh && skipLandFields.has(basicPh)) {
+    
+    // Create hidden basic input if needed
+    if (!loaiDatInput && skipLandFields.has(basicPh)) {
       loaiDatInput = document.createElement('input');
       loaiDatInput.type = 'hidden';
       loaiDatInput.setAttribute('data-ph', basicPh);
@@ -29,73 +35,66 @@ function setupLandTypeSync() {
       loaiDatInput.id = `hidden-${basicPh}`;
       document.body.appendChild(loaiDatInput);
     }
-  }
-  
-  if (loaiDatDInput && loaiDatFInput) {
-    const syncDtoF = () => {
-      const value = loaiDatDInput.value;
-      if (!value) {
-        return;
-      }
-      
-      const entries = value.split(';').map(e => e.trim()).filter(Boolean);
-      const converted = entries.map(entry => {
-        const parts = entry.split('|');
-        const code = parts[0] ? parts[0].trim() : '';
-        const area = parts[2] ? parts[2].trim() : '';
-        return code && area ? `${code} ${area}` : code;
-      }).filter(Boolean);
-      
-      loaiDatFInput.value = converted.join('; ');
-      loaiDatFInput.dispatchEvent(new Event('change', { bubbles: true }));
-      loaiDatFInput.dispatchEvent(new Event('input', { bubbles: true }));
-      
-      if (typeof populateDynamicOptions === 'function') {
-        populateDynamicOptions();
-      }
-    };
     
-    loaiDatDInput.addEventListener('input', syncDtoF);
-    loaiDatDInput.addEventListener('change', syncDtoF);
-  }
-  
-  if (loaiDatFInput && loaiDatInput) {
-    const syncFtoD = () => {
-      const value = loaiDatFInput.value;
-      if (!value) {
-        return;
-      }
+    // Setup D -> F sync
+    if (loaiDatFInput) {
+      const syncDtoF = () => {
+        const value = loaiDatDInput.value;
+        if (!value) return;
+        
+        const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+        const converted = entries.map(entry => {
+          const parts = entry.split('|');
+          const code = parts[0] ? parts[0].trim() : '';
+          const area = parts[2] ? parts[2].trim() : '';
+          return code && area ? `${code} ${area}` : code;
+        }).filter(Boolean);
+        
+        loaiDatFInput.value = converted.join('; ');
+        loaiDatFInput.dispatchEvent(new Event('change', { bubbles: true }));
+        loaiDatFInput.dispatchEvent(new Event('input', { bubbles: true }));
+      };
       
-      const entries = value.split(';').map(e => e.trim()).filter(Boolean);
-      const codes = entries.map(entry => {
-        const match = entry.match(/^([A-Z]+)/);
-        return match ? match[1] : '';
-      }).filter(Boolean);
-      
-      loaiDatInput.value = codes.join('+');
-      loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));    
-      if (typeof populateDynamicOptions === 'function') {
-        populateDynamicOptions();
-      }
-    };
+      loaiDatDInput.addEventListener('input', syncDtoF);
+      loaiDatDInput.addEventListener('change', syncDtoF);
+    }
     
-    loaiDatFInput.addEventListener('input', syncFtoD);
-    loaiDatFInput.addEventListener('change', syncFtoD);
-  }
+    // Setup F -> basic sync
+    if (loaiDatFInput && loaiDatInput) {
+      const syncFtoBasic = () => {
+        const value = loaiDatFInput.value;
+        if (!value) return;
+        
+        const entries = value.split(';').map(e => e.trim()).filter(Boolean);
+        const codes = entries.map(entry => {
+          const match = entry.match(/^([A-Z]+)/);
+          return match ? match[1] : '';
+        }).filter(Boolean);
+        
+        loaiDatInput.value = codes.join('+');
+        loaiDatInput.dispatchEvent(new Event('change', { bubbles: true }));
+      };
+      
+      loaiDatFInput.addEventListener('input', syncFtoBasic);
+      loaiDatFInput.addEventListener('change', syncFtoBasic);
+    }
+  });
 }
 
 function populateDynamicOptions(groupData, targetSuffix) {
   if (!groupData) {
-    const loaiDatDInput = document.querySelector('input[data-type="land_type_detail"]');
-    const loaiDatFInput = document.querySelector('input[data-type="land_type_size"]');
+    // If no groupData provided, try to find it from visible inputs
+    const loaiDatDPh = targetSuffix ? `Loai_Dat_D${targetSuffix}` : 'Loai_Dat_D';
+    const loaiDatFPh = targetSuffix ? `Loai_Dat_F${targetSuffix}` : 'Loai_Dat_F';
+    
+    const loaiDatDInput = document.querySelector(`[data-ph="${loaiDatDPh}"]`);
+    const loaiDatFInput = document.querySelector(`[data-ph="${loaiDatFPh}"]`);
     
     groupData = {};
     if (loaiDatDInput && loaiDatDInput.value) {
-      const ph = loaiDatDInput.getAttribute('data-ph');
-      groupData[ph] = loaiDatDInput.value;
+      groupData[loaiDatDPh] = loaiDatDInput.value;
     } else if (loaiDatFInput && loaiDatFInput.value) {
-      const ph = loaiDatFInput.getAttribute('data-ph');
-      groupData[ph] = loaiDatFInput.value;
+      groupData[loaiDatFPh] = loaiDatFInput.value;
     }
     
     if (Object.keys(groupData).length === 0) {
@@ -105,6 +104,7 @@ function populateDynamicOptions(groupData, targetSuffix) {
   
   const areas = [];
   
+  // Look for detail field with matching suffix
   const detailField = Object.keys(groupData).find(key => {
     const input = document.querySelector(`[data-ph="${key}"]`);
     return input && input.getAttribute('data-type') === 'land_type_detail';
@@ -123,6 +123,7 @@ function populateDynamicOptions(groupData, targetSuffix) {
     });
   }
   
+  // Look for size field with matching suffix
   const sizeField = Object.keys(groupData).find(key => {
     const input = document.querySelector(`[data-ph="${key}"]`);
     return input && input.getAttribute('data-type') === 'land_type_size';
@@ -182,7 +183,7 @@ function populateDynamicOptions(groupData, targetSuffix) {
   }
 }
 
-function fillLandTypeFields(groupData) {
+function fillLandTypeFields(groupData, targetSuffix) {
   if (!groupData || Object.keys(groupData).length === 0) {
     return;
   }
@@ -191,14 +192,17 @@ function fillLandTypeFields(groupData) {
     const value = groupData[fieldName];
     if (!value || typeof value !== 'string') return;
     
-    const targetInput = document.querySelector(`[data-ph="${fieldName}"]`);
+    // Add suffix to field name if provided
+    const placeholder = targetSuffix ? `${fieldName}${targetSuffix}` : fieldName;
+    
+    const targetInput = document.querySelector(`[data-ph="${placeholder}"]`);
     if (!targetInput) return;
     
     const fieldType = targetInput.getAttribute('data-type');
     
     if (fieldType === 'land_type') {
       setTimeout(() => {
-        const freshInput = document.querySelector(`[data-ph="${fieldName}"]`);
+        const freshInput = document.querySelector(`[data-ph="${placeholder}"]`);
         if (freshInput) {
           freshInput.value = value;
           freshInput.setAttribute('value', value);
@@ -207,9 +211,9 @@ function fillLandTypeFields(groupData) {
         }
       }, 100);
     } else if (fieldType === 'land_type_detail') {
-      fillLandTypeDetailField(fieldName, value);
+      fillLandTypeDetailField(placeholder, value);
     } else if (fieldType === 'land_type_size') {
-      fillLandTypeSizeField(fieldName, value);
+      fillLandTypeSizeField(placeholder, value);
     }
   });
 }
@@ -375,17 +379,23 @@ function fillLandTypeSizeField(placeholder, valueString) {
   }
 }
 
-function generateAllLandTypeFormats(data) {
-  const hasLoaiDat = data.hasOwnProperty('Loai_Dat');
-  const hasLoaiDatF = data.hasOwnProperty('Loai_Dat_F');
-  const hasLoaiDatD = data.hasOwnProperty('Loai_Dat_D');
+function generateLandTypeFormatsForSuffix(data, suffix) {
+  const loaiDatKey = suffix ? `Loai_Dat${suffix}` : 'Loai_Dat';
+  const loaiDatFKey = suffix ? `Loai_Dat_F${suffix}` : 'Loai_Dat_F';
+  const loaiDatDKey = suffix ? `Loai_Dat_D${suffix}` : 'Loai_Dat_D';
+  
+  const hasLoaiDat = data.hasOwnProperty(loaiDatKey);
+  const hasLoaiDatF = data.hasOwnProperty(loaiDatFKey);
+  const hasLoaiDatD = data.hasOwnProperty(loaiDatDKey);
   
   if (!hasLoaiDat && !hasLoaiDatF && !hasLoaiDatD) {
     return;
   }
-  const loaiDat = data['Loai_Dat'];
-  const loaiDatF = data['Loai_Dat_F'];
-  const loaiDatD = data['Loai_Dat_D'];
+  
+  const loaiDat = data[loaiDatKey];
+  const loaiDatF = data[loaiDatFKey];
+  const loaiDatD = data[loaiDatDKey];
+  
   const hasDetailInD = loaiDatD && loaiDatD.includes('|') && loaiDatD.split(';').some(e => {
     const parts = e.split('|');
     return (parts[1] && parts[1].trim()) || (parts[2] && parts[2].trim());
@@ -416,27 +426,44 @@ function generateAllLandTypeFormats(data) {
   
   if (!loaiDat || !loaiDat.trim()) {
     if (sourceType === 'D') {
-      data['Loai_Dat'] = convertLoaiDatDtoBasic(sourceValue);
+      data[loaiDatKey] = convertLoaiDatDtoBasic(sourceValue);
     } else if (sourceType === 'F') {
-      data['Loai_Dat'] = convertLoaiDatFtoBasic(sourceValue);
+      data[loaiDatKey] = convertLoaiDatFtoBasic(sourceValue);
     }
   }
   
   if (!loaiDatF || !loaiDatF.trim()) {
     if (sourceType === 'D') {
-      data['Loai_Dat_F'] = convertLoaiDatDtoF(sourceValue);
+      data[loaiDatFKey] = convertLoaiDatDtoF(sourceValue);
     } else if (sourceType === 'basic') {
-      data['Loai_Dat_F'] = convertLoaiDatBasicToF(sourceValue);
+      data[loaiDatFKey] = convertLoaiDatBasicToF(sourceValue);
     }
   }
   
   if (!loaiDatD || !loaiDatD.trim()) {
     if (sourceType === 'F') {
-      data['Loai_Dat_D'] = convertLoaiDatFtoD(sourceValue);
+      data[loaiDatDKey] = convertLoaiDatFtoD(sourceValue);
     } else if (sourceType === 'basic') {
-      data['Loai_Dat_D'] = convertLoaiDatBasicToD(sourceValue);
+      data[loaiDatDKey] = convertLoaiDatBasicToD(sourceValue);
     }
   }
+}
+
+function generateAllLandTypeFormats(data) {
+  // Find all Loai_Dat suffixes in data
+  const suffixes = new Set(['']); // Start with no suffix
+  
+  Object.keys(data).forEach(key => {
+    const match = key.match(/^Loai_Dat(_[FD])?(\d+)$/);
+    if (match && match[2]) {
+      suffixes.add(match[2]);
+    }
+  });
+  
+  // Process each suffix
+  suffixes.forEach(suffix => {
+    generateLandTypeFormatsForSuffix(data, suffix);
+  });
 }
 
 window.LandTypeHandlers = {

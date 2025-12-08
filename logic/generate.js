@@ -480,118 +480,138 @@
         if (data[k] === null || data[k] === undefined) data[k] = "";
         else if (typeof data[k] !== 'string') data[k] = String(data[k]);
       });
-      if (data.Loai_Dat && data.Loai_Dat.trim()) {
-        try {
-          const landTypesPath = path.join(__dirname, '..', 'renderer', 'config', 'land_types.json');
-          const landTypeMap = JSON.parse(fs.readFileSync(landTypesPath, 'utf8'));
-          const expandedNames = data.Loai_Dat
-            .split('+')
-            .map(s => s.trim().toUpperCase())
-            .filter(Boolean)
-            .map(code => landTypeMap[code] || code)
-            .join(' và ');
-          data.Loai_Dat = expandedNames;
-        } catch (error) {
-        }
+      // Format land types for all suffixes
+      const landTypesPath = path.join(__dirname, '..', 'renderer', 'config', 'land_types.json');
+      let landTypeMap = null;
+      try {
+        landTypeMap = JSON.parse(fs.readFileSync(landTypesPath, 'utf8'));
+      } catch (error) {
+        landTypeMap = {};
       }
       
-      if (data.Loai_Dat_F && data.Loai_Dat_F.trim()) {
-        try {
-          const landTypesPath = path.join(__dirname, '..', 'renderer', 'config', 'land_types.json');
-          const landTypeMap = JSON.parse(fs.readFileSync(landTypesPath, 'utf8'));
-          let formattedValue = data.Loai_Dat_F;
-          const pairs = formattedValue.split(';').map(p => p.trim()).filter(Boolean);
-          const formattedPairs = pairs.map(pair => {
-            if (pair.includes('m²')) {
-              const m2Match = pair.match(/^(\d+(?:\.\d+)?)\s*m²\s*(.+)$/i);
-              if (m2Match) {
-                const area = m2Match[1];
-                const rest = m2Match[2].trim();
-                if (/^[A-Z]{2,4}$/.test(rest)) {
-                  return `${area}m² ${rest}`;
+      // Find all Loai_Dat keys (with and without suffixes)
+      const loaiDatKeys = Object.keys(data).filter(k => k.match(/^Loai_Dat(_[FD])?(\d*)$/));
+      const suffixes = new Set(['']);
+      loaiDatKeys.forEach(k => {
+        const match = k.match(/^Loai_Dat(_[FD])?(\d+)$/);
+        if (match && match[2]) suffixes.add(match[2]);
+      });
+      
+      suffixes.forEach(suffix => {
+        const loaiDatKey = suffix ? `Loai_Dat${suffix}` : 'Loai_Dat';
+        const loaiDatFKey = suffix ? `Loai_Dat_F${suffix}` : 'Loai_Dat_F';
+        const loaiDatDKey = suffix ? `Loai_Dat_D${suffix}` : 'Loai_Dat_D';
+        
+        // Format Loai_Dat (basic)
+        if (data[loaiDatKey] && data[loaiDatKey].trim()) {
+          try {
+            const expandedNames = data[loaiDatKey]
+              .split('+')
+              .map(s => s.trim().toUpperCase())
+              .filter(Boolean)
+              .map(code => landTypeMap[code] || code)
+              .join(' và ');
+            data[loaiDatKey] = expandedNames;
+          } catch (error) {
+          }
+        }
+        
+        // Format Loai_Dat_F (with size)
+        if (data[loaiDatFKey] && data[loaiDatFKey].trim()) {
+          try {
+            let formattedValue = data[loaiDatFKey];
+            const pairs = formattedValue.split(';').map(p => p.trim()).filter(Boolean);
+            const formattedPairs = pairs.map(pair => {
+              if (pair.includes('m²')) {
+                const m2Match = pair.match(/^(\d+(?:\.\d+)?)\s*m²\s*(.+)$/i);
+                if (m2Match) {
+                  const area = m2Match[1];
+                  const rest = m2Match[2].trim();
+                  if (/^[A-Z]{2,4}$/.test(rest)) {
+                    return `${area}m² ${rest}`;
+                  } else {
+                    const foundCode = Object.keys(landTypeMap).find(code => landTypeMap[code] === rest);
+                    if (foundCode) {
+                      return `${area}m² ${foundCode}`;
+                    }
+                    return pair;
+                  }
+                }
+                return pair;
+              }
+              let match = pair.match(/^(\d+(?:\.\d+)?)\s*m2\s*([A-Z]+)$/i);
+              if (match) {
+                const area = match[1];
+                const code = match[2].toUpperCase();
+                return `${area}m² ${code}`;
+              }
+              match = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)$/i);
+              if (match) {
+                const code = match[1].toUpperCase();
+                const area = match[2];
+                return `${area}m² ${code}`;
+              }
+              match = pair.match(/^(\d+(?:\.\d+)?)\s*m2\s*(.+)$/i);
+              if (match) {
+                const area = match[1];
+                const nameOrCode = match[2].trim();
+                if (/^[A-Z]{2,4}$/.test(nameOrCode)) {
+                  return `${area}m² ${nameOrCode}`;
                 } else {
-                  const foundCode = Object.keys(landTypeMap).find(code => landTypeMap[code] === rest);
+                  const foundCode = Object.keys(landTypeMap).find(code => landTypeMap[code] === nameOrCode);
                   if (foundCode) {
                     return `${area}m² ${foundCode}`;
                   }
-                  return pair;
                 }
               }
               return pair;
-            }
-            let match = pair.match(/^(\d+(?:\.\d+)?)\s*m2\s*([A-Z]+)$/i);
-            if (match) {
-              const area = match[1];
-              const code = match[2].toUpperCase();
-              return `${area}m² ${code}`;
-            }
-            match = pair.match(/^([A-Z]+)\s+(\d+(?:\.\d+)?)$/i);
-            if (match) {
-              const code = match[1].toUpperCase();
-              const area = match[2];
-              return `${area}m² ${code}`;
-            }
-            match = pair.match(/^(\d+(?:\.\d+)?)\s*m2\s*(.+)$/i);
-            if (match) {
-              const area = match[1];
-              const nameOrCode = match[2].trim();
-              if (/^[A-Z]{2,4}$/.test(nameOrCode)) {
-                return `${area}m² ${nameOrCode}`;
-              } else {
-                const foundCode = Object.keys(landTypeMap).find(code => landTypeMap[code] === nameOrCode);
-                if (foundCode) {
-                  return `${area}m² ${foundCode}`;
-                }
-              }
-            }
-            return pair;
-          });
-          data.Loai_Dat_F = formattedPairs.join('; ');
-        } catch (error) {
-        }
-      }
-      
-      if (data.Loai_Dat_D && typeof data.Loai_Dat_D === 'string' && data.Loai_Dat_D.trim()) {
-        try {
-          const landTypesPath = path.join(__dirname, '..', 'renderer', 'config', 'land_types.json');
-          const landTypeMap = JSON.parse(fs.readFileSync(landTypesPath, 'utf8'));
-          const entries = data.Loai_Dat_D.split(';').map(e => e.trim()).filter(Boolean);
-          
-          if (entries.length > 0) {
-            const formattedEntries = entries.map((entry, index) => {
-              const parts = entry.split('|');
-              if (parts.length >= 1) {
-                const code = parts[0] ? parts[0].trim() : '';
-                const location = parts[1] ? parts[1].trim() : '';
-                const area = parts[2] ? parts[2].trim() : '';
-                
-                if (!code) return '';
-                
-                const locationPart = location ? `   ${location}` : '';
-                const areaPart = area ? `                     Diện tích: ${area}m²` : '';
-                
-                
-                return `\t+ Loại đất ${index + 1}: ${code}:${locationPart}${areaPart}.`;
-              }
-              return '';
-            }).filter(Boolean);
-            
-            if (formattedEntries.length > 0) {
-              data.Loai_Dat_D = formattedEntries.join('\n');
-            } else {
-              data.Loai_Dat_D = '';
-            }
-          } else {
-            data.Loai_Dat_D = '';
+            });
+            data[loaiDatFKey] = formattedPairs.join('; ');
+          } catch (error) {
           }
-        } catch (error) {
-          data.Loai_Dat_D = '';
         }
-      } else {
-        if (data.Loai_Dat_D !== undefined) {
-          data.Loai_Dat_D = '';
+        
+        // Format Loai_Dat_D (detail)
+        if (data[loaiDatDKey] && typeof data[loaiDatDKey] === 'string' && data[loaiDatDKey].trim()) {
+          try {
+            const entries = data[loaiDatDKey].split(';').map(e => e.trim()).filter(Boolean);
+            
+            if (entries.length > 0) {
+              const formattedEntries = entries.map((entry, index) => {
+                const parts = entry.split('|');
+                if (parts.length >= 1) {
+                  const code = parts[0] ? parts[0].trim() : '';
+                  const location = parts[1] ? parts[1].trim() : '';
+                  const area = parts[2] ? parts[2].trim() : '';
+                  
+                  if (!code) return '';
+                  
+                  const locationPart = location ? `   ${location}` : '';
+                  const areaPart = area ? `                     Diện tích: ${area}m²` : '';
+                  
+                  
+                  return `\t+ Loại đất ${index + 1}: ${code}:${locationPart}${areaPart}.`;
+                }
+                return '';
+              }).filter(Boolean);
+              
+              if (formattedEntries.length > 0) {
+                data[loaiDatDKey] = formattedEntries.join('\n');
+              } else {
+                data[loaiDatDKey] = '';
+              }
+            } else {
+              data[loaiDatDKey] = '';
+            }
+          } catch (error) {
+            data[loaiDatDKey] = '';
+          }
+        } else {
+          if (data[loaiDatDKey] !== undefined) {
+            data[loaiDatDKey] = '';
+          }
         }
-      }
+      });
       
       const templatePhs = getPlaceholders(templatePath);
       const fullData = {};

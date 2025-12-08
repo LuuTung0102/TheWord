@@ -549,18 +549,36 @@ async function renderGenericForm(placeholders, config, folderPath) {
 }
 
 function getLandFieldsToSkip(allPlaceholders) {
-  const hasLoaiDatD = allPlaceholders.some(ph => ph === 'Loai_Dat_D');
-  const hasLoaiDatF = allPlaceholders.some(ph => ph === 'Loai_Dat_F');
-  const hasLoaiDat = allPlaceholders.some(ph => ph === 'Loai_Dat');
-  
   const skipFields = new Set();
   
-  if (hasLoaiDatD) {
-    if (hasLoaiDatF) skipFields.add('Loai_Dat_F');
-    if (hasLoaiDat) skipFields.add('Loai_Dat');
-  } else if (hasLoaiDatF) {
-    if (hasLoaiDat) skipFields.add('Loai_Dat');
-  }
+  // Find all suffixes (including no suffix)
+  const suffixes = new Set(['']);
+  allPlaceholders.forEach(ph => {
+    const match = ph.match(/^Loai_Dat(_[FD])?(\d+)$/);
+    if (match && match[2]) {
+      suffixes.add(match[2]);
+    }
+  });
+  
+  // For each suffix, determine which fields to skip
+  suffixes.forEach(suffix => {
+    const loaiDatKey = suffix ? `Loai_Dat${suffix}` : 'Loai_Dat';
+    const loaiDatFKey = suffix ? `Loai_Dat_F${suffix}` : 'Loai_Dat_F';
+    const loaiDatDKey = suffix ? `Loai_Dat_D${suffix}` : 'Loai_Dat_D';
+    
+    const hasLoaiDatD = allPlaceholders.some(ph => ph === loaiDatDKey);
+    const hasLoaiDatF = allPlaceholders.some(ph => ph === loaiDatFKey);
+    const hasLoaiDat = allPlaceholders.some(ph => ph === loaiDatKey);
+    
+    // Priority: D > F > basic
+    if (hasLoaiDatD) {
+      if (hasLoaiDatF) skipFields.add(loaiDatFKey);
+      if (hasLoaiDat) skipFields.add(loaiDatKey);
+    } else if (hasLoaiDatF) {
+      if (hasLoaiDat) skipFields.add(loaiDatKey);
+    }
+  });
+  
   return skipFields;
 }
 
@@ -824,15 +842,19 @@ function collectGenericFormData() {
     const ph = el.getAttribute('data-ph');
     if (!ph) return;
     let value = el.value.trim();
-    if (ph === 'Money' && value) {
+    // Handle Money field with or without suffix (Money, Money2, Money3, etc.)
+    const moneyMatch = ph.match(/^Money(\d*)$/);
+    if (moneyMatch && value) {
+      const suffix = moneyMatch[1];
       const rawMoney = window.REGEX_HELPERS.removeNonDigits(value);
       if (rawMoney) {
         if (!value.includes(',')) {
           value = window.formatWithCommas ? window.formatWithCommas(rawMoney) : rawMoney;
           el.value = value;
         }
+        const moneyTextKey = suffix ? `MoneyText${suffix}` : 'MoneyText';
         const moneyText = window.numberToVietnameseWords ? window.numberToVietnameseWords(rawMoney) : "";
-        if (moneyText) data['MoneyText'] = moneyText;
+        if (moneyText) data[moneyTextKey] = moneyText;
       }
     }
     const nameMatch = ph.match(/^Name(\d+)$/);
@@ -848,12 +870,16 @@ function collectGenericFormData() {
         }
       }
     }
-    if (ph === 'S' && value) {
+    // Handle S field with or without suffix (S, S2, S3, etc.)
+    const sMatch = ph.match(/^S(\d*)$/);
+    if (sMatch && value) {
+      const suffix = sMatch[1];
       const rawArea = value.replace(/,/g, '');
       if (rawArea) {
         data[ph] = rawArea;
+        const sTextKey = suffix ? `S_Text${suffix}` : 'S_Text';
         const sText = window.numberToAreaWords ? window.numberToAreaWords(rawArea) : "";
-        if (sText) data['S_Text'] = sText;
+        if (sText) data[sTextKey] = sText;
         value = rawArea;
       }
     }
@@ -928,13 +954,20 @@ function collectGenericFormData() {
           }).join('; ');
           value = formatted || pairs.join('; '); 
         }
-        if (ph === 'Loai_Dat_F' && !data['Loai_Dat']) {
-          const codes = pairs.map(pair => {
-            const match = pair.match(/^([A-Z]+)/);
-            return match ? match[1] : '';
-          }).filter(Boolean);
-          if (codes.length > 0) {
-            data['Loai_Dat'] = codes.join('+');
+        // Handle Loai_Dat_F with or without suffix
+        const loaiDatFMatch = ph.match(/^Loai_Dat_F(\d*)$/);
+        if (loaiDatFMatch) {
+          const suffix = loaiDatFMatch[1];
+          const loaiDatKey = suffix ? `Loai_Dat${suffix}` : 'Loai_Dat';
+          
+          if (!data[loaiDatKey]) {
+            const codes = pairs.map(pair => {
+              const match = pair.match(/^([A-Z]+)/);
+              return match ? match[1] : '';
+            }).filter(Boolean);
+            if (codes.length > 0) {
+              data[loaiDatKey] = codes.join('+');
+            }
           }
         }
       }

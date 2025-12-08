@@ -1,7 +1,7 @@
 function fillFormWithMenData(groupData, targetSuffix) {
   setTimeout(() => {
     if (window.LandTypeHandlers && window.LandTypeHandlers.fillLandTypeFields) {
-      window.LandTypeHandlers.fillLandTypeFields(groupData);
+      window.LandTypeHandlers.fillLandTypeFields(groupData, targetSuffix);
     }
     
     if (window.LandTypeHandlers && window.LandTypeHandlers.populateDynamicOptions) {

@@ -92,12 +92,14 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
   
   if (allGroups.length === 0) return null;
   
+  const isLandGroup = groupKey === 'LAND';
+  
   const availableGroups = allGroups.filter(group => {
     if (group.groupKey === 'OTHER') return false;
-    if (targetSuffix) {
-      return group.groupKey.startsWith('MEN');
+    if (isLandGroup) {
+      return group.groupKey.startsWith('INFO');
     } else {
-      return !group.groupKey.startsWith('MEN');
+      return group.groupKey.startsWith('MEN');
     }
   }).map(group => {
       let finalDisplayName = group.displayName;

@@ -174,7 +174,7 @@
 
   function getGroupType(groupKey) {
     if (groupKey.startsWith('MEN')) return 'MEN';
-    if (groupKey === 'INFO') return 'INFO';
+    if (groupKey.startsWith('INFO')) return 'INFO';  // Match INFO, INFO2, INFO3...
     return groupKey; 
   }
 
@@ -514,7 +514,7 @@
             const formattedTime = formatTimestampForDisplay(timestamp);  
             if (baseKey.startsWith('MEN')) {
               displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName} - ${formattedTime})`;
-            } else if (baseKey === 'INFO') {
+            } else if (baseKey.startsWith('INFO')) {
               displayName = `${groupData.QSH || 'TT thửa đất'} (${shortFileName} - ${formattedTime})`;
             } else {
               displayName = `${baseKey} (${shortFileName} - ${formattedTime})`;
@@ -522,7 +522,7 @@
           } else {
             if (groupKey.startsWith('MEN')) {
               displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName})`;
-            } else if (groupKey === 'INFO') {
+            } else if (groupKey.startsWith('INFO')) {
               displayName = `${groupData.QSH || 'TT thửa đất'} (${shortFileName})`;
             } else {
               displayName = `${groupKey} (${shortFileName})`;
