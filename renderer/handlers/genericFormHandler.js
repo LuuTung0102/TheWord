@@ -2,13 +2,6 @@ function setupLandTypeSync() {
   return window.LandTypeHandlers?.setupLandTypeSync?.();
 }
 
-function populateDynamicOptions(...args) {
-  return window.LandTypeHandlers?.populateDynamicOptions?.(...args);
-}
-
-function fillLandTypeFields(...args) {
-  return window.LandTypeHandlers?.fillLandTypeFields?.(...args);
-}
 
 function generateAllLandTypeFormats(...args) {
   return window.LandTypeHandlers?.generateAllLandTypeFormats?.(...args);
@@ -42,9 +35,6 @@ function fillFormWithMenData(...args){
   return window.DataFiller?.fillFormWithMenData?.(...args);
 }
 
-function fillAddressField(...args){
-  return window.DataFiller?.fillAddressField?.(...args);
-}
 
 let idToPhGeneric = {};
 
@@ -246,10 +236,25 @@ async function renderGenericForm(placeholders, config, folderPath) {
         ? groupMapping.suffixes[subIndex] 
         : '';
       const hasPlaceholder = Object.keys(phMapping).some(ph => {
-        if (suffix) {
-          return ph.endsWith(suffix);
+        const phDef = phMapping[ph];
+        if (!phDef) return false;
+        if (phDef.group !== groupKey) return false;
+        if (suffix && suffix !== '') {
+          const match = ph.match(/^([A-Za-z_]+?)(\d+)$/);
+          if (match) {
+            const phSuffix = match[2];
+            if (phSuffix === String(suffix) && phDef.subgroup === subId) {
+              return true;
+            }
+          }
+          return false;
+        } else {
+          const hasNumericSuffix = /\d+$/.test(ph);
+          if (!hasNumericSuffix && phDef.subgroup === subId) {
+            return true;
+          }
+          return false;
         }
-        return true;
       });
       
       return hasPlaceholder;
@@ -415,12 +420,27 @@ async function renderGenericForm(placeholders, config, folderPath) {
           const suffix = groupMapping.suffixes && groupMapping.suffixes[subIndex] 
             ? groupMapping.suffixes[subIndex] 
             : '';
+          
           const hasPlaceholder = Object.keys(phMapping).some(ph => {
-            if (suffix) {
-              return ph.endsWith(suffix);
+            const phDef = phMapping[ph];
+            if (!phDef) return false;
+            if (phDef.group !== groupKey) return false;
+            if (suffix && suffix !== '') {
+              const match = ph.match(/^([A-Za-z_]+?)(\d+)$/);
+              if (match) {
+                const phSuffix = match[2];
+                return phSuffix === String(suffix) && phDef.subgroup === subId;
+              }
+              return false;
+            } else {
+              const hasNumericSuffix = /\d+$/.test(ph);
+              if (!hasNumericSuffix && phDef.subgroup === subId) {
+                return true;
+              }
+              return false;
             }
-            return true;
-          });      
+          });
+          
           return hasPlaceholder;
         });
         
@@ -551,7 +571,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
 function getLandFieldsToSkip(allPlaceholders) {
   const skipFields = new Set();
   
-  // Find all suffixes (including no suffix)
   const suffixes = new Set(['']);
   allPlaceholders.forEach(ph => {
     const match = ph.match(/^Loai_Dat(_[FD])?(\d+)$/);
@@ -560,17 +579,14 @@ function getLandFieldsToSkip(allPlaceholders) {
     }
   });
   
-  // For each suffix, determine which fields to skip
   suffixes.forEach(suffix => {
     const loaiDatKey = suffix ? `Loai_Dat${suffix}` : 'Loai_Dat';
     const loaiDatFKey = suffix ? `Loai_Dat_F${suffix}` : 'Loai_Dat_F';
     const loaiDatDKey = suffix ? `Loai_Dat_D${suffix}` : 'Loai_Dat_D';
-    
     const hasLoaiDatD = allPlaceholders.some(ph => ph === loaiDatDKey);
     const hasLoaiDatF = allPlaceholders.some(ph => ph === loaiDatFKey);
     const hasLoaiDat = allPlaceholders.some(ph => ph === loaiDatKey);
-    
-    // Priority: D > F > basic
+  
     if (hasLoaiDatD) {
       if (hasLoaiDatF) skipFields.add(loaiDatFKey);
       if (hasLoaiDat) skipFields.add(loaiDatKey);
@@ -842,7 +858,6 @@ function collectGenericFormData() {
     const ph = el.getAttribute('data-ph');
     if (!ph) return;
     let value = el.value.trim();
-    // Handle Money field with or without suffix (Money, Money2, Money3, etc.)
     const moneyMatch = ph.match(/^Money(\d*)$/);
     if (moneyMatch && value) {
       const suffix = moneyMatch[1];
@@ -870,7 +885,6 @@ function collectGenericFormData() {
         }
       }
     }
-    // Handle S field with or without suffix (S, S2, S3, etc.)
     const sMatch = ph.match(/^S(\d*)$/);
     if (sMatch && value) {
       const suffix = sMatch[1];
@@ -954,7 +968,6 @@ function collectGenericFormData() {
           }).join('; ');
           value = formatted || pairs.join('; '); 
         }
-        // Handle Loai_Dat_F with or without suffix
         const loaiDatFMatch = ph.match(/^Loai_Dat_F(\d*)$/);
         if (loaiDatFMatch) {
           const suffix = loaiDatFMatch[1];
@@ -1060,6 +1073,32 @@ function collectGenericFormData() {
     });
   }
   generateAllLandTypeFormats(data);
+  
+  const ndbdToHdbdMap = {
+    "Nhận chuyển nhượng quyền sử dụng đất": "Hợp đồng chuyển nhượng quyền sử dụng đất",
+    "Nhận tặng cho quyền sử dụng đất": "Hợp đồng tặng cho quyền sử dụng đất",
+    "Nhận thừa kế quyền sử dụng đất": "Hợp đồng thừa kế quyền sử dụng đất",
+    "Nhận cấp đổi giấy chứng nhận quyền sử dụng đất": "Giấy chứng nhận quyền sử dụng đất"
+  };
+  
+  if (data.NDBD && ndbdToHdbdMap[data.NDBD]) {
+    data.HDBD = ndbdToHdbdMap[data.NDBD];
+  }
+  
+  // Auto-generate Ngay_Full from Dia_Chi + Ngay
+  if (data.Dia_Chi && data.Ngay) {
+    const diaChi = data.Dia_Chi.trim();
+    const ngayStr = data.Ngay.trim();
+    
+    const dateParts = ngayStr.split('/');
+    if (dateParts.length === 3) {
+      const day = dateParts[0];
+      const month = dateParts[1];
+      const year = dateParts[2];
+      
+      data.Ngay_Full = `${diaChi}, ngày ${day} tháng ${month} năm ${year}`;
+    }
+  }
   
   return data;
 }

@@ -416,7 +416,19 @@ class MainApp {
   async loadPlaceholdersForFile(folderPath, fileName) {
     try {
       if (window.ipcRenderer) {
-        return await window.ipcRenderer.invoke("get-file-placeholders", folderPath, fileName);
+        let placeholders = await window.ipcRenderer.invoke("get-file-placeholders", folderPath, fileName);
+        
+        // Auto-expand Ngay_Full to include Dia_Chi and Ngay
+        if (placeholders.includes('Ngay_Full')) {
+          if (!placeholders.includes('Dia_Chi')) {
+            placeholders.push('Dia_Chi');
+          }
+          if (!placeholders.includes('Ngay')) {
+            placeholders.push('Ngay');
+          }
+        }
+        
+        return placeholders;
       } else {
         return [];
       }

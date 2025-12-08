@@ -5,9 +5,10 @@
       "filename": "Chưa kết hôn.docx",
       "name": "Chưa kết hôn",
       "description": "",
-      "groups": ["TTHN"],
+      "groups": ["TTHN", "PAGE"],
       "placeholders": {
-        "TTHN": ["MEN1"]
+        "TTHN": ["MEN1"],
+        "PAGE": ["HOME"]
       }
     },
     {
@@ -15,14 +16,16 @@
       "filename": "Ly Hôn.docx",
       "name": "Ly hôn",
       "description": "",
-      "groups": ["TTHN"],
+      "groups": ["TTHN","PAGE"],
       "placeholders": {
-        "TTHN": ["MEN1"]
+        "TTHN": ["MEN1"],
+        "PAGE": ["HOME"]
       }
     }
   ],
   "groups": [
-    {"id":"TTHN","label":"Thông tin cá nhân","order":1,"description":"Thông tin người xin xác nhận"}
+    {"id":"TTHN","label":"Thông tin cá nhân","order":1,"description":"Thông tin người xin xác nhận"},
+    {"id":"PAGE","label":"Thông tin khác","order":2,"description":"Thông tin hợp đồng"}
   ],
   "fieldSchemas": {
     "PersonalInfo": {
@@ -42,6 +45,21 @@
         {"name":"Noi_CapHN","label":"Nơi cấp giấy HN","type":"textarea","placeholder":"  ","required":true},
         {"name":"Ngay_CapHN","label":"Ngày cấp giấy HN","type":"date","required":true}
       ]
+    },
+    "PageInfo": {
+      "description": "Thông tin xác nhận",
+      "applicableTo": ["PAGE"],
+      "fields": [
+        {"name":"Kinh_Gui","label":"Kính gửi","type":"textarea","required":false},
+        {"name":"GenderPG","label":"Giới tính","type":"select","options":["ông","bà"],"defaultValue":"ông","required":true},
+        {"name":"NamePG","label":"Họ và tên","type":"text","placeholder":"Tên công chức","required":true},
+        {"name":"HN_SO","label":"Số","type":"text","required":true},
+        {"name":"Noi_CapPG","label":"Nơi xác nhận","type":"textarea","required":true},
+        {"name":"Dia_Chi","label":"Địa chỉ","type":"text","placeholder":"VD: Buôn Ma Thuột","required":true},
+        {"name":"Ngay","label":"Ngày tháng năm","type":"date","required":true},
+        {"name":"Ngay_Full","label":"Địa chỉ và ngày (tự động)","type":"text","hidden":true},
+        {"name":"Chuc_Vu","label":"Chức vụ","type":"text","required":true}
+      ]
     }
   },
   "fieldMappings": [
@@ -53,6 +71,13 @@
       ],
       "suffixes": ["1"],
       "defaultGenders": ["Ông"]
+    },
+     {
+      "group": "PAGE",
+      "schema": "PageInfo",
+      "subgroups": [
+        {"id":"HOME","label":"Thông tin khác","visible":true}
+      ]
     }
   ]
 }

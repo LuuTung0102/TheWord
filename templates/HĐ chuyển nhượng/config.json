@@ -5,11 +5,12 @@
       "filename": "Hop dong chuyen nhuong bia 2024.docx",
       "name": "Hop dong chuyen nhuong bia 2024",
       "description": "",
-      "groups": ["BCN","BNCN","LAND"],
+      "groups": ["BCN","BNCN","LAND", "PAGE"],
       "placeholders": {
         "BCN": ["MEN2","MEN1"],
         "BNCN": ["MEN7","MEN8"],
-        "LAND": ["INFO"]
+        "LAND": ["INFO"],
+        "PAGE": ["HOME"]
       }
     },
     {
@@ -17,11 +18,12 @@
       "filename": "HĐ chuyển nhượng(HGĐ).docx",
       "name": "HĐ chuyển nhượng(HGĐ)",
       "description": "",
-      "groups": ["BCN","BNCN","LAND"],
+      "groups": ["BCN","BNCN","LAND","PAGE"],
       "placeholders": {
         "BCN": ["MEN1","MEN2","MEN3","MEN4","MEN5","MEN6"],
         "BNCN": ["MEN7","MEN8"],
-        "LAND": ["INFO"]
+        "LAND": ["INFO"],
+        "PAGE": ["HOME"]
       }
     },
     {
@@ -29,11 +31,12 @@
       "filename": "HĐ chuyển nhượng(1).docx",
       "name": "HĐ chuyển nhượng(1)",
       "description": "",
-      "groups": ["BCN","BNCN","LAND"],
+      "groups": ["BCN","BNCN","LAND","PAGE"],
       "placeholders": {
         "BCN": ["MEN1","MEN2"],
         "BNCN": ["MEN7","MEN8"],
-        "LAND": ["INFO"]
+        "LAND": ["INFO"],
+        "PAGE": ["HOME"]
       }
     },
     {
@@ -51,7 +54,8 @@
   "groups": [
     {"id":"BCN","label":"Bên chuyển nhượng","order":1},
     {"id":"BNCN","label":"Bên nhận chuyển nhượng","order":2},
-    {"id":"LAND","label":"Thông tin thửa đất","order":3}
+    {"id":"LAND","label":"Thông tin thửa đất","order":3},
+    {"id":"PAGE","label":"Thông tin khác","order":4}
   ],
   "fieldSchemas": {
     "PersonalInfo": {
@@ -98,6 +102,21 @@
         {"name":"Resp","label":"Trách nhiệm thuế phí","type":"select","options":["A","B"],"required":true},
         {"name":"Note","label":"Ghi chú","type":"textarea"}
       ]
+    },
+     "PageInfo": {
+      "description": "Thông tin xác nhận",
+      "applicableTo": ["PAGE"],
+      "fields": [
+        {"name":"Kinh_Gui","label":"Kính gửi","type":"textarea","required":false},
+        {"name":"GenderPG","label":"Giới tính","type":"select","options":["ông","bà"],"defaultValue":"bà","required":true},
+        {"name":"NamePG","label":"Họ và tên","type":"text","placeholder":"Tên công chức","required":true},
+        {"name":"HN_SO","label":"Số","type":"text","required":true},
+        {"name":"Noi_CapPG","label":"Nơi xác nhận","type":"textarea","required":true},
+        {"name":"Dia_Chi","label":"Địa chỉ","type":"text","placeholder":"VD: Buôn Ma Thuột","required":true},
+        {"name":"Ngay","label":"Ngày tháng năm","type":"date","required":true},
+        {"name":"Ngay_Full","label":"Địa chỉ và ngày (tự động)","type":"text","hidden":true},
+        {"name":"Chuc_Vu","label":"Chức vụ","type":"text","required":true}
+      ]
     }
   },
   "fieldMappings": [
@@ -136,6 +155,13 @@
         {"id":"INFO5","label":"Thửa đất 5","visible":false}
       ],
       "suffixes": ["","2","3","4","5"]
+    },
+     {
+      "group": "PAGE",
+      "schema": "PageInfo",
+      "subgroups": [
+        {"id":"HOME","label":"Thông tin khác","visible":true}
+      ]
     }
   ]
 }

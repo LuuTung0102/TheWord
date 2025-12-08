@@ -2,7 +2,7 @@
   class PlaceholderAnalyzer {
     async analyzePlaceholders(filePath) {
     try {
-      const placeholders = await window.ipcRenderer.invoke('get-placeholders', filePath);
+      let placeholders = await window.ipcRenderer.invoke('get-placeholders', filePath);
       
       if (!placeholders || placeholders.length === 0) {
         return {
@@ -15,11 +15,21 @@
         };
       }
 
-      const patterns = this.identifyPatterns(placeholders);
-      const groups = this.groupPlaceholders(placeholders);
+      const expandedPlaceholders = [...placeholders];
+      if (placeholders.includes('Ngay_Full')) {
+        if (!expandedPlaceholders.includes('Dia_Chi')) {
+          expandedPlaceholders.push('Dia_Chi');
+        }
+        if (!expandedPlaceholders.includes('Ngay')) {
+          expandedPlaceholders.push('Ngay');
+        }
+      }
+
+      const patterns = this.identifyPatterns(expandedPlaceholders);
+      const groups = this.groupPlaceholders(expandedPlaceholders);
 
       return {
-        placeholders,
+        placeholders: expandedPlaceholders,
         patterns,
         groups
       };
