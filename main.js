@@ -247,6 +247,7 @@ ipcMain.handle("open-template-file", async (event, fileName) => {
 
 ipcMain.handle("export-word", async (event, { folderName, data, exportType }) => {
   try {
+
     const tempDir = path.join(app.getPath("temp"), "word_exports");
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
     const generatedPaths = [];
@@ -373,7 +374,7 @@ ipcMain.handle("get-template-placeholders", async (event, folderPath) => {
 
 ipcMain.handle("export-single-document", async (event, { folderPath, fileName, formData, options }) => {
   try {
-    
+
     const projectRoot = path.dirname(getTemplatesDir());
     const fullFolderPath = path.join(projectRoot, folderPath);
     const filePath = path.join(fullFolderPath, fileName);
@@ -586,30 +587,21 @@ ipcMain.handle("read-folder-config", async (event, folderPath) => {
 ipcMain.handle("write-folder-config", async (event, folderPath, config) => {
   try {
     const configPath = path.join(folderPath, "config.json");
-    
-    // Custom formatter: compact arrays of objects
     const formatConfig = (obj, indent = 0) => {
       const spaces = '  '.repeat(indent);
       const nextSpaces = '  '.repeat(indent + 1);
       
       if (Array.isArray(obj)) {
         if (obj.length === 0) return '[]';
-        
-        // Check if array contains only primitives (strings, numbers, booleans)
         const isPrimitiveArray = obj.every(item => 
           typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean' || item === null
         );
         
         if (isPrimitiveArray) {
-          // Format primitive array on one line
           return JSON.stringify(obj);
         }
-        
-        // Check if array contains simple objects (should be on one line)
         const isCompactArray = obj.every(item => {
           if (typeof item !== 'object' || item === null || Array.isArray(item)) return false;
-          
-          // Check if object has nested arrays or objects
           const values = Object.values(item);
           const hasNestedStructure = values.some(v => 
             (typeof v === 'object' && v !== null && !Array.isArray(v)) ||
@@ -620,13 +612,11 @@ ipcMain.handle("write-folder-config", async (event, folderPath, config) => {
         });
         
         if (isCompactArray) {
-          // Format each object on one line
           const items = obj.map(item => {
             return nextSpaces + JSON.stringify(item);
           }).join(',\n');
           return '[\n' + items + '\n' + spaces + ']';
         } else {
-          // Regular array formatting
           const items = obj.map(item => {
             return nextSpaces + formatConfig(item, indent + 1);
           }).join(',\n');

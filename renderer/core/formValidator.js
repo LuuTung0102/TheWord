@@ -16,16 +16,45 @@ function validateForm() {
   if (!selectedFile || !selectedFile.groups) {
     return true;
   }
-  
-
   const formData = window.collectGenericFormData ? window.collectGenericFormData() : {};
   const errors = validateFormData(formData, fieldMappings, fieldSchemas, selectedFile.groups);
+  const htsdErrors = validateHTSDFields(formData);
+  errors.push(...htsdErrors);
   
   if (errors.length > 0) {
     displayValidationErrors(errors);
     return false;
   }
   return true;
+}
+
+function validateHTSDFields(formData) {
+  const errors = [];
+  Object.keys(formData).forEach(key => {
+    if ((key === 'HTSD' || key.match(/^HTSD\d*$/))) {
+      if (typeof formData[key] === 'object' && formData[key] !== null) {
+        const htsdData = formData[key];
+        if (htsdData.printMode === 'both') {
+          errors.push({
+            subgroupLabel: 'Thông tin thửa đất',
+            field: key,
+            fieldLabel: 'Hình thức sử dụng',
+            customMessage: 'Không thể chọn cả Loại 1 và Loại 2 cùng lúc. Vui lòng tắt một trong hai nút.'
+          });
+        }
+        if (!htsdData.printMode || htsdData.printMode === null) {
+          errors.push({
+            subgroupLabel: 'Thông tin thửa đất',
+            field: key,
+            fieldLabel: 'Hình thức sử dụng',
+            customMessage: 'Vui lòng chọn Loại 1 hoặc Loại 2 để xuất dữ liệu.'
+          });
+        }
+      }
+    }
+  });
+  
+  return errors;
 }
 
 function validateFormData(formData, fieldMappings, fieldSchemas, templateGroups) {
@@ -110,6 +139,14 @@ function highlightErrorFields(errors) {
   
   errors.forEach(error => {
     const fieldName = error.field;
+    if (fieldName === 'HTSD' || fieldName.match(/^HTSD\d*$/)) {
+      const htsdContainer = document.querySelector(`[data-field-name="${fieldName}"]`);
+      if (htsdContainer) {
+        highlightHTSDField(htsdContainer);
+      }
+      return;
+    }
+    
     let inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
   
     if (!inputElement && fieldName.includes('Address')) {
@@ -142,35 +179,25 @@ function highlightElement(element) {
     element.classList.remove('validation-error');
     element.removeEventListener('input', removeErrorStyle);
     element.removeEventListener('change', removeErrorStyle);
+    element.removeEventListener('click', removeErrorStyle);
   };
-  
   element.addEventListener('input', removeErrorStyle, { once: true });
   element.addEventListener('change', removeErrorStyle, { once: true });
+  element.addEventListener('click', removeErrorStyle, { once: true });
+}
+
+function highlightHTSDField(htsdContainer) {
+  const toggleButtons = htsdContainer.querySelectorAll('.htsd-toggle-btn');
+  
+  toggleButtons.forEach(btn => {
+    highlightElement(btn);
+  });
 }
 
 function highlightAddressGroup(addressGroup) {
   const inputs = addressGroup.querySelectorAll('input.editable-select-input');
   inputs.forEach(input => {
-    input.style.borderColor = '#dc3545';
-    input.style.borderWidth = '2px';
-    input.style.backgroundColor = '#fff5f5';
-    input.classList.add('validation-error');
-  });
-  
-  const removeErrorStyle = () => {
-    inputs.forEach(inp => {
-      inp.style.borderColor = '';
-      inp.style.borderWidth = '';
-      inp.style.backgroundColor = '';
-      inp.classList.remove('validation-error');
-      inp.removeEventListener('input', removeErrorStyle);
-      inp.removeEventListener('change', removeErrorStyle);
-    });
-  };
-  
-  inputs.forEach(input => {
-    input.addEventListener('input', removeErrorStyle, { once: true });
-    input.addEventListener('change', removeErrorStyle, { once: true });
+    highlightElement(input);
   });
 }
 
@@ -195,7 +222,11 @@ function showValidationNotification(errors) {
     const subgroupErrors = errorsBySubgroup[subgroup];
     message += `${subgroup}:\n`;
     subgroupErrors.forEach(error => {
-      message += `• ${error.fieldLabel}\n`;
+      if (error.customMessage) {
+        message += `• ${error.customMessage}\n`;
+      } else {
+        message += `• ${error.fieldLabel}\n`;
+      }
     });
     if (index < Object.keys(errorsBySubgroup).length - 1) {
       message += `\n`;
@@ -208,6 +239,28 @@ function scrollToFirstError(errors) {
   if (errors.length === 0) return;
   const firstError = errors[0];
   const fieldName = firstError.field;
+  
+  if (fieldName === 'HTSD' || fieldName.match(/^HTSD\d*$/)) {
+    const htsdContainer = document.querySelector(`[data-field-name="${fieldName}"]`);
+    if (htsdContainer) {
+      const section = htsdContainer.closest('.form-section');
+      if (section) {
+        const sectionId = section.id;
+        const groupKey = sectionId.replace('section-', '');
+        switchToTab(groupKey);
+      }
+      
+      setTimeout(() => {
+        htsdContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+          const firstToggle = htsdContainer.querySelector('.htsd-toggle-btn');
+          if (firstToggle) firstToggle.focus();
+        }, 300);
+      }, 100);
+    }
+    return;
+  }
+  
   let inputElement = document.querySelector(`[data-ph="${fieldName}"]`);
   
   if (!inputElement && fieldName.includes('Address')) {

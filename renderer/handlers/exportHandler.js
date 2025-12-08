@@ -35,6 +35,7 @@ function setupExportButton() {
     
     const folderName = selectedTemplates[0];
     
+
     try {
       const result = await window.ipcRenderer.invoke("export-word", {
         folderName: folderName,

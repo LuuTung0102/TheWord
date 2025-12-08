@@ -76,7 +76,7 @@
         {"name":"Loai_Dat_F","label":"Loại đất (có diện tích)","type":"land_type_size","required":true},
         {"name":"Loai_Dat_D","label":"Loại đất chi tiết","type":"land_type_detail","required":true},
         {"name":"TDCSPL","label":"Thay đổi cơ sở pháp lý","type":"date"},
-        {"name":"HTSD","label":"Hình thức sử dụng","type":"select","options":["Sử dụng chung","Sử dụng riêng"]},
+        {"name":"HTSD","label":"Hình thức sử dụng","type":"htsd_custom"},
         {"name":"THSD","label":"Thời hạn sử dụng","type":"textarea","required":true},
         {"name":"AddressD","label":"Địa chỉ thửa đất","type":"address-select","required":true},
         {"name":"TTGLVD","label":"TT tài sản gắn liền","placeholder":"VD: Nhập thông tin tài sản gắn liền","type":"textarea"},

@@ -472,6 +472,11 @@
       }
     
       Object.keys(data).forEach(k => {
+        const isHTSDField = (k === 'HTSD' || k.match(/^HTSD\d*$/)) && !k.includes('_');
+        if (isHTSDField && typeof data[k] === 'object') {
+          return;
+        }
+        
         if (data[k] === null || data[k] === undefined) data[k] = "";
         else if (typeof data[k] !== 'string') data[k] = String(data[k]);
       });
@@ -622,21 +627,91 @@
       });
       
       Object.keys(data).forEach(key => {
+        const isHTSDField = (key === 'HTSD' || key.match(/^HTSD\d*$/)) && !key.includes('_');
+        
+        if (isHTSDField && typeof data[key] === 'object' && data[key] !== null) {
+          const htsdData = data[key];
+          const value = htsdData.value;
+          const printMode = htsdData.printMode;
+          
+          if (!value) {
+            data[key] = '';
+            return;
+          }
+          
+          const parts = value.split('|');
+          const selectOptions = ['Sử dụng chung', 'Sử dụng riêng'];
+          const selectValue = parts.find(p => selectOptions.includes(p));
+          const numbers = parts.filter(p => !selectOptions.includes(p) && !isNaN(parseFloat(p)));
+          
+          if (printMode === 'loai2') {
+            if (numbers.length > 0) {
+              const areaText = [];
+              if (numbers[0]) areaText.push(`${numbers[0]}m² Chung`);
+              if (numbers[1]) areaText.push(`${numbers[1]}m² Riêng`);
+              data[key] = areaText.join('; ');
+            } else {
+              data[key] = '';
+            }
+          } else if (printMode === 'loai1') {
+            data[key] = selectValue || '';
+          } else if (printMode === 'both') {
+            data[key] = value;
+          } else {
+            data[key] = '';
+          }
+        }
+        
         if (typeof data[key] === 'string') {
-          if (data[key].includes('m2')) {
+          if (data[key] && data[key].includes('m2')) {
             data[key] = data[key].replace(/m2/g, 'm²');
           }
-          if (data[key].includes('{') || data[key].includes('}')) {
+          if (data[key] && (data[key].includes('{') || data[key].includes('}'))) {
             data[key] = data[key].replace(/[{}]/g, '');
           }
         }
       });
       Object.keys(fullData).forEach(key => {
+        const isHTSDField = (key === 'HTSD' || key.match(/^HTSD\d*$/)) && !key.includes('_');
+        
+        if (isHTSDField && typeof fullData[key] === 'object' && fullData[key] !== null) {
+          const htsdData = fullData[key];
+          const value = htsdData.value;
+          const printMode = htsdData.printMode;
+          
+          if (!value) {
+            fullData[key] = '';
+            return;
+          }
+          
+          const parts = value.split('|');
+          const selectOptions = ['Sử dụng chung', 'Sử dụng riêng'];
+          const selectValue = parts.find(p => selectOptions.includes(p));
+          const numbers = parts.filter(p => !selectOptions.includes(p) && !isNaN(parseFloat(p)));
+          
+          if (printMode === 'loai2') {
+            if (numbers.length > 0) {
+              const areaText = [];
+              if (numbers[0]) areaText.push(`${numbers[0]}m² Chung`);
+              if (numbers[1]) areaText.push(`${numbers[1]}m² Riêng`);
+              fullData[key] = areaText.join('; ');
+            } else {
+              fullData[key] = '';
+            }
+          } else if (printMode === 'loai1') {
+            fullData[key] = selectValue || '';
+          } else if (printMode === 'both') {
+            fullData[key] = value;
+          } else {
+            fullData[key] = '';
+          }
+        }
+        
         if (typeof fullData[key] === 'string') {
-          if (fullData[key].includes('m2')) {
+          if (fullData[key] && fullData[key].includes('m2')) {
             fullData[key] = fullData[key].replace(/m2/g, 'm²');
           }
-          if (fullData[key].includes('{') || fullData[key].includes('}')) {
+          if (fullData[key] && (fullData[key].includes('{') || fullData[key].includes('}'))) {
             fullData[key] = fullData[key].replace(/[{}]/g, '');
           }
         }

@@ -444,6 +444,149 @@ function setupNoteTextarea(el) {
   resizeTextarea(el);
 }
 
+function setupHTSDInput(fieldWrapper, inputId) {
+  if (fieldWrapper.dataset.htsdSetup === 'true') return;
+  fieldWrapper.dataset.htsdSetup = 'true';
+  
+  const hiddenInput = fieldWrapper.querySelector('input[type="hidden"]');
+  const loai1Toggle = fieldWrapper.querySelector('.htsd-toggle-loai1');
+  const loai2Toggle = fieldWrapper.querySelector('.htsd-toggle-loai2');
+  const loai1Content = fieldWrapper.querySelector('.htsd-loai1-content');
+  const loai2Content = fieldWrapper.querySelector('.htsd-loai2-content');
+  const selectInput = fieldWrapper.querySelector('.htsd-select');
+  const commonInput = fieldWrapper.querySelector('input[data-htsd-type="common"]');
+  const privateInput = fieldWrapper.querySelector('input[data-htsd-type="private"]');
+  
+  if (!hiddenInput || !loai1Toggle || !loai2Toggle || !loai1Content || !loai2Content || !selectInput || !commonInput || !privateInput) {
+    console.error('[setupHTSDInput] Missing elements');
+    return;
+  }
+  
+  function updateHiddenValue() {
+    const parts = [];
+    
+    const selectValue = selectInput.value;
+    const commonValue = commonInput.value;
+    const privateValue = privateInput.value;
+    
+    if (selectValue) parts.push(selectValue);
+    if (commonValue) parts.push(commonValue);
+    if (privateValue) parts.push(privateValue);
+    
+    hiddenInput.value = parts.join('|');
+  }
+  
+  function toggleLoai1() {
+    const isActive = loai1Toggle.classList.toggle('active');
+    
+    if (isActive) {
+      loai1Content.classList.remove('hidden');
+    } else {
+      loai1Content.classList.add('hidden');
+    }
+    
+    updateHiddenValue();
+  }
+  
+  function toggleLoai2() {
+    const isActive = loai2Toggle.classList.toggle('active');
+    
+    if (isActive) {
+      loai2Content.classList.remove('hidden');
+    } else {
+      loai2Content.classList.add('hidden');
+    }
+    
+    updateHiddenValue();
+  }
+  
+  loai1Toggle.addEventListener('click', toggleLoai1);
+  loai2Toggle.addEventListener('click', toggleLoai2);
+  
+  selectInput.addEventListener('change', updateHiddenValue);
+  commonInput.addEventListener('input', updateHiddenValue);
+  privateInput.addEventListener('input', updateHiddenValue);
+}
+
+function fillHTSDField(groupData, targetSuffix) {
+  let htsdData = groupData['HTSD'];
+  if (!htsdData) return;
+  let value, printMode;
+  if (typeof htsdData === 'object' && htsdData !== null) {
+    value = htsdData.value;
+    printMode = htsdData.printMode;
+  } else if (typeof htsdData === 'string') {
+    value = htsdData;
+    printMode = null;
+  } else {
+    return;
+  }
+  
+  if (!value) return;
+  
+  const fieldName = targetSuffix ? `HTSD${targetSuffix}` : 'HTSD';
+  const htsdContainer = document.querySelector(`[data-field-name="${fieldName}"]`);
+  if (!htsdContainer) return;
+  
+  const loai1Toggle = htsdContainer.querySelector('.htsd-toggle-loai1');
+  const loai2Toggle = htsdContainer.querySelector('.htsd-toggle-loai2');
+  const loai1Content = htsdContainer.querySelector('.htsd-loai1-content');
+  const loai2Content = htsdContainer.querySelector('.htsd-loai2-content');
+  const selectInput = htsdContainer.querySelector('select');
+  const commonInput = htsdContainer.querySelector('input[data-htsd-type="common"]');
+  const privateInput = htsdContainer.querySelector('input[data-htsd-type="private"]');
+  
+  if (!selectInput || !commonInput || !privateInput) return;
+  
+  const parts = value.split('|');
+  const selectOptions = ['Sử dụng chung', 'Sử dụng riêng'];
+  const selectValue = parts.find(p => selectOptions.includes(p));
+  const numbers = parts.filter(p => !selectOptions.includes(p) && !isNaN(parseFloat(p)));
+  
+  if (selectValue) {
+    selectInput.value = selectValue;
+    selectInput.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  if (numbers[0]) {
+    commonInput.value = numbers[0];
+    commonInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  if (numbers[1]) {
+    privateInput.value = numbers[1];
+    privateInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  
+  const hiddenInput = htsdContainer.querySelector('input[type="hidden"]');
+  if (hiddenInput) {
+    hiddenInput.value = value;
+  }
+  if (printMode === 'loai1') {
+    loai1Toggle?.classList.add('active');
+    loai1Content?.classList.remove('hidden');
+    loai2Toggle?.classList.remove('active');
+    loai2Content?.classList.add('hidden');
+  } else if (printMode === 'loai2') {
+    loai2Toggle?.classList.add('active');
+    loai2Content?.classList.remove('hidden');
+    loai1Toggle?.classList.remove('active');
+    loai1Content?.classList.add('hidden');
+  } else if (printMode === 'both') {
+    loai1Toggle?.classList.add('active');
+    loai2Toggle?.classList.add('active');
+    loai1Content?.classList.remove('hidden');
+    loai2Content?.classList.remove('hidden');
+  } else {
+    if (selectValue) {
+      loai1Toggle?.classList.add('active');
+      loai1Content?.classList.remove('hidden');
+    }
+    if (numbers.length > 0) {
+      loai2Toggle?.classList.add('active');
+      loai2Content?.classList.remove('hidden');
+    }
+  }
+}
+
 function setupDatePickers() {
   try {
     if (typeof flatpickr === "undefined") {
@@ -471,7 +614,7 @@ function setupDatePickers() {
               longhand: ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'],
             },
             months: {
-              shorthand: ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'],
+              shorthand: ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', ' Th9', 'Th10', 'Th11', 'Th12'],
               longhand: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
             },
           },
@@ -889,6 +1032,16 @@ function reSetupAllInputs() {
       if (inputId && !container.dataset.landTypeSizeSetup) {
         setupLandTypeSizeInput(container, inputId);
         container.dataset.landTypeSizeSetup = 'true';
+      }
+    }
+  });
+  
+  document.querySelectorAll('[data-field-type="htsd_custom"]').forEach(fieldWrapper => {
+    if (!fieldWrapper.dataset.htsdSetup) {
+      const hiddenInput = fieldWrapper.querySelector('input[type="hidden"]');
+      const inputId = hiddenInput?.id;
+      if (inputId) {
+        setupHTSDInput(fieldWrapper, inputId);
       }
     }
   });
@@ -1662,3 +1815,5 @@ function setupLandTypeSizeInput(container, inputId) {
 window.reSetupAllInputs = reSetupAllInputs;
 window.formatInputValue = formatInputValue;
 window.setupLandTypeSizeInput = setupLandTypeSizeInput;
+window.setupHTSDInput = setupHTSDInput;
+window.fillHTSDField = fillHTSDField;

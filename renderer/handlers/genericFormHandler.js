@@ -942,6 +942,28 @@ function collectGenericFormData() {
     if (el.classList.contains('date-picker') && window.formatInputValue) {
       value = window.formatInputValue(value, ph, { type: 'date' });
     }
+    
+    if (el.getAttribute('data-type') === 'htsd_custom' && ph) {
+      const htsdContainer = el.closest('[data-field-type="htsd_custom"]');
+      
+      if (htsdContainer) {
+        const loai1Active = htsdContainer.querySelector('.htsd-toggle-loai1')?.classList.contains('active') || false;
+        const loai2Active = htsdContainer.querySelector('.htsd-toggle-loai2')?.classList.contains('active') || false;
+        
+        let printMode = null;
+        if (loai1Active && !loai2Active) printMode = 'loai1';
+        else if (loai2Active && !loai1Active) printMode = 'loai2';
+        else if (loai1Active && loai2Active) printMode = 'both';
+    
+        data[ph] = {
+          value: value || '',
+          printMode: printMode
+        };
+        
+        return;
+      }
+    }
+    
     if (ph.includes('CCCD') && value) {
       const digits = window.REGEX_HELPERS.removeNonDigits(value);
       if (window.REGEX.CCCD_PATTERN.test(digits)) {
@@ -1005,6 +1027,7 @@ function collectGenericFormData() {
     });
   }
   generateAllLandTypeFormats(data);
+  
   return data;
 }
 

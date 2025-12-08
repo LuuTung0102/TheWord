@@ -7,6 +7,10 @@ function fillFormWithMenData(groupData, targetSuffix) {
     if (window.LandTypeHandlers && window.LandTypeHandlers.populateDynamicOptions) {
       window.LandTypeHandlers.populateDynamicOptions(groupData, targetSuffix);
     }
+    
+    if (window.fillHTSDField) {
+      window.fillHTSDField(groupData, targetSuffix);
+    }
   }, 50);
   
   Object.keys(groupData).forEach(fieldName => {
@@ -15,6 +19,10 @@ function fillFormWithMenData(groupData, targetSuffix) {
     
     if (fieldName.includes('Address') && value && typeof value === 'string') {
       fillAddressField(placeholder, value);
+      return;
+    }
+    
+    if (fieldName === 'HTSD' || fieldName.match(/^HTSD\d*$/)) {
       return;
     }
     

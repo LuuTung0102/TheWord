@@ -194,6 +194,28 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
       <input type="text" id="${safeId}" data-ph="${ph}" data-dot-placeholder="${dotPlaceholder}" class="input-field text-or-dots-input" placeholder="${placeholder}" />
       ${wrapperEnd}
     `;
+  } else if (type === "htsd_custom") {
+    inputHtml = `
+      <div class="field-wrapper" data-field-name="${ph}" data-field-type="htsd_custom">
+        <label for="${safeId}"${requiredClass}><b>${label}</b></label>
+        <input type="hidden" id="${safeId}" data-ph="${ph}" data-type="htsd_custom" />
+        <div class="htsd-controls">
+          <button type="button" class="htsd-toggle-btn htsd-toggle-loai1">Loại 1</button>
+          <button type="button" class="htsd-toggle-btn htsd-toggle-loai2">Loại 2</button>
+        </div>
+        <div class="htsd-loai1-content hidden">
+          <select class="htsd-select input-field">
+            <option value="">-- Chọn --</option>
+            <option value="Sử dụng chung">Sử dụng chung</option>
+            <option value="Sử dụng riêng">Sử dụng riêng</option>
+          </select>
+        </div>
+        <div class="htsd-loai2-content hidden">
+          <input type="number" data-htsd-type="common" class="htsd-area-input input-field" placeholder="Chung (m²)" />
+          <input type="number" data-htsd-type="private" class="htsd-area-input input-field" placeholder="Riêng (m²)" />
+        </div>
+      </div>
+    `;
   } else {
     inputHtml = `
       ${wrapperStart}

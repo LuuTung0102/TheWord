@@ -454,7 +454,8 @@ class MainApp {
     try {
       this.showLoading();
       const formData = this.collectFormData();
-      if (window.sessionStorageManager && this.selectedFile) {
+      
+if (window.sessionStorageManager && this.selectedFile) {
         
         const saved = window.sessionStorageManager.saveFormData(
           this.selectedFile, 
