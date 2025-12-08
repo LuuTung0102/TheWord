@@ -93,17 +93,20 @@ function renderReuseDataDropdown(groupKey, subKey, config) {
   if (allGroups.length === 0) return null;
   
   const isLandGroup = groupKey === 'LAND';
+  const isPageGroup = groupKey === 'PAGE';
   
   const availableGroups = allGroups.filter(group => {
     if (group.groupKey === 'OTHER') return false;
     if (isLandGroup) {
       return group.groupKey.startsWith('INFO');
+    } else if (isPageGroup) {
+      return group.groupKey.startsWith('HOME');
     } else {
       return group.groupKey.startsWith('MEN');
     }
   }).map(group => {
       let finalDisplayName = group.displayName;
-      if (!group.groupKey.startsWith('MEN')) {
+      if (!group.groupKey.startsWith('MEN') && !group.groupKey.startsWith('HOME')) {
         let groupLabel = null;
         if (config.groups) {
           const groupDef = config.groups.find(g => g.id === group.groupKey);

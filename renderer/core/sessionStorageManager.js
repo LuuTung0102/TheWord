@@ -462,8 +462,11 @@
   function parseFormDataToGroups(formData, config) {
     const groups = {};
     const suffixToGroupMap = {};
+    const fieldToGroupMap = {}; // Map field names to their group
+    
     if (config?.fieldMappings) {
       config.fieldMappings.forEach((mapping) => {
+        // Build suffix to group map
         if (mapping.subgroups) {
           mapping.subgroups.forEach((subgroupDef, index) => {
             const subgroupId =
@@ -475,19 +478,41 @@
             suffixToGroupMap[suffix] = subgroupId;
           });
         }
+        
+        // Build field name to group map from schema
+        if (mapping.schema && config.fieldSchemas && config.fieldSchemas[mapping.schema]) {
+          const schemaFields = config.fieldSchemas[mapping.schema].fields || [];
+          const subgroupId = mapping.subgroups && mapping.subgroups[0] 
+            ? (typeof mapping.subgroups[0] === "string" ? mapping.subgroups[0] : mapping.subgroups[0].id)
+            : null;
+          
+          if (subgroupId) {
+            schemaFields.forEach(field => {
+              fieldToGroupMap[field.name] = subgroupId;
+            });
+          }
+        }
       });
     }
 
     Object.keys(formData).forEach((key) => {
       const match = key.match(/^([A-Za-z_]+?)(\d+)$/);
       if (match) {
+        // Field with numeric suffix (e.g., Name1, CCCD2)
         const fieldName = match[1];
         const suffix = match[2];
         const groupKey = suffixToGroupMap[suffix] || `UNKNOWN_${suffix}`;
         if (!groups[groupKey]) groups[groupKey] = {};
         groups[groupKey][fieldName] = formData[key];
       } else {
-        const groupKey = suffixToGroupMap[""] || "OTHER";
+        // Field without numeric suffix - check field name mapping first
+        let groupKey = fieldToGroupMap[key];
+        
+        // If not found in field mapping, use suffix mapping
+        if (!groupKey) {
+          groupKey = suffixToGroupMap[""] || "OTHER";
+        }
+        
         if (!groups[groupKey]) groups[groupKey] = {};
         groups[groupKey][key] = formData[key];
       }
@@ -516,6 +541,8 @@
               displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName} - ${formattedTime})`;
             } else if (baseKey.startsWith('INFO')) {
               displayName = `${groupData.QSH || 'TT thửa đất'} (${shortFileName} - ${formattedTime})`;
+            } else if (baseKey.startsWith('HOME')) {
+              displayName = `Thông tin khác (${shortFileName} - ${formattedTime})`;
             } else {
               displayName = `${baseKey} (${shortFileName} - ${formattedTime})`;
             }
@@ -524,6 +551,8 @@
               displayName = `${groupData.Name || groupData.name || 'Chưa có tên'} (${shortFileName})`;
             } else if (groupKey.startsWith('INFO')) {
               displayName = `${groupData.QSH || 'TT thửa đất'} (${shortFileName})`;
+            } else if (groupKey.startsWith('HOME')) {
+              displayName = `Thông tin khác (${shortFileName})`;
             } else {
               displayName = `${groupKey} (${shortFileName})`;
             }

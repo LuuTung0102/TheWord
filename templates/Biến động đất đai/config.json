@@ -5,10 +5,11 @@
       "filename": "Đơn đăng ký biến động đất.docx",
       "name": "Đơn đăng ký biến động đất",
       "description": "Đơn đăng ký biến động đất đai",
-      "groups": ["BD","LAND"],
+      "groups": ["BD","LAND","PAGE"],
       "placeholders": {
         "BD": ["MEN1","MEN2"],
-        "LAND": ["INFO"]
+        "LAND": ["INFO"],
+        "PAGE": ["HOME"]
       }
     },
     {
@@ -16,25 +17,17 @@
       "filename": "Biến động.docx",
       "name": "Biến động",
       "description": "",
-      "groups": ["BD"],
+      "groups": ["BD","PAGE"],
       "placeholders": {
-        "BD": ["MEN1"]
-      }
-    },
-    {
-      "id": "bi-n",
-      "filename": "Biến.docx",
-      "name": "Biến",
-      "description": "",
-      "groups": ["BD"],
-      "placeholders": {
-        "BD": ["MEN1"]
+        "BD": ["MEN1"],
+        "PAGE": ["HOME"]
       }
     }
   ],
   "groups": [
     {"id":"BD","label":"Người sử dụng đất","order":1,"description":"Thông tin người sử dụng đất"},
-    {"id":"LAND","label":"Thông tin thửa đất","order":2,"description":"Thông tin đất đai"}
+    {"id":"LAND","label":"Thông tin thửa đất","order":2,"description":"Thông tin đất đai"},
+    {"id":"PAGE","label":"Thông tin khác","order":3,"description":"Thông tin hợp đồng"}
   ],
   "fieldSchemas": {
     "PersonalInfo": {
@@ -46,8 +39,8 @@
         {"name":"Date","label":"Ngày sinh","type":"date","required":true},
         {"name":"CCCD","label":"CCCD","type":"number","placeholder":"Nhập CCCD","required":true},
         {"name":"MST","label":"Mã số thuế","type":"number"},
-        {"name":"SDT","label":"Số điện thoại","type":"tel"},
-        {"name":"Email","label":"Địa chỉ email","type":"email"},
+        {"name":"SDT","label":"Số điện thoại","type":"text-or-dots","dotPlaceholder":"........................","required":false},
+        {"name":"Email","label":"Địa chỉ email","type":"text-or-dots","dotPlaceholder":"........................","required":false},
         {"name":"Noi_Cap","label":"Nơi cấp CCCD","type":"select","options":["Cục Cảnh sát QLHC về TTXH","Công an T. Đắk Lắk"],"required":true},
         {"name":"Ngay_Cap","label":"Ngày cấp CCCD","type":"date","required":true},
         {"name":"Address","label":"Hộ khẩu thường trú","type":"address-select","required":true}
@@ -80,6 +73,15 @@
         {"name":"Resp","label":"Trách nhiệm thuế phí","type":"select","options":["A","B"],"required":true},
         {"name":"Note","label":"Ghi chú","type":"textarea"}
       ]
+    },
+    "PageInfo": {
+      "description": "Thông tin đất đai",
+      "applicableTo": ["PAGE"],
+      "fields": [
+        {"name":"Kinh_Gui","label":"Kính gửi","type":"textarea"},
+        {"name":"NDBD","label":"Nội dung biến động","type":"select","options":["Nhận chuyển nhượng quyền sử dụng đất","Nhận tặng cho quyền sử dụng đất","Nhận thừa kế quyền sử dụng đất","Nhận cấp đổi giấy chứng nhận quyền sử dụng đất"],"required":true},
+        {"name":"HDBD","label":"Hợp đồng","type":"textarea","required":false}
+      ]
     }
   },
   "fieldMappings": [
@@ -104,6 +106,13 @@
         {"id":"INFO5","label":"Thửa đất 5","visible":false}
       ],
       "suffixes": ["","2","3","4","5"]
+    },
+    {
+      "group": "PAGE",
+      "schema": "PageInfo",
+      "subgroups": [
+        {"id":"HOME","label":"Thông tin khác","visible":true}
+      ]
     }
   ]
 }

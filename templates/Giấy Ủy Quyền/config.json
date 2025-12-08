@@ -28,8 +28,8 @@
         {"name":"Date","label":"Ngày sinh","type":"date","required":true},
         {"name":"CCCD","label":"CCCD","type":"number","placeholder":"Nhập CCCD","required":true},
         {"name":"MST","label":"Mã số thuế","type":"number"},
-        {"name":"SDT","label":"Số điện thoại","type":"tel"},
-        {"name":"Email","label":"Địa chỉ email","type":"email"},
+        {"name":"SDT","label":"Số điện thoại","type":"text-or-dots","dotPlaceholder":"........................","required":false},
+        {"name":"Email","label":"Địa chỉ email","type":"text-or-dots","dotPlaceholder":"........................","required":false},
         {"name":"Noi_Cap","label":"Nơi cấp CCCD","type":"select","options":["Cục Cảnh sát QLHC về TTXH","Công an T. Đắk Lắk"],"required":true},
         {"name":"Ngay_Cap","label":"Ngày cấp CCCD","type":"date","required":true},
         {"name":"Address","label":"Hộ khẩu thường trú","type":"address-select","required":true}
