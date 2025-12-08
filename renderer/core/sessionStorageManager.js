@@ -584,7 +584,7 @@
       }
       return false;
     } catch (error) {
-      console.error('Error persisting session to localStorage:', error);
+      console.error('Lỗi lưu session vào localStorage:', error);
       return false;
     }
   }
@@ -598,7 +598,7 @@
       }
       return false;
     } catch (error) {
-      console.error('Error restoring session from localStorage:', error);
+      console.error('Lỗi khôi phục session từ localStorage:', error);
       return false;
     }
   }
@@ -608,7 +608,7 @@
       localStorage.removeItem(STORAGE_KEY);
       return true;
     } catch (error) {
-      console.error('Error clearing persisted session:', error);
+      console.error('Lỗi xóa session đã lưu:', error);
       return false;
     }
   }

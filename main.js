@@ -380,7 +380,7 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     const filePath = path.join(fullFolderPath, fileName);
     
     if (!fs.existsSync(filePath)) {
-      throw new Error(`File not found: ${fileName} in ${folderPath}`);
+      throw new Error(`Không tìm thấy file: ${fileName} trong ${folderPath}`);
     }
     
     const defaultFolder = global.lastOutputFolder || app.getPath('downloads');
@@ -391,7 +391,7 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     });
     
     if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
-      throw new Error('User canceled folder selection');
+      throw new Error('Người dùng đã hủy chọn thư mục');
     }
     const outputFolder = result.filePaths[0];
     global.lastOutputFolder = outputFolder;
@@ -403,7 +403,7 @@ ipcMain.handle("export-single-document", async (event, { folderPath, fileName, f
     } : {};
     await generateDocx(filePath, formData, outputPath, generateOptions);
     if (!fs.existsSync(outputPath)) {
-      throw new Error('Document generation failed');
+      throw new Error('Tạo văn bản thất bại');
     }
     
     return {
@@ -426,11 +426,11 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
     const folderPath = path.join(templatesRoot, templateName);
     
     if (!fs.existsSync(folderPath)) {
-      throw new Error(`Template folder not found: ${templateName}`);
+      throw new Error(`Không tìm thấy thư mục template: ${templateName}`);
     }
     const files = fs.readdirSync(folderPath).filter(file => file.endsWith('.docx'));
     if (files.length === 0) {
-      throw new Error(`No Word documents found in ${templateName}`);
+      throw new Error(`Không tìm thấy file Word nào trong ${templateName}`);
     }
     const generatedPaths = [];
     for (const file of files) {
@@ -441,7 +441,7 @@ ipcMain.handle("export-documents", async (event, { templateName, formData }) => 
       }
     }
     if (generatedPaths.length === 0) {
-      throw new Error('No documents were generated');
+      throw new Error('Không có văn bản nào được tạo');
     }
     return {
       success: true,
@@ -520,7 +520,7 @@ ipcMain.handle("open-output-folder", async (event, filePath) => {
 ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, fileName }) => {
   try {
     if (!fs.existsSync(sourcePath)) {
-      throw new Error('Source file not found');
+      throw new Error('Không tìm thấy file nguồn');
     }
     if (!fs.existsSync(targetFolder)) {
       fs.mkdirSync(targetFolder, { recursive: true });
@@ -549,7 +549,7 @@ ipcMain.handle("copy-file-to-folder", async (event, { sourcePath, targetFolder, 
 ipcMain.handle("open-file-path", async (event, filePath) => {
   try {
     if (!fs.existsSync(filePath)) {
-      throw new Error('File not found');
+      throw new Error('Không tìm thấy file');
     }
     await shell.openPath(filePath);
     return { success: true };
@@ -561,7 +561,7 @@ ipcMain.handle("open-file-path", async (event, filePath) => {
 ipcMain.handle("delete-file-path", async (event, filePath) => {
   try {
     if (!fs.existsSync(filePath)) {
-      throw new Error('File not found');
+      throw new Error('Không tìm thấy file');
     }
     
     fs.unlinkSync(filePath);
@@ -580,7 +580,7 @@ ipcMain.handle("read-folder-config", async (event, folderPath) => {
     const data = fs.readFileSync(configPath, "utf8");
     return JSON.parse(data);
   } catch (err) {
-    throw new Error(`Failed to read config: ${err.message}`);
+    throw new Error(`Không thể đọc config: ${err.message}`);
   }
 });
 
@@ -642,7 +642,7 @@ ipcMain.handle("write-folder-config", async (event, folderPath, config) => {
     fs.writeFileSync(configPath, formattedConfig, "utf8");
     return true;
   } catch (err) {
-    throw new Error(`Failed to write config: ${err.message}`);
+    throw new Error(`Không thể ghi config: ${err.message}`);
   }
 });
 
@@ -657,20 +657,20 @@ ipcMain.handle("backup-folder-config", async (event, folderPath) => {
     fs.copyFileSync(configPath, backupPath);
     return backupPath;
   } catch (err) {
-    throw new Error(`Failed to create backup: ${err.message}`);
+    throw new Error(`Không thể tạo backup: ${err.message}`);
   }
 });
 
 ipcMain.handle("restore-folder-config", async (event, backupPath, folderPath) => {
   try {
     if (!fs.existsSync(backupPath)) {
-      throw new Error('Backup file not found');
+      throw new Error('Không tìm thấy file backup');
     }
     const configPath = path.join(folderPath, "config.json");
     fs.copyFileSync(backupPath, configPath);
     return true;
   } catch (err) {
-    throw new Error(`Failed to restore config: ${err.message}`);
+    throw new Error(`Không thể khôi phục config: ${err.message}`);
   }
 });
 

@@ -43,7 +43,7 @@
       "description": "",
       "groups": ["BCN","LAND"],
       "placeholders": {
-        "BCN": ["MEN1","MEN2"],
+        "BCN": ["MEN1"],
         "LAND": ["INFO","INFO2"]
       }
     }

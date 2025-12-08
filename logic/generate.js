@@ -459,14 +459,38 @@
           modules: []
         });
       } catch (error) {
-        let msg = `❌ Error compiling template ${path.basename(templatePath)}: ${error.message}`;
+        // Check if error is related to unclosed tags (placeholder syntax errors)
+        const isUnclosedTagError = error.message && (
+          error.message.includes('Unclosed tag') || 
+          error.message.includes('Multi error')
+        );
+        
+        if (isUnclosedTagError && error.properties && Array.isArray(error.properties.errors)) {
+          const hasUnclosedTags = error.properties.errors.some(e => 
+            (e.message && e.message.includes('Unclosed tag')) ||
+            (e.explanation && e.explanation.includes('Unclosed tag'))
+          );
+          
+          if (hasUnclosedTags) {
+            const msg = `❌ Lỗi cú pháp placeholder trong file ${path.basename(templatePath)}:\n\n` +
+              `📝 Hướng dẫn khắc phục:\n` +
+              `1. Kiểm tra xem placeholder đã dùng font Times New Roman chưa\n` +
+              `2. Kiểm tra cấu trúc {{Placeholder}} - phải có đúng 2 ngoặc nhọn mở và đóng\n` +
+              `3. Nếu vẫn lỗi: Xóa placeholder đó đi và gõ lại từ đầu\n` +
+              `4. Đảm bảo không có ký tự đặc biệt hoặc khoảng trắng thừa trong {{Placeholder}}`;
+            throw new Error(msg);
+          }
+        }
+        
+        // Default error message for other types of errors
+        let msg = `❌ Lỗi biên dịch template ${path.basename(templatePath)}: ${error.message}`;
         if (error.properties && Array.isArray(error.properties.errors)) {
           const details = error.properties.errors.map((e, idx) => {
             const expl = e.explanation || e.message || JSON.stringify(e);
             const context = e.context ? JSON.stringify(e.context, null, 2) : '';
-            return `${idx + 1}. ${expl}${context ? '\n   Context: ' + context : ''}`;
+            return `${idx + 1}. ${expl}${context ? '\n   Chi tiết: ' + context : ''}`;
           }).join('\n');
-          msg += '\n📋 Details:\n' + details;
+          msg += '\n📋 Chi tiết:\n' + details;
         }
         throw new Error(msg);
       }
@@ -742,13 +766,37 @@
       try {
         doc.render(processedData);
       } catch (error) {
-        let msg = `Error rendering template ${path.basename(templatePath)}: ${error.message}`;
+        // Check if error is related to unclosed tags
+        const isUnclosedTagError = error.message && (
+          error.message.includes('Unclosed tag') || 
+          error.message.includes('Multi error')
+        );
+        
+        if (isUnclosedTagError && error.properties && Array.isArray(error.properties.errors)) {
+          const hasUnclosedTags = error.properties.errors.some(e => 
+            (e.message && e.message.includes('Unclosed tag')) ||
+            (e.explanation && e.explanation.includes('Unclosed tag'))
+          );
+          
+          if (hasUnclosedTags) {
+            const msg = `❌ Lỗi cú pháp placeholder trong file ${path.basename(templatePath)}:\n\n` +
+              `📝 Hướng dẫn khắc phục:\n` +
+              `1. Kiểm tra xem placeholder đã dùng font Times New Roman chưa\n` +
+              `2. Kiểm tra cấu trúc {{Placeholder}} - phải có đúng 2 ngoặc nhọn mở và đóng\n` +
+              `3. Nếu vẫn lỗi: Xóa placeholder đó đi và gõ lại từ đầu\n` +
+              `4. Đảm bảo không có ký tự đặc biệt hoặc khoảng trắng thừa trong {{Placeholder}}`;
+            throw new Error(msg);
+          }
+        }
+        
+        // Default error message
+        let msg = `Lỗi render template ${path.basename(templatePath)}: ${error.message}`;
         if (error.properties && Array.isArray(error.properties.errors)) {
           const details = error.properties.errors.map((e, idx) => {
             const expl = e.explanation || e.message || JSON.stringify(e);
             return `${idx + 1}. ${expl}`;
           }).join('\n');
-          msg += '\nDetails:\n' + details;
+          msg += '\nChi tiết:\n' + details;
         }
         throw new Error(msg);
       }
