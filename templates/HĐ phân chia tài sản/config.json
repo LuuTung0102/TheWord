@@ -47,8 +47,8 @@
         {"name":"QSH","label":"QSH đất(Số sery)","type":"text","required":true},
         {"name":"So_so","label":"Số vào sổ","type":"text","required":true},
         {"name":"Ngay_CapD","label":"Ngày cấp","type":"date","required":true},
-        {"name":"Thua_dat_so","label":"Thửa đất số","type":"text","required":true},
-        {"name":"Ban_do_so","label":"Bản đồ số","type":"text","required":true},
+        {"name":"TDS","label":"Thửa đất số","type":"text","required":true},
+        {"name":"TBD","label":"Tờ bản đồ số","type":"text","required":true},
         {"name":"S","label":"Diện tích (m²)","type":"number","required":true},
         {"name":"SV","label":"Diện tích đất trồng","type":"editable-select","options":[],"required":true},
         {"name":"Loai_Dat","label":"Loại đất","type":"land_type","placeholder":"VD: XXX+XXX","required":true},
@@ -61,7 +61,7 @@
         {"name":"TTGLVD","label":"TT tài sản gắn liền","type":"textarea","required":false},
         {"name":"Money","label":"Giá chuyển nhượng","type":"currency","required":true},
         {"name":"MoneyText","label":"Giá chuyển nhượng (chữ)","type":"text","hidden":true,"required":false},
-        {"name":"Responsibility","label":"Bên chịu trách nhiệm thuế phí","type":"select","options":["A","B"],"required":true},
+        {"name":"Resp","label":"Bên chịu trách nhiệm thuế phí","type":"select","options":["A","B"],"required":true},
         {"name":"Note","label":"Ghi chú","type":"textarea","required":false}
       ]
     }

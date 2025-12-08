@@ -132,12 +132,12 @@ const BASE_PLACEHOLDERS = {
     order: 5
   },
   
-  Thua_dat_so: {
+  TDS: {
     type: "text",
     order: 6
   },
   
-  Ban_do_so: {
+  TBD: {
     type: "text",
     order: 7
   },
@@ -200,7 +200,7 @@ const BASE_PLACEHOLDERS = {
     order: 11
   },
   
-  Responsibility: {
+  Resp: {
     type: "select",
     options: ["A", "B"],
     order: 12

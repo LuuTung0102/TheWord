@@ -637,6 +637,15 @@
         }
       });
       
+      suffixes.forEach(suffix => {
+        const tdcsplKey = suffix ? `TDCSPL${suffix}` : 'TDCSPL';
+        
+        if (data[tdcsplKey] && data[tdcsplKey].trim()) {
+          const dateValue = data[tdcsplKey].trim();
+          data[tdcsplKey] = `. Thay đổi cơ sở pháp lý ngày ${dateValue}`;
+        }
+      });
+      
       const templatePhs = getPlaceholders(templatePath);
       const fullData = {};
       templatePhs.forEach(ph => {
