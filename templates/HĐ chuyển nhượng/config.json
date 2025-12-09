@@ -1,9 +1,9 @@
 {
   "templates": [
     {
-      "id": "hop-dong-chuyen-nhuong-bia-2024",
-      "filename": "Hop dong chuyen nhuong bia 2024.docx",
-      "name": "Hop dong chuyen nhuong bia 2024",
+      "id": "hop-dong-chuyen-nhuong",
+      "filename": "HĐ chuyển nhượng.docx",
+      "name": "HĐ chuyển nhượng",
       "description": "",
       "groups": ["BCN","BNCN","LAND","PAGE"],
       "placeholders": {
@@ -21,19 +21,6 @@
       "groups": ["BCN","BNCN","LAND","PAGE"],
       "placeholders": {
         "BCN": ["MEN1","MEN2","MEN3","MEN4","MEN5","MEN6"],
-        "BNCN": ["MEN7","MEN8"],
-        "LAND": ["INFO"],
-        "PAGE": ["HOME"]
-      }
-    },
-    {
-      "id": "h-chuy-n-nh-ng-1",
-      "filename": "HĐ chuyển nhượng(1).docx",
-      "name": "HĐ chuyển nhượng(1)",
-      "description": "",
-      "groups": ["BCN","BNCN","LAND","PAGE"],
-      "placeholders": {
-        "BCN": ["MEN1","MEN2"],
         "BNCN": ["MEN7","MEN8"],
         "LAND": ["INFO"],
         "PAGE": ["HOME"]

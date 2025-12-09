@@ -1009,7 +1009,6 @@ function reSetupAllInputs() {
   const nameInputs = document.querySelectorAll('input[data-ph*="Name"]');
   nameInputs.forEach(input => {
     const ph = input.getAttribute('data-ph');
-    // Skip NamePG - don't convert to uppercase
     if (ph && ph.includes('NamePG')) {
       return;
     }

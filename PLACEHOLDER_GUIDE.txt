@@ -1,8 +1,12 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
                     HƯỚNG DẪN SỬ DỤNG PLACEHOLDER - THEWORD
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-
+Nếu file word có đuôi là .doc thì phải chuyển sang .docx:
+1. Mở file .doc bằng Word
+2. Nhấn File
+3. Chọn Save As
+4. Ở mục Save as type, chọn Word Document (.docx)
+5. Nhấn Save
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 1. CẤU TRÚC CƠ BẢN 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -47,35 +51,46 @@ Ngay_CapHN1:  + Ngày cấp giấy HN
 
 2.2 THÔNG TIN THỬA ĐẤT (LandInfo Schema)
 
-QSH=  + Quyền sử dụng đất
-So_so=  + Số vào sổ
-Ngay_CapD=  + Ngày cấp sổ (date)
-Thua_dat_so=  + Thửa đất số
-Ban_do_so=  + Bản đồ số
-S=  + Diện tích m² (number)
-S_Text=  + Diện tích chữ (hidden, optional)
-Loai_Dat=  + Loại đất (ví dụ: XXX+XXX)
-Loai_Dat_F=  + Loại đất có diện tích (ví dụ: 1000.5m² ONT)
-Loai_Dat_D=  + Loại đất chi tiết (ví dụ: + Loại đất 1: ONT: Vị trí 2 Diện tích: 1000.5m².)
-NG=  + Nguồn gốc 
-HTSD_R=  + Sử dụng riêng m² (ví dụ:  1000.5m²)
-HTSD_C=  + Sử dụng chung m² (ví dụ: 0m²)
-THSD=  + Thời hạn sử dụng 
-AddressD=  + Địa chỉ thửa đất
-TTGLVD=  + TT tài sản gắn liền 
-Money=  + Giá chuyển nhượng
-MoneyText=  + Giá chữ (hidden)
-Responsibility=  + Bên chịu thuế (chọn A hoặc B)
-Note=  + Ghi chú (optional)
-Noi_CapD=  + Nơi cấp sổ (optional)
-TDCSPL=  + Thay đổi cơ sở pháp lý (time)
-HTSD=  + Hình thức sử dụng (chung/riêng) (ví dụ: sử dụng chung)
-AddressQS=  + Địa chỉ giao QSDĐ 
-Plant=  + Cây trồng (ví dụ: Nhãn)
-Mat_do=  + Mật độ cây
-SV=  + Diện tích đất trồng
-VTTD=  + Vị trí thửa đất
-Sum_A=  + Tổng cây A 
-Sum_B=  + Tổng cây B 
-Sum_C=  + Tổng cây C
-Exp=  + Năm chăm sóc/kinh doanh
+QSH:  + Quyền sử dụng đất
+So_so:  + Số vào sổ
+Ngay_CapD:  + Ngày cấp sổ (date)
+Thua_dat_so:  + Thửa đất số
+Ban_do_so:  + Bản đồ số
+S:  + Diện tích m² (number)
+S_Text:  + Diện tích chữ (hidden, optional)
+Loai_Dat:  + Loại đất (ví dụ: XXX+XXX)
+Loai_Dat_F:  + Loại đất có diện tích (ví dụ: 1000.5m² ONT)
+Loai_Dat_D:  + Loại đất chi tiết (ví dụ: + Loại đất 1: ONT: Vị trí 2 Diện tích: 1000.5m².)
+NG:  + Nguồn gốc 
+HTSD_R:  + Sử dụng riêng m² (ví dụ:  1000.5m²)
+HTSD_C:  + Sử dụng chung m² (ví dụ: 0m²)
+THSD:  + Thời hạn sử dụng 
+AddressD:  + Địa chỉ thửa đất
+TTGLVD:  + TT tài sản gắn liền 
+Money:  + Giá chuyển nhượng
+MoneyText:  + Giá chữ (hidden)
+Responsibility:  + Bên chịu thuế (chọn A hoặc B)
+Note:  + Ghi chú (optional)
+Noi_CapD:  + Nơi cấp sổ (optional)
+TDCSPL:  + Thay đổi cơ sở pháp lý (time)
+HTSD:  + Hình thức sử dụng (chung/riêng) (ví dụ: sử dụng chung)
+AddressQS:  + Địa chỉ giao QSDĐ 
+Plant:  + Cây trồng (ví dụ: Nhãn)
+Mat_do:  + Mật độ cây
+SV:  + Diện tích đất trồng
+VTTD:  + Vị trí thửa đất
+Sum_A:  + Tổng cây A 
+Sum_B:  + Tổng cây B 
+Sum_C:  + Tổng cây C
+Exp:  + Năm chăm sóc/kinh doanh
+
+2.3 THÔNG TIN KHÁC (PageInfo Schema)
+Kinh_Gui: + Kính gửi: ......
+GenderPG: + Giới tính (ông/bà)
+NamePG: + Họ và tên người tiếp nhận hồ sơ
+HN_SO: + Số
+Noi_XN: + Nơi xác nhận
+Ngay_Full: + Địa chỉ và ngày (VD: xxxxxxx, ngày dd tháng mm năm yyyy)
+Chuc_Vu: + Chức vụ (VD: Chủ tịch UBND xã EaKar, tỉnh Đắk Lắk) 
+
+

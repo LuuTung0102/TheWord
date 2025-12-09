@@ -1,22 +1,16 @@
 function setupLandTypeSync() {
   const skipLandFields = window.stateManager.getRenderDataStructures()?.skipLandFields || new Set();
   const phMapping = window.stateManager.getRenderDataStructures()?.phMapping || {};
-  
-  // Find all land type detail inputs (including suffixed ones)
   const allLoaiDatDInputs = document.querySelectorAll('input[data-type="land_type_detail"]');
-  
   allLoaiDatDInputs.forEach(loaiDatDInput => {
     const detailPh = loaiDatDInput.getAttribute('data-ph');
     const suffix = detailPh.replace('Loai_Dat_D', '');
-    
-    // Find or create corresponding F and basic inputs
     const sizePh = suffix ? `Loai_Dat_F${suffix}` : 'Loai_Dat_F';
     const basicPh = suffix ? `Loai_Dat${suffix}` : 'Loai_Dat';
     
     let loaiDatFInput = document.querySelector(`[data-ph="${sizePh}"]`);
     let loaiDatInput = document.querySelector(`[data-ph="${basicPh}"]`);
     
-    // Create hidden F input if needed
     if (!loaiDatFInput && skipLandFields.has(sizePh)) {
       loaiDatFInput = document.createElement('input');
       loaiDatFInput.type = 'hidden';
@@ -26,7 +20,6 @@ function setupLandTypeSync() {
       document.body.appendChild(loaiDatFInput);
     }
     
-    // Create hidden basic input if needed
     if (!loaiDatInput && skipLandFields.has(basicPh)) {
       loaiDatInput = document.createElement('input');
       loaiDatInput.type = 'hidden';
@@ -36,7 +29,6 @@ function setupLandTypeSync() {
       document.body.appendChild(loaiDatInput);
     }
     
-    // Setup D -> F sync
     if (loaiDatFInput) {
       const syncDtoF = () => {
         const value = loaiDatDInput.value;
@@ -59,7 +51,6 @@ function setupLandTypeSync() {
       loaiDatDInput.addEventListener('change', syncDtoF);
     }
     
-    // Setup F -> basic sync
     if (loaiDatFInput && loaiDatInput) {
       const syncFtoBasic = () => {
         const value = loaiDatFInput.value;
@@ -83,10 +74,8 @@ function setupLandTypeSync() {
 
 function populateDynamicOptions(groupData, targetSuffix) {
   if (!groupData) {
-    // If no groupData provided, try to find it from visible inputs
     const loaiDatDPh = targetSuffix ? `Loai_Dat_D${targetSuffix}` : 'Loai_Dat_D';
     const loaiDatFPh = targetSuffix ? `Loai_Dat_F${targetSuffix}` : 'Loai_Dat_F';
-    
     const loaiDatDInput = document.querySelector(`[data-ph="${loaiDatDPh}"]`);
     const loaiDatFInput = document.querySelector(`[data-ph="${loaiDatFPh}"]`);
     
@@ -103,8 +92,6 @@ function populateDynamicOptions(groupData, targetSuffix) {
   }
   
   const areas = [];
-  
-  // Look for detail field with matching suffix
   const detailField = Object.keys(groupData).find(key => {
     const input = document.querySelector(`[data-ph="${key}"]`);
     return input && input.getAttribute('data-type') === 'land_type_detail';
@@ -123,7 +110,6 @@ function populateDynamicOptions(groupData, targetSuffix) {
     });
   }
   
-  // Look for size field with matching suffix
   const sizeField = Object.keys(groupData).find(key => {
     const input = document.querySelector(`[data-ph="${key}"]`);
     return input && input.getAttribute('data-type') === 'land_type_size';
@@ -191,15 +177,10 @@ function fillLandTypeFields(groupData, targetSuffix) {
   Object.keys(groupData).forEach(fieldName => {
     const value = groupData[fieldName];
     if (!value || typeof value !== 'string') return;
-    
-    // Add suffix to field name if provided
     const placeholder = targetSuffix ? `${fieldName}${targetSuffix}` : fieldName;
-    
     const targetInput = document.querySelector(`[data-ph="${placeholder}"]`);
     if (!targetInput) return;
-    
     const fieldType = targetInput.getAttribute('data-type');
-    
     if (fieldType === 'land_type') {
       setTimeout(() => {
         const freshInput = document.querySelector(`[data-ph="${placeholder}"]`);
@@ -450,17 +431,13 @@ function generateLandTypeFormatsForSuffix(data, suffix) {
 }
 
 function generateAllLandTypeFormats(data) {
-  // Find all Loai_Dat suffixes in data
-  const suffixes = new Set(['']); // Start with no suffix
-  
+  const suffixes = new Set(['']); 
   Object.keys(data).forEach(key => {
     const match = key.match(/^Loai_Dat(_[FD])?(\d+)$/);
     if (match && match[2]) {
       suffixes.add(match[2]);
     }
   });
-  
-  // Process each suffix
   suffixes.forEach(suffix => {
     generateLandTypeFormatsForSuffix(data, suffix);
   });

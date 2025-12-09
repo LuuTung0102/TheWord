@@ -59,7 +59,11 @@
       
       const fieldInput = document.querySelector(`[data-ph="${key}"]`);
       const fieldType = fieldInput?.getAttribute('data-type');
-      if (fieldType === 'land_type' || fieldType === 'land_type_size' || fieldType === 'land_type_detail' || fieldType === 'htsd_custom') {
+      if (fieldType === 'land_type' || fieldType === 'land_type_size' || fieldType === 'land_type_detail') {
+        continue;
+      }
+      
+      if (fieldType === 'htsd_custom') {
         continue;
       }
       
@@ -138,23 +142,7 @@
     return `${day}/${month}/${year} ${hours}:${minutes}`;
   }
 
-  function extractBaseKey(groupKey) {
-    const timestampMatch = groupKey.match(/^(.+)_(\d{8}_\d{6,9})$/);
-    
-    if (timestampMatch) {
-      return {
-        baseKey: timestampMatch[1],
-        timestamp: timestampMatch[2],
-        isVersioned: true
-      };
-    }
-    
-    return {
-      baseKey: groupKey,
-      timestamp: null,
-      isVersioned: false
-    };
-  }
+
 
   function isSubgroupInConfig(groupKey, config) {
     if (!config || !config.fieldMappings) return false;
@@ -174,7 +162,7 @@
 
   function getGroupType(groupKey) {
     if (groupKey.startsWith('MEN')) return 'MEN';
-    if (groupKey.startsWith('INFO')) return 'INFO';  // Match INFO, INFO2, INFO3...
+    if (groupKey.startsWith('INFO')) return 'INFO';
     return groupKey; 
   }
 
@@ -183,9 +171,6 @@
     const groupsToDelete = new Set();
 
     for (const [groupKey, groupData] of Object.entries(dataGroups)) {
-      const normalizedCurrent = normalizeDataForComparison(groupData);
-      const currentType = getGroupType(groupKey);
-
       for (const [otherFile, otherFileData] of Object.entries(existingData)) {
         if (!otherFileData || !otherFileData.dataGroups) continue;
 
@@ -211,10 +196,14 @@
             groupsToDelete.add(groupKey);
             break;
           } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-            existingData[otherFile].dataGroups[otherGroupKey] = {
+            const merged = {
               ...otherGroupData,
               ...groupData 
             };
+            
+
+            
+            existingData[otherFile].dataGroups[otherGroupKey] = merged;
             groupsToDelete.add(groupKey);
             break;
           }
@@ -247,27 +236,66 @@
         reusedGroups.forEach((reusedKey) => {
           const isFromLocalStorage = reusedKey.startsWith("localStorage:");
           const groupKey = isFromLocalStorage ? reusedKey.replace("localStorage:", "") : reusedKey;
-          if (!dataGroups[groupKey]) return;
+          
+          if (!dataGroups[groupKey]) {
+            const sourceInfo = reusedGroupSources?.get?.(reusedKey);
+            if (!sourceInfo || !sourceInfo.sourceData) {
+              return;
+            }
+            
+            const sourceFileName = sourceInfo.sourceFileName;
+            const sourceGroupKey = sourceInfo.sourceGroupKey;
+            
+            let htsdUpdated = false;
+            const htsdUpdates = {};
+            const htsdFieldNames = Object.keys(sourceInfo.sourceData).filter(k => k === 'HTSD' || k.match(/^HTSD\d*$/));
+            
+            if (htsdFieldNames.length > 0) {
+              htsdFieldNames.forEach(htsdFieldName => {
+                const htsdInput = document.querySelector(`[data-ph="${htsdFieldName}"][data-type="htsd_custom"]`);
+                if (!htsdInput) return;
+                const htsdContainer = htsdInput.closest('[data-field-type="htsd_custom"]');
+                if (!htsdContainer) return;
+                const loai1Active = htsdContainer.querySelector('.htsd-toggle-loai1')?.classList.contains('active') || false;
+                const loai2Active = htsdContainer.querySelector('.htsd-toggle-loai2')?.classList.contains('active') || false;
+                let printMode = null;
+                if (loai1Active && !loai2Active) printMode = 'loai1';
+                else if (loai2Active && !loai1Active) printMode = 'loai2';
+                else if (loai1Active && loai2Active) printMode = 'both';
+                const htsdValue = htsdInput.value.trim();
+                htsdUpdates[htsdFieldName] = {
+                  value: htsdValue || '',
+                  printMode: printMode
+                };
+                
+                htsdUpdated = true;
+              });
+            }
+            
+            if (htsdUpdated && existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
+              Object.keys(htsdUpdates).forEach(htsdFieldName => {
+                existingData[sourceFileName].dataGroups[sourceGroupKey][htsdFieldName] = htsdUpdates[htsdFieldName];
+              });
+            }
+            
+            return;
+          }
+          
           if (isFromLocalStorage) {
             groupsToRemove.push(groupKey);
             return;
           }
           const sourceInfo = reusedGroupSources?.get?.(reusedKey);
           if (!sourceInfo || !sourceInfo.sourceData) return;
-          const sourceFileName = sourceInfo.sourceFileName;
-          const sourceGroupKey = sourceInfo.sourceGroupKey;
           const sourceData = sourceInfo.sourceData;
-          const isSameFile = sourceFileName === fileName;
           const normalizedCurrent = normalizeDataForComparison(dataGroups[groupKey]);
           const normalizedSource = normalizeDataForComparison(sourceData);
           const changeAnalysis = analyzeChanges(normalizedSource, normalizedCurrent);
 
-          if (changeAnalysis.type === "NO_CHANGE") {
-            groupsToRemove.push(groupKey);
-          } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-            dataGroups[groupKey] = { 
+          if (changeAnalysis.type === "NO_CHANGE" || changeAnalysis.type === "ONLY_ADDITIONS") {
+            dataGroups[groupKey] = {
               ...sourceData,
-              ...dataGroups[groupKey]  
+              ...dataGroups[groupKey]
             };
           } else {
           }
@@ -281,6 +309,7 @@
       for (const groupKey of Object.keys(dataGroups)) {
         if (processedReusedKeys.has(groupKey)) continue;
         if (isSubgroupInConfig(groupKey, config)) continue;
+        
         const normalizedCurrent = normalizeDataForComparison(dataGroups[groupKey]);
         for (const [otherFileName, otherFileData] of Object.entries(existingData)) {
           if (otherFileName === fileName) continue;
@@ -288,14 +317,16 @@
           if (!otherGroups[groupKey]) continue;
           const normalizedOther = normalizeDataForComparison(otherGroups[groupKey]);
           const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
+          
           if (changeAnalysis.type === "NO_CHANGE") {
             delete dataGroups[groupKey];
             break;
           } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
             existingData[otherFileName].dataGroups[groupKey] = {
-              ...normalizedOther,
-              ...normalizedCurrent
+              ...otherGroups[groupKey],
+              ...dataGroups[groupKey]
             };
+            
             delete dataGroups[groupKey];
             break;
           }
@@ -311,7 +342,6 @@
       }
       const oldDataGroups = existingData[fileName]?.dataGroups || {};
       const mergedDataGroups = { ...oldDataGroups };
-      const groupsToRemoveFromNew = new Set();
       
       Object.keys(dataGroups).forEach(groupKey => {
         const newData = dataGroups[groupKey];
@@ -370,72 +400,18 @@
             const changeAnalysis = analyzeChanges(normalizedOld, normalizedNew);
             
             if (!isExactMatch && changeAnalysis.type === "HAS_MODIFICATIONS") {
-              if (typeof console !== 'undefined') {
-                console.log(`⚠️ Creating new version: ${groupKey} (matched with ${matchedKey} but has modifications)`);
-              }
               mergedDataGroups[groupKey] = newData;
               return;
             }
             
-            if (typeof console !== 'undefined') {
-              const action = changeAnalysis.type === "NO_CHANGE" ? "KEEP" 
-                           : changeAnalysis.type === "ONLY_ADDITIONS" ? "MERGE" 
-                           : "CREATE_VERSION";
-              console.log(`✅ Merge decision for ${groupKey}:`, {
-                matchedKey,
-                isExactMatch,
-                changeType: changeAnalysis.type,
-                action,
-                willMergeInto: changeAnalysis.type === "ONLY_ADDITIONS" ? matchedKey : null
-              });
-            }
-            if (typeof console !== 'undefined' && console.log) {
-              const differences = [];
-              const allKeys = new Set([...Object.keys(normalizedOld), ...Object.keys(normalizedNew)]);
-              for (const key of allKeys) {
-                const oldVal = normalizedOld[key];
-                const newVal = normalizedNew[key];
-                const isEmpty = (v) => v === undefined || v === null || v === "";
-                
-                if (!isEmpty(oldVal) && !isEmpty(newVal) && oldVal !== newVal) {
-                  differences.push({
-                    field: key,
-                    old: oldVal,
-                    new: newVal,
-                    type: 'MODIFIED'
-                  });
-                } else if (isEmpty(oldVal) && !isEmpty(newVal)) {
-                  differences.push({
-                    field: key,
-                    old: oldVal,
-                    new: newVal,
-                    type: 'ADDED'
-                  });
-                } else if (!isEmpty(oldVal) && isEmpty(newVal)) {
-                  differences.push({
-                    field: key,
-                    old: oldVal,
-                    new: newVal,
-                    type: 'REMOVED'
-                  });
-                }
-              }
-              
-              if (differences.length > 0) {
-                console.table(differences);
-              }
-            }
             if (changeAnalysis.type === "NO_CHANGE") {
             } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
               const merged = {
                 ...oldData,
                 ...newData
               };
-              mergedDataGroups[matchedKey] = merged;
               
-              if (groupKey !== matchedKey) {
-                groupsToRemoveFromNew.add(groupKey);
-              }
+              mergedDataGroups[matchedKey] = merged;
             } else {
               const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
               mergedDataGroups[versionedKey] = newData;
@@ -451,6 +427,7 @@
         dataGroups: mergedDataGroups,
         rawData: formData
       };
+      
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
       return true;
     } catch (err) {
@@ -462,11 +439,10 @@
   function parseFormDataToGroups(formData, config) {
     const groups = {};
     const suffixToGroupMap = {};
-    const fieldToGroupMap = {}; // Map field names to their group
+    const fieldToGroupMap = {};
     
     if (config?.fieldMappings) {
       config.fieldMappings.forEach((mapping) => {
-        // Build suffix to group map
         if (mapping.subgroups) {
           mapping.subgroups.forEach((subgroupDef, index) => {
             const subgroupId =
@@ -479,7 +455,6 @@
           });
         }
         
-        // Build field name to group map from schema
         if (mapping.schema && config.fieldSchemas && config.fieldSchemas[mapping.schema]) {
           const schemaFields = config.fieldSchemas[mapping.schema].fields || [];
           const subgroupId = mapping.subgroups && mapping.subgroups[0] 
@@ -498,17 +473,13 @@
     Object.keys(formData).forEach((key) => {
       const match = key.match(/^([A-Za-z_]+?)(\d+)$/);
       if (match) {
-        // Field with numeric suffix (e.g., Name1, CCCD2)
         const fieldName = match[1];
         const suffix = match[2];
         const groupKey = suffixToGroupMap[suffix] || `UNKNOWN_${suffix}`;
         if (!groups[groupKey]) groups[groupKey] = {};
         groups[groupKey][fieldName] = formData[key];
       } else {
-        // Field without numeric suffix - check field name mapping first
         let groupKey = fieldToGroupMap[key];
-        
-        // If not found in field mapping, use suffix mapping
         if (!groupKey) {
           groupKey = suffixToGroupMap[""] || "OTHER";
         }
