@@ -25,9 +25,9 @@
     }
   ],
   "groups": [
-    {"id":"BD","label":"Người sử dụng đất","order":1,"description":"Thông tin người sử dụng đất"},
-    {"id":"LAND","label":"Thông tin thửa đất","order":2,"description":"Thông tin đất đai"},
-    {"id":"PAGE","label":"Thông tin khác","order":3,"description":"Thông tin hợp đồng"}
+    {"id":"BD","label":"Chủ sử hữu đất","order":1},
+    {"id":"LAND","label":"Thông tin thửa đất","order":2},
+    {"id":"PAGE","label":"Thông tin khác","order":3}
   ],
   "fieldSchemas": {
     "PersonalInfo": {

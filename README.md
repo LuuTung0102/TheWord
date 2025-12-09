@@ -17,13 +17,18 @@
 
 ### Core Workflow
 ```
-Select Template Folder → Choose Word File → Fill Form → Export Document ✅
+Select Template Folder → Choose .docx File → Fill Form → Export Document ✅
 ```
 
 ### 100% Offline
 - No internet required after installation
 - All data stored locally
 - Full privacy control
+
+### ⚠️ Important Note
+- **Only .docx format is supported** (Word 2007+)
+- **.doc files (Word 97-2003) will NOT work**
+- See [File Format Support](#-file-format-support) section for conversion guide
 
 ---
 
@@ -34,6 +39,7 @@ Select Template Folder → Choose Word File → Fill Form → Export Document �
 - **15+ field types**: text, number, date, select, address, money, land-type, and more
 - **Smart validation** with visual feedback and auto tab-switching
 - **Auto-format**: CCCD (9/12 digits), Money (1,000,000), Dates, Phone numbers
+- **Flexible address input**: Auto-suggest from database OR manual input for villages
 
 ### 🏷️ Advanced Land Type System
 - **3 intelligent formats**:
@@ -42,6 +48,16 @@ Select Template Folder → Choose Word File → Fill Form → Export Document �
   - `Loai_Dat_D`: Detailed with location (CLN|Location|1236.5)
 - **Smart auto-sync** between formats
 - **Automatic conversion** when reusing across templates
+
+### 🗺️ Flexible Address System
+- **4-level cascading selection**: Province → Ward → Village → Street
+- **Smart dropdown behavior**:
+  - Province & Ward: Must select from database
+  - Village: **Select from list OR type manually** if not available
+- **Auto-suggest with search**: Type to filter matching entries
+- **Keyboard navigation**: Arrow keys, Enter, Tab support
+- **Data preservation**: Manual entries saved and restored correctly
+- **Reuse support**: All address components including manual villages
 
 ### 👥 Person Data Management
 - **LocalStorage** for frequently used people (PERSON1, PERSON2, ...)
@@ -68,6 +84,7 @@ Select Template Folder → Choose Word File → Fill Form → Export Document �
 - **Responsive design** for all screen sizes
 - **Toast notifications** replacing old alert/confirm dialogs
 - **Loading overlays** during export
+- **Smart input fields**: Auto-suggest with manual fallback for maximum flexibility
 
 ### ⚡ Performance Optimized
 - **Form rendering**: < 200ms
@@ -93,6 +110,7 @@ Select Template Folder → Choose Word File → Fill Form → Export Document �
 - npm >= 6.x
 - 4GB RAM (8GB recommended)
 - 500MB free disk space
+- **Word templates must be in .docx format** (not .doc)
 
 ### Quick Start
 
@@ -128,7 +146,8 @@ npm run build:linux
 ### 1. Select Template Folder
 1. Open TheWord
 2. Right panel (orange): Select a template folder
-3. System automatically loads all Word files in that folder
+3. System automatically loads all **.docx** files in that folder
+   - **Note**: Only .docx format is supported, not .doc
 
 ### 2. Choose Word File
 1. Click folder to expand and see available files
@@ -139,7 +158,9 @@ npm run build:linux
 1. Left panel (green): Fill in all required fields
 2. Use smart features:
    - **Date Picker**: Click field to select date
-   - **Address Select**: 4-level cascading dropdowns
+   - **Address Select**: 4-level cascading dropdowns with manual input support
+     - Province & Ward: Select from dropdown
+     - Village: Select from dropdown OR type manually if not in list
    - **Land Type**: Dropdown with autocomplete
    - **CCCD**: Auto-formats when typing
    - **Money**: Auto-formats with thousand separator
@@ -162,6 +183,40 @@ npm run build:linux
 3. Choose save folder
 4. Wait for processing (< 5 seconds)
 5. Success dialog with option to open folder
+
+---
+
+## 🗺️ Address Input Guide
+
+### How to Use Address Fields
+
+**Province Selection:**
+1. Click or focus on Province field
+2. Type to search (e.g., "Đắk Lắk")
+3. Use Arrow keys to navigate suggestions
+4. Press Enter or click to select
+
+**Ward Selection:**
+1. After selecting Province, Ward field becomes active
+2. Type to search within selected province
+3. Select from dropdown
+
+**Village Input (Flexible):**
+1. After selecting Ward, Village field becomes active
+2. **Option A - Select from list:**
+   - If ward has villages in database, dropdown shows suggestions
+   - Type to filter, select from list
+3. **Option B - Manual input:**
+   - If no suggestions OR village not in list
+   - Simply type the village name directly
+   - Press Enter or Tab to move to next field
+4. **Your manual entry will be saved** and can be reused later
+
+**Tips:**
+- Use Tab key to quickly move between fields
+- Press Escape to close dropdown
+- Manual village entries are fully supported in data reuse
+- Address format saved as: "Village, Ward, Province"
 
 ---
 
@@ -235,6 +290,45 @@ TheWord/
 
 ---
 
+## � File Ftormat Support
+
+### ✅ Supported Format
+- **.docx** (Office Open XML) - Word 2007 and later
+- This is the **ONLY** supported format
+
+### ❌ NOT Supported
+- **.doc** (Office 97-2003 Binary Format)
+- **.rtf** (Rich Text Format)
+- **.odt** (OpenDocument Text)
+- **.pdf** (Portable Document Format)
+
+### Why Only .docx?
+1. **Modern Standard**: .docx is the current Microsoft Word standard since 2007
+2. **XML-Based**: .docx files are ZIP archives containing XML, making them easy to parse and modify
+3. **Library Support**: Docxtemplater library only supports .docx format
+4. **Better Features**: .docx supports more features and is more reliable than old .doc format
+
+### How to Convert .doc to .docx
+
+**Using Microsoft Word:**
+1. Open your .doc file in Microsoft Word
+2. Click **File** → **Save As**
+3. Choose **Word Document (*.docx)** from format dropdown
+4. Click **Save**
+
+**Using LibreOffice (Free):**
+1. Download and install [LibreOffice](https://www.libreoffice.org/)
+2. Open your .doc file in LibreOffice Writer
+3. Click **File** → **Save As**
+4. Choose **Office Open XML Text (.docx)** from format dropdown
+5. Click **Save**
+
+**Batch Conversion:**
+- For multiple files, use Microsoft Word's batch conversion feature
+- Or use online converters (be careful with sensitive documents)
+
+---
+
 ## 💻 Tech Stack
 
 ### Core
@@ -243,8 +337,8 @@ TheWord/
 - **Vanilla JavaScript** - No framework dependencies
 
 ### Document Processing
-- **Docxtemplater** 3.66.7 - Word template engine
-- **PizZip** 3.2.0 - ZIP file handling
+- **Docxtemplater** 3.66.7 - Word template engine (**.docx only**)
+- **PizZip** 3.2.0 - ZIP file handling for .docx archives
 - **SAX** 1.4.3 - XML streaming parser
 - **xmldom** 0.6.0 - XML DOM parser
 
@@ -341,7 +435,7 @@ TheWord/
 - CCCD: 9 or 12 digits only
 - Phone: 10 digits format
 - Email: Basic email format
-- Address: 4-level selection required
+- Address: Province and Ward required, Village can be selected or manually entered
 
 **Smart Placeholder Checking**
 - Only validate fields in template
@@ -388,6 +482,14 @@ window.validateField()          // Returns validation result
 
 ## 🐛 Troubleshooting
 
+### System only accepts .docx files, not .doc
+- **TheWord only supports .docx format** (Office Open XML)
+- **.doc files (Office 97-2003) are NOT supported**
+- **Solution**: Convert .doc to .docx:
+  - Open .doc file in Microsoft Word
+  - File → Save As → Choose "Word Document (*.docx)"
+  - Or use LibreOffice Writer (free) to convert
+
 ### Form not filling correctly
 - Placeholders might be split across text runs in Word
 - Solution: Delete and retype placeholder without formatting
@@ -403,6 +505,11 @@ window.validateField()          // Returns validation result
 - Clear cache and restart app
 - Check disk space available
 
+### Village not filling when reusing data
+- Ensure ward is selected first
+- Manual village entries are now fully supported
+- Check that address string format is correct (Village, Ward, Province)
+
 ### Export very slow
 - Large templates (> 50MB) take longer
 - Close unused applications
@@ -411,6 +518,13 @@ window.validateField()          // Returns validation result
 ---
 
 ## 📝 Version History
+
+### v5.6 - Flexible Village Input System
+- **Manual village input** when not in database
+- **Smart dropdown behavior**: Show suggestions when available, allow typing when not
+- **Improved data reuse**: Village values preserved correctly during reuse
+- **Better UX**: Updated placeholder "Chọn hoặc nhập thôn/xóm..."
+- **No data loss**: Manual entries saved and restored properly
 
 ### v5.5 - Smart Land Type Storage & Auto-Conversion
 - Simplified land type logic with auto 3-format generation

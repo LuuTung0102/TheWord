@@ -1,20 +1,20 @@
 {
   "templates": [
     {
-      "id": "ch-a-k-t-h-n",
-      "filename": "Chưa kết hôn.docx",
-      "name": "Chưa kết hôn",
+      "id": "ly-h-n",
+      "filename": "Ly Hôn.docx",
+      "name": "Ly hôn",
       "description": "",
-      "groups": ["TTHN", "PAGE"],
+      "groups": ["TTHN","PAGE"],
       "placeholders": {
         "TTHN": ["MEN1"],
         "PAGE": ["HOME"]
       }
     },
     {
-      "id": "ly-h-n",
-      "filename": "Ly Hôn.docx",
-      "name": "Ly hôn",
+      "id": "ch-a-k-t-h-n",
+      "filename": "Chưa kết hôn.docx",
+      "name": "Chưa kết hôn",
       "description": "",
       "groups": ["TTHN","PAGE"],
       "placeholders": {
@@ -72,7 +72,7 @@
       "suffixes": ["1"],
       "defaultGenders": ["Ông"]
     },
-     {
+    {
       "group": "PAGE",
       "schema": "PageInfo",
       "subgroups": [
