@@ -59,7 +59,7 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
         </div>
         <div class="address-field-wrapper">
           <div class="editable-select-wrapper">
-            <input type="text" id="${safeId}_village" data-main="${safeId}" data-level="village" class="editable-select-input input-field" placeholder="Chọn thôn/xóm..." autocomplete="off" disabled/>
+            <input type="text" id="${safeId}_village" data-main="${safeId}" data-level="village" class="editable-select-input input-field" placeholder="Chọn hoặc nhập thôn/xóm..." autocomplete="off" disabled/>
             <span class="editable-select-arrow">▼</span>
           </div>
           <div id="${safeId}_village_dropdown" class="address-dropdown"></div>

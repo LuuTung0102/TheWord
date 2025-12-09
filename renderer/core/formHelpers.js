@@ -753,7 +753,7 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
       wardInput.value = '';
       wardInput.disabled = false;
       villageInput.value = '';
-      villageInput.disabled = true;
+      villageInput.disabled = false;
       hideDropdown(provinceDropdown);
       wardInput.focus();
     });
@@ -768,7 +768,7 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
       wardInput.value = '';
       wardInput.disabled = false;
       villageInput.value = '';
-      villageInput.disabled = true;
+      villageInput.disabled = false;
       hideDropdown(provinceDropdown);
       wardInput.focus();
     });
@@ -817,15 +817,9 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
       addressSetup.selectedWard = ward;
       wardInput.value = ward.name;
       villageInput.value = '';
-      villageInput.disabled = !ward.villages || ward.villages.length === 0;
+      villageInput.disabled = false;
       hideDropdown(wardDropdown);
-      
-      if (!villageInput.disabled) {
-        villageInput.focus();
-      } else {
-        const nextInput = findNextInput(wardInput);
-        if (nextInput) nextInput.focus();
-      }
+      villageInput.focus();
     });
   });
   
@@ -837,9 +831,9 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
       addressSetup.selectedWard = ward;
       wardInput.value = ward.name;
       villageInput.value = '';
-      villageInput.disabled = !ward.villages || ward.villages.length === 0;
+      villageInput.disabled = false;
       hideDropdown(wardDropdown);
-      if (!villageInput.disabled) villageInput.focus();
+      villageInput.focus();
     });
   });
   
@@ -851,9 +845,9 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
       addressSetup.selectedWard = ward;
       wardInput.value = ward.name;
       villageInput.value = '';
-      villageInput.disabled = !ward.villages || ward.villages.length === 0;
+      villageInput.disabled = false;
       hideDropdown(wardDropdown);
-      if (!villageInput.disabled) villageInput.focus();
+      villageInput.focus();
     });
   });
   
@@ -891,33 +885,41 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
     const query = e.target.value.trim();
     const filtered = filterVillages(query);
     
-    showDropdown(villageDropdown, filtered, (village) => {
-      villageInput.value = village;
+    if (filtered.length > 0) {
+      showDropdown(villageDropdown, filtered, (village) => {
+        villageInput.value = village;
+        hideDropdown(villageDropdown);
+        
+        const nextInput = findNextInput(villageInput);
+        if (nextInput) nextInput.focus();
+      });
+    } else {
       hideDropdown(villageDropdown);
-      
-      const nextInput = findNextInput(villageInput);
-      if (nextInput) nextInput.focus();
-    });
+    }
   });
   
   villageInput.addEventListener('focus', () => {
     if (!addressSetup.selectedWard) return;
     const query = villageInput.value.trim();
     const filtered = filterVillages(query);
-    showDropdown(villageDropdown, filtered, (village) => {
-      villageInput.value = village;
-      hideDropdown(villageDropdown);
-    });
+    if (filtered.length > 0) {
+      showDropdown(villageDropdown, filtered, (village) => {
+        villageInput.value = village;
+        hideDropdown(villageDropdown);
+      });
+    }
   });
   
   villageInput.addEventListener('click', () => {
     if (!addressSetup.selectedWard) return;
     const query = villageInput.value.trim();
     const filtered = filterVillages(query);
-    showDropdown(villageDropdown, filtered, (village) => {
-      villageInput.value = village;
-      hideDropdown(villageDropdown);
-    });
+    if (filtered.length > 0) {
+      showDropdown(villageDropdown, filtered, (village) => {
+        villageInput.value = village;
+        hideDropdown(villageDropdown);
+      });
+    }
   });
   
   villageInput.addEventListener('keydown', (e) => {
@@ -941,11 +943,20 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
         });
       }
     } else if (e.key === 'Enter') {
-      e.preventDefault();
       if (selectedIndex >= 0 && items[selectedIndex]) {
+        e.preventDefault();
         items[selectedIndex].click();
+      } else {
+        hideDropdown(villageDropdown);
+        const nextInput = findNextInput(villageInput);
+        if (nextInput) {
+          e.preventDefault();
+          nextInput.focus();
+        }
       }
     } else if (e.key === 'Escape') {
+      hideDropdown(villageDropdown);
+    } else if (e.key === 'Tab') {
       hideDropdown(villageDropdown);
     }
   });

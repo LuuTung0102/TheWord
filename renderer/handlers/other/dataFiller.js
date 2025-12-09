@@ -126,23 +126,28 @@ function fillAddressField(placeholder, addressString) {
     }
     
     if (villageInput) {
-      villageInput.disabled = !ward.villages || ward.villages.length === 0;
+      villageInput.disabled = false;
     }
     
-    if (parts.length >= 3 && villageInput && ward.villages && ward.villages.length > 0) {
+    if (parts.length >= 3 && villageInput) {
       setTimeout(() => {
         const villageName = parts[0];
         const cleanVillageName = villageName.replace(/^(Thôn|Buôn|Xóm)\s*/i, '').trim();
-        const village = ward.villages.find(v => {
-          const cleanVName = v.replace(/^(Thôn|Buôn|Xóm)\s*/i, '').trim();
-          return cleanVName.toLowerCase().includes(cleanVillageName.toLowerCase()) ||
-                 cleanVillageName.toLowerCase().includes(cleanVName.toLowerCase());
-        });
         
-        if (village) {
-          villageInput.value = village;
+        if (ward.villages && ward.villages.length > 0) {
+          const village = ward.villages.find(v => {
+            const cleanVName = v.replace(/^(Thôn|Buôn|Xóm)\s*/i, '').trim();
+            return cleanVName.toLowerCase().includes(cleanVillageName.toLowerCase()) ||
+                   cleanVillageName.toLowerCase().includes(cleanVName.toLowerCase());
+          });
+          
+          if (village) {
+            villageInput.value = village;
+          } else {
+            villageInput.value = villageName;
+          }
         } else {
-          console.warn('Village not found:', villageName, 'in ward:', ward.name);
+          villageInput.value = villageName;
         }
       }, 100);
     }
