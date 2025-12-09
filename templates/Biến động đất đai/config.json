@@ -88,7 +88,7 @@
         {"name":"Dia_Chi","label":"Địa chỉ","type":"text","placeholder":"VD: Buôn Ma Thuột","required":true},
         {"name":"Ngay","label":"Ngày tháng năm","type":"date","required":true},
         {"name":"Ngay_Full","label":"Địa chỉ và ngày (tự động)","type":"text","hidden":true},
-        {"name":"Chuc_Vu","label":"Chức vụ","type":"text","required":true}
+        {"name":"Chuc_Vu","label":"Chức vụ","type":"textarea","required":true}
       ]
     }
   },

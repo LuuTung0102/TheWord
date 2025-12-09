@@ -13,7 +13,7 @@ function renderGenericInputField(ph, fieldDef, group, subgroup) {
   const requiredClass = isRequired ? ' class="required"' : '';
   
   const hiddenStyle = isHidden ? 'style="display: none;"' : '';
-  const isFullWidth = type === 'land_type_detail';
+  const isFullWidth = type === 'land_type_detail' || type === 'textarea';
   const fullWidthClass = isFullWidth ? ' full-width' : '';
   
   const wrapperStart = `<div class="field-wrapper${fullWidthClass}" ${hiddenStyle}>`;

@@ -103,6 +103,58 @@ const BASE_PLACEHOLDERS = {
   },
 
   ///////////////////////////////////////////////////////////////////
+  // PAGE INFO
+  ///////////////////////////////////////////////////////////////////
+
+  Kinh_Gui: {
+    type: "textarea",
+    order: 1
+  },
+
+  GenderPG: {
+    type: "select",
+    options: ["ông", "bà"],
+    order: 2
+  },
+
+  NamePG: {
+    type: "text",
+    order: 3
+  },
+
+  HN_SO: {
+    type: "text",
+    order: 4
+  },
+
+  Noi_CapPG: {
+    type: "textarea",
+    order: 5
+  },
+
+  Dia_Chi: {
+    type: "text",
+    order: 6
+  },
+
+  Ngay: {
+    type: "date",
+    order: 7
+  },
+
+  Chuc_Vu: {
+    type: "text",
+    order: 8
+  },
+
+  Ngay_Full: {
+    type: "text",
+    order: 9
+  },
+
+  ///////////////////////////////////////////////////////////////////
+  // LAND INFO
+  ///////////////////////////////////////////////////////////////////
   
   QSH: {
     type: "text",
@@ -215,13 +267,13 @@ const BASE_PLACEHOLDERS = {
     order: 13
   },
 
-  NG: {
-    type: "text",
-    order: 14
-  },
-
   AddressD: {
     type: "address-select",
+    order: 14
+  },
+  
+  NG: {
+    type: "text",
     order: 15
   },
 

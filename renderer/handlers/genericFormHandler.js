@@ -361,7 +361,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
           rowDiv.className = "form-row";
           
           const { ph, def } = filteredItems[i];
-          const isFullWidth = def.type === 'land_type_detail';
+          const isFullWidth = def.type === 'land_type_detail' || def.type === 'textarea';
           
           if (isFullWidth) {
             const { inputHtml } = renderGenericInputField(ph, def, groupKey, subKey);
@@ -371,9 +371,9 @@ async function renderGenericForm(placeholders, config, folderPath) {
             rowDiv.appendChild(cellDiv);
             i++;
           } else {
-            for (let j = 0; j < 3 && i < filteredItems.length; j++, i++) {
+            for (let j = 0; j < 3 && i < filteredItems.length; j++) {
               const { ph: currentPh, def: currentDef } = filteredItems[i];
-              if (currentDef.type === 'land_type_detail') {
+              if (currentDef.type === 'land_type_detail' || currentDef.type === 'textarea') {
                 break;
               }
               const { inputHtml } = renderGenericInputField(currentPh, currentDef, groupKey, subKey);
@@ -381,6 +381,7 @@ async function renderGenericForm(placeholders, config, folderPath) {
               cellDiv.className = "form-cell form-field";
               cellDiv.innerHTML = inputHtml;
               rowDiv.appendChild(cellDiv);
+              i++;
             }
           }
           
