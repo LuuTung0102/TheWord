@@ -127,7 +127,7 @@ const BASE_PLACEHOLDERS = {
     order: 4
   },
 
-  Noi_CapPG: {
+  Noi_XN: {
     type: "textarea",
     order: 5
   },
@@ -143,7 +143,7 @@ const BASE_PLACEHOLDERS = {
   },
 
   Chuc_Vu: {
-    type: "text",
+    type: "textarea",
     order: 8
   },
 

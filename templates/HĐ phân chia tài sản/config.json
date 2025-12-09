@@ -5,12 +5,13 @@
       "filename": "Phân chia tài sản.docx",
       "name": "Hợp đồng phân chia tài sản thừa kế",
       "description": "Phân chia tài sản thừa kế",
-      "groups": ["NTK","NM","MP","LAND"],
+      "groups": ["NTK","NM","MP","LAND","PAGE"],
       "placeholders": {
         "NTK": ["MEN1","MEN2","MEN3","MEN4","MEN5","MEN6"],
         "NM": ["MEN7"],
         "MP": ["MEN8","MEN9"],
-        "LAND": ["INFO"]
+        "LAND": ["INFO"],
+        "PAGE": ["HOME"]
       }
     }
   ],
@@ -18,7 +19,8 @@
     {"id":"NTK","label":"Người thừa kế","order":1,"description":"Những người được thừa kế tài sản"},
     {"id":"NM","label":"Người mất","order":2,"description":"Người để lại tài sản thừa kế"},
     {"id":"MP","label":"Bố/mẹ người mất","order":3,"description":"Bố mẹ của người mất (nếu có)"},
-    {"id":"LAND","label":"Thông tin thửa đất","order":4,"description":"Thông tin đất đai"}
+    {"id":"LAND","label":"Thông tin thửa đất","order":4,"description":"Thông tin đất đai"},
+    {"id":"PAGE","label":"Thông tin khác","order":5}
   ],
   "fieldSchemas": {
     "PersonalInfo": {
@@ -63,6 +65,21 @@
         {"name":"MoneyText","label":"Giá chuyển nhượng (chữ)","type":"text","hidden":true,"required":false},
         {"name":"Resp","label":"Bên chịu trách nhiệm thuế phí","type":"select","options":["A","B"],"required":true},
         {"name":"Note","label":"Ghi chú","type":"textarea","required":false}
+      ]
+    },
+    "PageInfo": {
+      "description": "Thông tin xác nhận",
+      "applicableTo": ["PAGE"],
+      "fields": [
+        {"name":"Kinh_Gui","label":"Kính gửi","type":"textarea","required":false},
+        {"name":"GenderPG","label":"Giới tính","type":"select","options":["ông","bà"],"defaultValue":"bà","required":true},
+        {"name":"NamePG","label":"Họ và tên","type":"text","placeholder":"Người tiếp nhận hồ sơ","required":true},
+        {"name":"HN_SO","label":"Số","type":"text","required":true},
+        {"name":"Noi_XN","label":"Nơi xác nhận","type":"textarea","required":true},
+        {"name":"Dia_Chi","label":"Địa chỉ","type":"text","placeholder":"VD: Buôn Ma Thuột","required":true},
+        {"name":"Ngay","label":"Ngày tháng năm","type":"date","required":true},
+        {"name":"Ngay_Full","label":"Địa chỉ và ngày (tự động)","type":"text","hidden":true},
+        {"name":"Chuc_Vu","label":"Chức vụ","type":"textarea","required":true}
       ]
     }
   },
@@ -111,6 +128,13 @@
         {"id":"INFO5","label":"Thửa đất 5","visible":false}
       ],
       "suffixes": ["","2","3","4","5"]
+    },
+    {
+      "group": "PAGE",
+      "schema": "PageInfo",
+      "subgroups": [
+        {"id":"HOME","label":"Thông tin khác","visible":true}
+      ]
     }
   ]
 }

@@ -52,9 +52,9 @@
       "fields": [
         {"name":"Kinh_Gui","label":"Kính gửi","type":"textarea","required":false},
         {"name":"GenderPG","label":"Giới tính","type":"select","options":["ông","bà"],"defaultValue":"bà","required":true},
-        {"name":"NamePG","label":"Họ và tên","type":"text","placeholder":"Tên công chức","required":true},
+        {"name":"NamePG","label":"Họ và tên","type":"text","placeholder":"Người tiếp nhận hồ sơ","required":true},
         {"name":"HN_SO","label":"Số","type":"text","required":true},
-        {"name":"Noi_CapPG","label":"Nơi xác nhận","type":"textarea","required":true},
+        {"name":"Noi_XN","label":"Nơi xác nhận","type":"textarea","required":true},
         {"name":"Dia_Chi","label":"Địa chỉ","type":"text","placeholder":"VD: Buôn Ma Thuột","required":true},
         {"name":"Ngay","label":"Ngày tháng năm","type":"date","required":true},
         {"name":"Ngay_Full","label":"Địa chỉ và ngày (tự động)","type":"text","hidden":true},

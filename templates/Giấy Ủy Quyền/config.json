@@ -5,18 +5,20 @@
       "filename": "Giấy ủy quyền.docx",
       "name": "Giấy ủy quyền",
       "description": "Giấy ủy quyền",
-      "groups": ["BUQ","BNUQ","LAND"],
+      "groups": ["BUQ","BNUQ","LAND","PAGE"],
       "placeholders": {
         "BUQ": ["MEN1","MEN2"],
         "BNUQ": ["MEN7"],
-        "LAND": ["INFO"]
+        "LAND": ["INFO"],
+        "PAGE": ["HOME"]
       }
     }
   ],
   "groups": [
     {"id":"BUQ","label":"Bên ủy quyền","order":1,"description":"Người ủy quyền"},
     {"id":"BNUQ","label":"Bên nhận ủy quyền","order":2,"description":"Người nhận ủy quyền"},
-    {"id":"LAND","label":"Thông tin thửa đất","order":3,"description":"Thông tin thửa đất"}
+    {"id":"LAND","label":"Thông tin thửa đất","order":3,"description":"Thông tin thửa đất"},
+    {"id":"PAGE","label":"Thông tin khác","order":4,"description":"Thông tin hợp đồng"}
   ],
   "fieldSchemas": {
     "PersonalInfo": {
@@ -62,6 +64,21 @@
         {"name":"Resp","label":"Trách nhiệm thuế phí","type":"select","options":["A","B"],"required":true},
         {"name":"Note","label":"Ghi chú","type":"textarea"}
       ]
+    },
+    "PageInfo": {
+      "description": "Thông tin xác nhận",
+      "applicableTo": ["PAGE"],
+      "fields": [
+        {"name":"Kinh_Gui","label":"Kính gửi","type":"textarea","required":false},
+        {"name":"GenderPG","label":"Giới tính","type":"select","options":["ông","bà"],"defaultValue":"bà","required":true},
+        {"name":"NamePG","label":"Họ và tên","type":"text","placeholder":"Người tiếp nhận hồ sơ","required":true},
+        {"name":"HN_SO","label":"Số","type":"text","required":true},
+        {"name":"Noi_XN","label":"Nơi xác nhận","type":"textarea","required":true},
+        {"name":"Dia_Chi","label":"Địa chỉ","type":"text","placeholder":"VD: Buôn Ma Thuột","required":true},
+        {"name":"Ngay","label":"Ngày tháng năm","type":"date","required":true},
+        {"name":"Ngay_Full","label":"Địa chỉ và ngày (tự động)","type":"text","hidden":true},
+        {"name":"Chuc_Vu","label":"Chức vụ","type":"textarea","required":true}
+      ]
     }
   },
   "fieldMappings": [
@@ -95,6 +112,13 @@
         {"id":"INFO5","label":"Thửa đất 5","visible":false}
       ],
       "suffixes": ["","2","3","4","5"]
+    },
+    {
+      "group": "PAGE",
+      "schema": "PageInfo",
+      "subgroups": [
+        {"id":"HOME","label":"Thông tin khác","visible":true}
+      ]
     }
   ]
 }
