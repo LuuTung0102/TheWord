@@ -232,6 +232,7 @@
       }
       mergeDuplicateGroupsAcrossFiles(dataGroups, existingData, fileName);
       const groupsToRemove = [];
+      
       if (reusedGroups?.size > 0) {
         reusedGroups.forEach((reusedKey) => {
           const isFromLocalStorage = reusedKey.startsWith("localStorage:");
@@ -248,29 +249,38 @@
             
             let htsdUpdated = false;
             const htsdUpdates = {};
-            const htsdFieldNames = Object.keys(sourceInfo.sourceData).filter(k => k === 'HTSD' || k.match(/^HTSD\d*$/));
+            const allHtsdInputs = document.querySelectorAll('[data-type="htsd_custom"]');
             
-            if (htsdFieldNames.length > 0) {
-              htsdFieldNames.forEach(htsdFieldName => {
-                const htsdInput = document.querySelector(`[data-ph="${htsdFieldName}"][data-type="htsd_custom"]`);
-                if (!htsdInput) return;
-                const htsdContainer = htsdInput.closest('[data-field-type="htsd_custom"]');
-                if (!htsdContainer) return;
-                const loai1Active = htsdContainer.querySelector('.htsd-toggle-loai1')?.classList.contains('active') || false;
-                const loai2Active = htsdContainer.querySelector('.htsd-toggle-loai2')?.classList.contains('active') || false;
-                let printMode = null;
-                if (loai1Active && !loai2Active) printMode = 'loai1';
-                else if (loai2Active && !loai1Active) printMode = 'loai2';
-                else if (loai1Active && loai2Active) printMode = 'both';
-                const htsdValue = htsdInput.value.trim();
-                htsdUpdates[htsdFieldName] = {
-                  value: htsdValue || '',
-                  printMode: printMode
-                };
-                
-                htsdUpdated = true;
-              });
-            }
+            allHtsdInputs.forEach(htsdInput => {
+              const htsdFieldName = htsdInput.getAttribute('data-ph');
+              if (!htsdFieldName) return;
+              
+              const fieldBelongsToGroup = sourceInfo.sourceData.hasOwnProperty(htsdFieldName) || 
+                                          (groupKey === 'INFO' && htsdFieldName.match(/^HTSD\d*$/));
+              
+              if (!fieldBelongsToGroup) return;
+              
+              const htsdContainer = htsdInput.closest('[data-field-type="htsd_custom"]');
+              if (!htsdContainer) return;
+              
+              const loai1Active = htsdContainer.querySelector('.htsd-toggle-loai1')?.classList.contains('active') || false;
+              const loai2Active = htsdContainer.querySelector('.htsd-toggle-loai2')?.classList.contains('active') || false;
+              
+              if (!loai1Active && !loai2Active) return;
+              
+              let printMode = null;
+              if (loai1Active && !loai2Active) printMode = 'loai1';
+              else if (loai2Active && !loai1Active) printMode = 'loai2';
+              else if (loai1Active && loai2Active) printMode = 'both';
+              
+              const htsdValue = htsdInput.value.trim();
+              htsdUpdates[htsdFieldName] = {
+                value: htsdValue || '',
+                printMode: printMode
+              };
+              
+              htsdUpdated = true;
+            });
             
             if (htsdUpdated && existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
               Object.keys(htsdUpdates).forEach(htsdFieldName => {
@@ -288,6 +298,37 @@
           const sourceInfo = reusedGroupSources?.get?.(reusedKey);
           if (!sourceInfo || !sourceInfo.sourceData) return;
           const sourceData = sourceInfo.sourceData;
+          const sourceFileName = sourceInfo.sourceFileName;
+          const sourceGroupKey = sourceInfo.sourceGroupKey;
+          const allHtsdInputs = document.querySelectorAll('[data-type="htsd_custom"]');
+          allHtsdInputs.forEach(htsdInput => {
+            const htsdFieldName = htsdInput.getAttribute('data-ph');
+            if (!htsdFieldName) return;
+            const fieldInCurrentGroup = dataGroups[groupKey].hasOwnProperty(htsdFieldName);
+            if (!fieldInCurrentGroup) return;
+            const htsdContainer = htsdInput.closest('[data-field-type="htsd_custom"]');
+            if (!htsdContainer) return;
+            const loai1Active = htsdContainer.querySelector('.htsd-toggle-loai1')?.classList.contains('active') || false;
+            const loai2Active = htsdContainer.querySelector('.htsd-toggle-loai2')?.classList.contains('active') || false;
+            if (!loai1Active && !loai2Active) return;
+            let printMode = null;
+            if (loai1Active && !loai2Active) printMode = 'loai1';
+            else if (loai2Active && !loai1Active) printMode = 'loai2';
+            else if (loai1Active && loai2Active) printMode = 'both';
+            const htsdValue = htsdInput.value.trim();
+            dataGroups[groupKey][htsdFieldName] = {
+              value: htsdValue || '',
+              printMode: printMode
+            };
+            
+            if (existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
+              existingData[sourceFileName].dataGroups[sourceGroupKey][htsdFieldName] = {
+                value: htsdValue || '',
+                printMode: printMode
+              };
+            }
+          });
+          
           const normalizedCurrent = normalizeDataForComparison(dataGroups[groupKey]);
           const normalizedSource = normalizeDataForComparison(sourceData);
           const changeAnalysis = analyzeChanges(normalizedSource, normalizedCurrent);
