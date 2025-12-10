@@ -70,6 +70,37 @@ async function renderGenericForm(placeholders, config, folderPath) {
     }
   });
   
+  // Tự động thêm các field phụ thuộc (S_Text, MoneyText) với suffix đúng
+  const dependentFields = [];
+  expandedPlaceholders.forEach(ph => {
+    // Thêm S_Text cho mỗi S
+    const sMatch = ph.match(/^S(\d*)$/);
+    if (sMatch) {
+      const suffix = sMatch[1];
+      const sTextKey = suffix ? `S_Text${suffix}` : 'S_Text';
+      if (!dependentFields.includes(sTextKey)) {
+        dependentFields.push(sTextKey);
+      }
+    }
+    
+    // Thêm MoneyText cho mỗi Money
+    const moneyMatch = ph.match(/^Money(\d*)$/);
+    if (moneyMatch) {
+      const suffix = moneyMatch[1];
+      const moneyTextKey = suffix ? `MoneyText${suffix}` : 'MoneyText';
+      if (!dependentFields.includes(moneyTextKey)) {
+        dependentFields.push(moneyTextKey);
+      }
+    }
+  });
+  
+  // Thêm các field phụ thuộc vào expandedPlaceholders
+  dependentFields.forEach(field => {
+    if (!expandedPlaceholders.includes(field)) {
+      expandedPlaceholders.push(field);
+    }
+  });
+  
   const allPlaceholders = [...new Set([...expandedPlaceholders, ...placeholders])];
   
   window.stateManager.setRenderParams({ placeholders: expandedPlaceholders, config, folderPath });
@@ -1100,7 +1131,6 @@ function collectGenericFormData() {
       data.Ngay_Full = `${diaChi}, ngày ${day} tháng ${month} năm ${year}`;
     }
   }
-  
   return data;
 }
 

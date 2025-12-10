@@ -334,6 +334,46 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
     });
   }
   
+  // Tự động tạo mapping cho các field phụ thuộc (S_Text, MoneyText) với suffix đúng
+  Object.keys(mapping).forEach(placeholder => {
+    const fieldMapping = mapping[placeholder];
+    
+    // Xử lý S → S_Text
+    const sMatch = placeholder.match(/^S(\d*)$/);
+    if (sMatch) {
+      const suffix = sMatch[1];
+      const sTextKey = suffix ? `S_Text${suffix}` : 'S_Text';
+      if (!mapping[sTextKey]) {
+        mapping[sTextKey] = {
+          type: 'text',
+          label: 'Diện tích (chữ)',
+          group: fieldMapping.group,
+          subgroup: fieldMapping.subgroup,
+          subgroupLabel: fieldMapping.subgroupLabel,
+          required: false,
+          hidden: true
+        };
+      }
+    }
+    
+    const moneyMatch = placeholder.match(/^Money(\d*)$/);
+    if (moneyMatch) {
+      const suffix = moneyMatch[1];
+      const moneyTextKey = suffix ? `MoneyText${suffix}` : 'MoneyText';
+      if (!mapping[moneyTextKey]) {
+        mapping[moneyTextKey] = {
+          type: 'text',
+          label: 'Giá chuyển nhượng (chữ)',
+          group: fieldMapping.group,
+          subgroup: fieldMapping.subgroup,
+          subgroupLabel: fieldMapping.subgroupLabel,
+          required: false,
+          hidden: true
+        };
+      }
+    }
+  });
+  
   return mapping;
 }
 

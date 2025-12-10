@@ -357,6 +357,11 @@ function setupLandTypeInput(el, id) {
 }
 
 function setupMoneyInput(el) {
+  const ph = el.getAttribute('data-ph');
+  const match = ph ? ph.match(/^Money(\d*)$/) : null;
+  const suffix = match ? match[1] : '';
+  const moneyTextKey = suffix ? `MoneyText${suffix}` : 'MoneyText';
+  
   el.addEventListener("input", (e) => {
     let value = window.REGEX_HELPERS.removeNonDigits(e.target.value);
     e.target.value = value; 
@@ -369,7 +374,7 @@ function setupMoneyInput(el) {
   el.addEventListener("blur", (e) => {
     let value = window.REGEX_HELPERS.removeNonDigits(e.target.value);
     if (value.length === 0) {
-      const moneyTextField = document.querySelector('[data-ph="MoneyText"]');
+      const moneyTextField = document.querySelector(`[data-ph="${moneyTextKey}"]`);
       if (moneyTextField) {
         moneyTextField.value = "";
       }
@@ -378,7 +383,7 @@ function setupMoneyInput(el) {
     const formatted = window.formatWithCommas ? window.formatWithCommas(value) : value;
     e.target.value = formatted;
     const moneyText = window.numberToVietnameseWords ? window.numberToVietnameseWords(value) : "";
-    const moneyTextField = document.querySelector('[data-ph="MoneyText"]');
+    const moneyTextField = document.querySelector(`[data-ph="${moneyTextKey}"]`);
     if (moneyTextField && moneyText) {
       moneyTextField.value = moneyText;
     }
@@ -386,6 +391,11 @@ function setupMoneyInput(el) {
 }
 
 function setupAreaInput(el) {
+  const ph = el.getAttribute('data-ph');
+  const match = ph ? ph.match(/^S(\d*)$/) : null;
+  const suffix = match ? match[1] : '';
+  const sTextKey = suffix ? `S_Text${suffix}` : 'S_Text';
+  
   function cleanValue(value) {
     if (!value || value === '') return '';
     let cleaned = value.replace(/[^\d.]/g, '');
@@ -411,7 +421,7 @@ function setupAreaInput(el) {
     
     if (rawValue.length === 0 || rawValue === '.') {
       e.target.value = '';
-      const sTextField = document.querySelector('[data-ph="S_Text"]');
+      const sTextField = document.querySelector(`[data-ph="${sTextKey}"]`);
       if (sTextField) {
         sTextField.value = "";
       }
@@ -427,7 +437,7 @@ function setupAreaInput(el) {
     const numericValue = parseFloat(rawValue);
     if (!isNaN(numericValue)) {
       const sText = window.numberToAreaWords ? window.numberToAreaWords(rawValue) : "";
-      const sTextField = document.querySelector('[data-ph="S_Text"]');
+      const sTextField = document.querySelector(`[data-ph="${sTextKey}"]`);
       if (sTextField && sText) {
         sTextField.value = sText;
       }
@@ -456,9 +466,10 @@ function setupHTSDInput(fieldWrapper, inputId) {
   const selectInput = fieldWrapper.querySelector('.htsd-select');
   const commonInput = fieldWrapper.querySelector('input[data-htsd-type="common"]');
   const privateInput = fieldWrapper.querySelector('input[data-htsd-type="private"]');
+  const htsdPh = hiddenInput?.getAttribute('data-ph');
   
   if (!hiddenInput || !loai1Toggle || !loai2Toggle || !loai1Content || !loai2Content || !selectInput || !commonInput || !privateInput) {
-    console.error('[setupHTSDInput] Missing elements');
+    console.error('[setupHTSDInput] Missing elements for', htsdPh);
     return;
   }
   
@@ -473,7 +484,10 @@ function setupHTSDInput(fieldWrapper, inputId) {
     if (commonValue) parts.push(commonValue);
     if (privateValue) parts.push(privateValue);
     
-    hiddenInput.value = parts.join('|');
+    const newValue = parts.join('|');
+    hiddenInput.value = newValue;
+    hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+    hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
   }
   
   function toggleLoai1() {
@@ -1081,12 +1095,20 @@ function reSetupAllInputs() {
     setupNameInput(input);
   });
   
-  document.querySelectorAll('input[data-ph="Money"]').forEach(input => {
-    setupMoneyInput(input);
+  // Setup Money inputs với tất cả các suffix (Money, Money2, Money3, Money4, Money5)
+  document.querySelectorAll('input[data-ph^="Money"]').forEach(input => {
+    const ph = input.getAttribute('data-ph');
+    if (ph && ph.match(/^Money\d*$/)) {
+      setupMoneyInput(input);
+    }
   });
   
-  document.querySelectorAll('input[data-ph="S"]').forEach(input => {
-    setupAreaInput(input);
+  // Setup Area inputs với tất cả các suffix (S, S2, S3, S4, S5)
+  document.querySelectorAll('input[data-ph^="S"]').forEach(input => {
+    const ph = input.getAttribute('data-ph');
+    if (ph && ph.match(/^S\d*$/)) {
+      setupAreaInput(input);
+    }
   });
   
   document.querySelectorAll('textarea[data-ph="Note"]').forEach(textarea => {
