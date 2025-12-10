@@ -974,9 +974,75 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
   });
 }
 
+function setupTabNavigation() {
+  // Thêm TAB navigation cho tất cả inputs trong form
+  document.querySelectorAll('.form-section').forEach(section => {
+    const allInputs = Array.from(section.querySelectorAll('input:not([type="hidden"]), select, textarea'));
+    
+    allInputs.forEach(input => {
+      // Xóa listener cũ nếu có
+      if (input._tabNavigationHandler) {
+        input.removeEventListener('keydown', input._tabNavigationHandler);
+      }
+      
+      const handler = (e) => {
+        if (e.key === 'Tab' && !e.shiftKey) {
+          // Tìm tất cả inputs có thể focus được
+          const focusableInputs = Array.from(section.querySelectorAll('input:not([disabled]):not([type="hidden"]):not([readonly]), select:not([disabled]), textarea:not([disabled]):not([readonly])'));
+          const currentIndex = focusableInputs.indexOf(input);
+          
+          // Kiểm tra xem có field nào sau input hiện tại không
+          let hasNextField = false;
+          for (let i = currentIndex + 1; i < focusableInputs.length; i++) {
+            const nextInput = focusableInputs[i];
+            // Kiểm tra xem field có visible không
+            const rect = nextInput.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              hasNextField = true;
+              break;
+            }
+          }
+          
+          // Nếu không có field nào sau đó, chuyển sang tab tiếp theo
+          if (!hasNextField) {
+            e.preventDefault();
+            
+            const allTabs = Array.from(document.querySelectorAll('.taskbar-btn'));
+            const allSections = Array.from(document.querySelectorAll('.form-section'));
+            const currentSectionIndex = allSections.indexOf(section);
+            
+            if (currentSectionIndex < allSections.length - 1) {
+              const nextTab = allTabs[currentSectionIndex + 1];
+              
+              if (nextTab) {
+                nextTab.click();
+                
+                // Focus vào field đầu tiên của tab mới
+                setTimeout(() => {
+                  const nextSection = allSections[currentSectionIndex + 1];
+                  if (nextSection) {
+                    const firstInput = nextSection.querySelector('input:not([disabled]):not([type="hidden"]):not([readonly]), select:not([disabled]), textarea:not([disabled]):not([readonly])');
+                    if (firstInput) {
+                      firstInput.focus();
+                    }
+                  }
+                }, 100);
+              }
+            }
+          }
+        }
+      };
+      
+      input._tabNavigationHandler = handler;
+      input.addEventListener('keydown', handler);
+    });
+  });
+}
+
 function reSetupAllInputs() {
   setupDatePickers();
   setupAddressSelects();
+  setupTabNavigation();
   
   if (typeof window.setupEditableSelectInput === 'function') {
     document.querySelectorAll('.editable-select-input').forEach(input => {
