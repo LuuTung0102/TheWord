@@ -334,11 +334,8 @@ function buildPlaceholderMapping(config, actualPlaceholders = null) {
     });
   }
   
-  // Tự động tạo mapping cho các field phụ thuộc (S_Text, MoneyText) với suffix đúng
   Object.keys(mapping).forEach(placeholder => {
     const fieldMapping = mapping[placeholder];
-    
-    // Xử lý S → S_Text
     const sMatch = placeholder.match(/^S(\d*)$/);
     if (sMatch) {
       const suffix = sMatch[1];

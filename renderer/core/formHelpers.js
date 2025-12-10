@@ -989,35 +989,28 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
 }
 
 function setupTabNavigation() {
-  // Thêm TAB navigation cho tất cả inputs trong form
   document.querySelectorAll('.form-section').forEach(section => {
     const allInputs = Array.from(section.querySelectorAll('input:not([type="hidden"]), select, textarea'));
     
     allInputs.forEach(input => {
-      // Xóa listener cũ nếu có
       if (input._tabNavigationHandler) {
         input.removeEventListener('keydown', input._tabNavigationHandler);
       }
       
       const handler = (e) => {
         if (e.key === 'Tab' && !e.shiftKey) {
-          // Tìm tất cả inputs có thể focus được
           const focusableInputs = Array.from(section.querySelectorAll('input:not([disabled]):not([type="hidden"]):not([readonly]), select:not([disabled]), textarea:not([disabled]):not([readonly])'));
           const currentIndex = focusableInputs.indexOf(input);
-          
-          // Kiểm tra xem có field nào sau input hiện tại không
           let hasNextField = false;
           for (let i = currentIndex + 1; i < focusableInputs.length; i++) {
             const nextInput = focusableInputs[i];
-            // Kiểm tra xem field có visible không
             const rect = nextInput.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
               hasNextField = true;
               break;
             }
           }
-          
-          // Nếu không có field nào sau đó, chuyển sang tab tiếp theo
+
           if (!hasNextField) {
             e.preventDefault();
             
@@ -1030,8 +1023,6 @@ function setupTabNavigation() {
               
               if (nextTab) {
                 nextTab.click();
-                
-                // Focus vào field đầu tiên của tab mới
                 setTimeout(() => {
                   const nextSection = allSections[currentSectionIndex + 1];
                   if (nextSection) {
@@ -1095,7 +1086,6 @@ function reSetupAllInputs() {
     setupNameInput(input);
   });
   
-  // Setup Money inputs với tất cả các suffix (Money, Money2, Money3, Money4, Money5)
   document.querySelectorAll('input[data-ph^="Money"]').forEach(input => {
     const ph = input.getAttribute('data-ph');
     if (ph && ph.match(/^Money\d*$/)) {
@@ -1103,7 +1093,6 @@ function reSetupAllInputs() {
     }
   });
   
-  // Setup Area inputs với tất cả các suffix (S, S2, S3, S4, S5)
   document.querySelectorAll('input[data-ph^="S"]').forEach(input => {
     const ph = input.getAttribute('data-ph');
     if (ph && ph.match(/^S\d*$/)) {

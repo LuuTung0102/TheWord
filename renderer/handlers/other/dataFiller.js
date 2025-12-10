@@ -60,14 +60,11 @@ function fillFormWithMenData(groupData, targetSuffix) {
 }
 
 function fillAddressField(placeholder, addressString) {
-  // Tìm field có data-main chứa placeholder (vì data-main có format: input-Address1-timestamp-random)
   let provinceInput = null;
   const allProvinceInputs = document.querySelectorAll('input[data-level="province"]');
   
   for (const input of allProvinceInputs) {
     const dataMain = input.getAttribute('data-main');
-    // Kiểm tra xem data-main có chứa placeholder không
-    // Ví dụ: data-main="input-Address1-..." và placeholder="Address1"
     if (dataMain && dataMain.includes(`-${placeholder}-`)) {
       provinceInput = input;
       break;

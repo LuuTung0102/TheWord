@@ -459,7 +459,6 @@
           modules: []
         });
       } catch (error) {
-        // Check if error is related to unclosed tags (placeholder syntax errors)
         const isUnclosedTagError = error.message && (
           error.message.includes('Unclosed tag') || 
           error.message.includes('Multi error')
@@ -482,7 +481,6 @@
           }
         }
         
-        // Default error message for other types of errors
         let msg = `❌ Lỗi biên dịch template ${path.basename(templatePath)}: ${error.message}`;
         if (error.properties && Array.isArray(error.properties.errors)) {
           const details = error.properties.errors.map((e, idx) => {
@@ -504,7 +502,7 @@
         if (data[k] === null || data[k] === undefined) data[k] = "";
         else if (typeof data[k] !== 'string') data[k] = String(data[k]);
       });
-      // Format land types for all suffixes
+
       const landTypesPath = path.join(__dirname, '..', 'renderer', 'config', 'land_types.json');
       let landTypeMap = null;
       try {
@@ -513,7 +511,6 @@
         landTypeMap = {};
       }
       
-      // Find all Loai_Dat keys (with and without suffixes)
       const loaiDatKeys = Object.keys(data).filter(k => k.match(/^Loai_Dat(_[FD])?(\d*)$/));
       const suffixes = new Set(['']);
       loaiDatKeys.forEach(k => {
@@ -526,7 +523,6 @@
         const loaiDatFKey = suffix ? `Loai_Dat_F${suffix}` : 'Loai_Dat_F';
         const loaiDatDKey = suffix ? `Loai_Dat_D${suffix}` : 'Loai_Dat_D';
         
-        // Format Loai_Dat (basic)
         if (data[loaiDatKey] && data[loaiDatKey].trim()) {
           try {
             const expandedNames = data[loaiDatKey]
@@ -540,7 +536,6 @@
           }
         }
         
-        // Format Loai_Dat_F (with size)
         if (data[loaiDatFKey] && data[loaiDatFKey].trim()) {
           try {
             let formattedValue = data[loaiDatFKey];
@@ -594,8 +589,7 @@
           } catch (error) {
           }
         }
-        
-        // Format Loai_Dat_D (detail)
+
         if (data[loaiDatDKey] && typeof data[loaiDatDKey] === 'string' && data[loaiDatDKey].trim()) {
           try {
             const entries = data[loaiDatDKey].split(';').map(e => e.trim()).filter(Boolean);
@@ -775,7 +769,6 @@
       try {
         doc.render(processedData);
       } catch (error) {
-        // Check if error is related to unclosed tags
         const isUnclosedTagError = error.message && (
           error.message.includes('Unclosed tag') || 
           error.message.includes('Multi error')
@@ -798,7 +791,6 @@
           }
         }
         
-        // Default error message
         let msg = `Lỗi render template ${path.basename(templatePath)}: ${error.message}`;
         if (error.properties && Array.isArray(error.properties.errors)) {
           const details = error.properties.errors.map((e, idx) => {

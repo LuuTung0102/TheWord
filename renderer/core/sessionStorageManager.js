@@ -255,14 +255,9 @@
             allHtsdInputs.forEach(htsdInput => {
               const htsdFieldNameInDOM = htsdInput.getAttribute('data-ph');
               if (!htsdFieldNameInDOM) return;
-              
-              // Kiểm tra xem field này có thuộc group đang xử lý không
-              // Cần match suffix: HTSD với INFO, HTSD2 với INFO2
               const baseFieldName = htsdFieldNameInDOM.replace(/\d+$/, '');
               const suffix = htsdFieldNameInDOM.replace(baseFieldName, '');
               const groupSuffix = groupKey.replace(/^[A-Z]+/, '');
-              
-              // Chỉ xử lý nếu suffix match
               if (suffix !== groupSuffix) return;
               
               const fieldBelongsToGroup = sourceInfo.sourceData.hasOwnProperty(htsdFieldNameInDOM) || 
@@ -285,8 +280,6 @@
               else if (loai1Active && loai2Active) printMode = 'both';
               
               const htsdValue = htsdInput.value.trim();
-              
-              // Tìm field name đúng trong sourceData
               let targetFieldName = htsdFieldNameInDOM;
               if (!sourceInfo.sourceData.hasOwnProperty(htsdFieldNameInDOM) && 
                   sourceInfo.sourceData.hasOwnProperty(baseFieldName)) {
@@ -324,24 +317,14 @@
             try {
               const htsdFieldNameInDOM = htsdInput.getAttribute('data-ph');
               if (!htsdFieldNameInDOM) return;
-              
-              // Tìm field name tương ứng trong dataGroups[groupKey]
-              // Ví dụ: DOM có "HTSD2", dataGroups[INFO2] có key "HTSD"
               let matchedFieldName = null;
-              
-              // Kiểm tra exact match trước
               if (dataGroups[groupKey].hasOwnProperty(htsdFieldNameInDOM)) {
                 matchedFieldName = htsdFieldNameInDOM;
               } else {
-                // Nếu không match exact, thử strip suffix từ DOM field name
-                // HTSD2 → HTSD, HTSD → HTSD
                 const baseFieldName = htsdFieldNameInDOM.replace(/\d+$/, '');
                 if (dataGroups[groupKey].hasOwnProperty(baseFieldName)) {
-                  // Kiểm tra xem suffix có match với group không
                   const suffix = htsdFieldNameInDOM.replace(baseFieldName, '');
                   const groupSuffix = groupKey.replace(/^[A-Z]+/, '');
-                  
-                  // Nếu suffix match (ví dụ: HTSD2 với INFO2, hoặc HTSD với INFO)
                   if (suffix === groupSuffix) {
                     matchedFieldName = baseFieldName;
                   }
@@ -431,27 +414,19 @@
       
       Object.keys(dataGroups).forEach(groupKey => {
         const newData = dataGroups[groupKey];
-      
         const currentBase = groupKey.replace(/_\d{8}_\d{6,9}$/, '');
         let matchedKey = null;
         let isExactMatch = false;
         let bestMatchScore = -1;
         const candidates = [];
-        
-        // Thêm exact match candidate nếu có
         if (mergedDataGroups[groupKey]) {
           candidates.push({ key: groupKey, isExact: true });
         }
-        
         const currentType = getGroupType(currentBase);
-        
-        // Tìm tất cả các group cùng type (INFO, INFO2, INFO3,... đều là type "INFO")
         for (const oldKey of Object.keys(mergedDataGroups)) {
           if (oldKey === groupKey) continue;
           const oldBase = oldKey.replace(/_\d{8}_\d{6,9}$/, '');
           const oldType = getGroupType(oldBase);
-          
-          // So sánh với TẤT CẢ các group cùng type, không chỉ cùng base
           if (currentType === oldType) {
             candidates.push({ key: oldKey, isExact: false });
           }
@@ -462,9 +437,6 @@
           const normalizedOld = normalizeDataForComparison(oldData);
           const normalizedNew = normalizeDataForComparison(newData);
           const analysis = analyzeChanges(normalizedOld, normalizedNew);
-          
-          // Ưu tiên: NO_CHANGE (100) > ONLY_ADDITIONS (50) > HAS_MODIFICATIONS (0)
-          // Exact match được bonus 10 điểm
           let score = analysis.type === "NO_CHANGE" ? 100 
                     : analysis.type === "ONLY_ADDITIONS" ? 50 
                     : 0;
@@ -498,34 +470,24 @@
             }
             
             if (changeAnalysis.type === "NO_CHANGE") {
-              // Data giống hệt, không cần làm gì
-              // Nếu matched với group khác (ví dụ: INFO mới giống INFO2 cũ)
               if (!isExactMatch && matchedKey !== groupKey) {
-                // Xóa group mới vì đã có group cũ giống hệt
                 delete dataGroups[groupKey];
               }
-              // Nếu exact match, giữ nguyên
             } else if (changeAnalysis.type === "ONLY_ADDITIONS") {
-              // Data mới có thêm field, merge vào group đã match
               const merged = {
                 ...oldData,
                 ...newData
               };
               mergedDataGroups[matchedKey] = merged;
-              
-              // Nếu matched với group khác, xóa group mới
               if (!isExactMatch && matchedKey !== groupKey) {
                 delete dataGroups[groupKey];
               }
             } else {
-              // HAS_MODIFICATIONS - data khác nhau
               if (isExactMatch) {
-                // Cùng groupKey nhưng data khác → tạo versioned key cho old data
                 const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
                 mergedDataGroups[versionedKey] = oldData;
                 mergedDataGroups[groupKey] = newData;
               } else {
-                // Không match với bất kỳ group nào → tạo group mới
                 mergedDataGroups[groupKey] = newData;
               }
             }
