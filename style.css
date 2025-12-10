@@ -807,7 +807,7 @@ label.required::after {
   box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
   max-height: 200px;
   overflow-y: auto;
-  z-index: 9999;
+  z-index: 99999;
   margin-top: 0.25rem;
   display: none;
 }
@@ -962,15 +962,23 @@ label.required::after {
 .tag-input-wrapper {
   position: relative;
   flex: 1 1 auto;
-  min-width: 150px;
-  z-index: 100;
-  order: 10;
+  min-width: 120px;
+  max-width: 200px;
+  z-index: 10;
   display: none;
 }
 
 .tag-input-wrapper.show {
   display: block;
-  z-index: 100;
+  z-index: 10;
+}
+
+.tag-input-wrapper:has(.land-type-dropdown) {
+  z-index: 1000;
+}
+
+.tag-input-wrapper.show:has(.land-type-dropdown) {
+  z-index: 1000;
 }
 
 .tag-input {
