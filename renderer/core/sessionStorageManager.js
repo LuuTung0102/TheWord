@@ -334,10 +334,12 @@
           const changeAnalysis = analyzeChanges(normalizedSource, normalizedCurrent);
 
           if (changeAnalysis.type === "NO_CHANGE" || changeAnalysis.type === "ONLY_ADDITIONS") {
-            dataGroups[groupKey] = {
-              ...sourceData,
-              ...dataGroups[groupKey]
-            };
+            const mergedData = { ...sourceData };
+            Object.keys(dataGroups[groupKey]).forEach(key => {
+              mergedData[key] = dataGroups[groupKey][key];
+            });
+            
+            dataGroups[groupKey] = mergedData;
           } else {
           }
         });
@@ -481,6 +483,7 @@
     const groups = {};
     const suffixToGroupMap = {};
     const fieldToGroupMap = {};
+    const schemaToSuffixMap = {};
     
     if (config?.fieldMappings) {
       config.fieldMappings.forEach((mapping) => {
@@ -492,21 +495,31 @@
               mapping.suffixes && mapping.suffixes[index]
                 ? mapping.suffixes[index]
                 : "";
-            suffixToGroupMap[suffix] = subgroupId;
+            if (mapping.schema) {
+              if (!schemaToSuffixMap[mapping.schema]) {
+                schemaToSuffixMap[mapping.schema] = {};
+              }
+              schemaToSuffixMap[mapping.schema][suffix] = subgroupId;
+            }
+            if (!suffixToGroupMap[suffix]) {
+              suffixToGroupMap[suffix] = [];
+            }
+            suffixToGroupMap[suffix].push({groupId: subgroupId, schema: mapping.schema});
           });
         }
         
         if (mapping.schema && config.fieldSchemas && config.fieldSchemas[mapping.schema]) {
           const schemaFields = config.fieldSchemas[mapping.schema].fields || [];
-          const subgroupId = mapping.subgroups && mapping.subgroups[0] 
-            ? (typeof mapping.subgroups[0] === "string" ? mapping.subgroups[0] : mapping.subgroups[0].id)
-            : null;
           
-          if (subgroupId) {
-            schemaFields.forEach(field => {
-              fieldToGroupMap[field.name] = subgroupId;
+          schemaFields.forEach(field => {
+            if (!fieldToGroupMap[field.name]) {
+              fieldToGroupMap[field.name] = [];
+            }
+            fieldToGroupMap[field.name].push({
+              schema: mapping.schema,
+              suffixes: mapping.suffixes || [""]
             });
-          }
+          });
         }
       });
     }
@@ -516,13 +529,45 @@
       if (match) {
         const fieldName = match[1];
         const suffix = match[2];
-        const groupKey = suffixToGroupMap[suffix] || `UNKNOWN_${suffix}`;
+        const fieldSchemas = fieldToGroupMap[fieldName];
+        let groupKey = null;
+        
+        if (fieldSchemas && fieldSchemas.length > 0) {
+          for (const fieldSchema of fieldSchemas) {
+            if (schemaToSuffixMap[fieldSchema.schema] && schemaToSuffixMap[fieldSchema.schema][suffix]) {
+              groupKey = schemaToSuffixMap[fieldSchema.schema][suffix];
+              break;
+            }
+          }
+        }
+        if (!groupKey && suffixToGroupMap[suffix] && suffixToGroupMap[suffix].length > 0) {
+          groupKey = suffixToGroupMap[suffix][0].groupId;
+        }
+        
+        if (!groupKey) {
+          groupKey = `UNKNOWN_${suffix}`;
+        }
+        
         if (!groups[groupKey]) groups[groupKey] = {};
         groups[groupKey][fieldName] = formData[key];
       } else {
-        let groupKey = fieldToGroupMap[key];
+        let groupKey = null;
+        const fieldSchemas = fieldToGroupMap[key];
+        if (fieldSchemas && fieldSchemas.length > 0) {
+          for (const fieldSchema of fieldSchemas) {
+            if (schemaToSuffixMap[fieldSchema.schema] && schemaToSuffixMap[fieldSchema.schema][""]) {
+              groupKey = schemaToSuffixMap[fieldSchema.schema][""];
+              break;
+            }
+          }
+        }
+        
+        if (!groupKey && suffixToGroupMap[""] && suffixToGroupMap[""].length > 0) {
+          groupKey = suffixToGroupMap[""][0].groupId;
+        }
+        
         if (!groupKey) {
-          groupKey = suffixToGroupMap[""] || "OTHER";
+          groupKey = "OTHER";
         }
         
         if (!groups[groupKey]) groups[groupKey] = {};
