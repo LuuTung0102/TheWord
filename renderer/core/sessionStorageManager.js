@@ -1,6 +1,5 @@
 (function () {
   const STORAGE_KEY = "theword_session_data";
-
   function normalizeDataForComparison(data) {
     const normalized = {};
     const isEmpty = (val) => {
@@ -11,7 +10,6 @@
     
     Object.keys(data).forEach((key) => {
       if (key === '_landOriginalFields') return;
-      
       let value = data[key];
       if (isEmpty(value)) return;
       if (key.includes("CCCD") && typeof value === "string") {
@@ -199,10 +197,7 @@
             const merged = {
               ...otherGroupData,
               ...groupData 
-            };
-            
-
-            
+            };     
             existingData[otherFile].dataGroups[otherGroupKey] = merged;
             groupsToDelete.add(groupKey);
             break;
@@ -247,7 +242,6 @@
             
             const sourceFileName = sourceInfo.sourceFileName;
             const sourceGroupKey = sourceInfo.sourceGroupKey;
-            
             let htsdUpdated = false;
             const htsdUpdates = {};
             const allHtsdInputs = document.querySelectorAll('[data-type="htsd_custom"]');
@@ -272,14 +266,14 @@
               const loai1Active = htsdContainer.querySelector('.htsd-toggle-loai1')?.classList.contains('active') || false;
               const loai2Active = htsdContainer.querySelector('.htsd-toggle-loai2')?.classList.contains('active') || false;
               
-              if (!loai1Active && !loai2Active) return;
-              
               let printMode = null;
               if (loai1Active && !loai2Active) printMode = 'loai1';
               else if (loai2Active && !loai1Active) printMode = 'loai2';
               else if (loai1Active && loai2Active) printMode = 'both';
               
               const htsdValue = htsdInput.value.trim();
+              
+              if (!loai1Active && !loai2Active && !htsdValue) return;
               let targetFieldName = htsdFieldNameInDOM;
               if (!sourceInfo.sourceData.hasOwnProperty(htsdFieldNameInDOM) && 
                   sourceInfo.sourceData.hasOwnProperty(baseFieldName)) {
@@ -294,12 +288,17 @@
               htsdUpdated = true;
             });
             
-            if (htsdUpdated && existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
-              Object.keys(htsdUpdates).forEach(htsdFieldName => {
-                existingData[sourceFileName].dataGroups[sourceGroupKey][htsdFieldName] = htsdUpdates[htsdFieldName];
-              });
+            if (htsdUpdated) {
+              const currentBaseType = groupKey.replace(/\d+$/, '');
+              const sourceBaseType = sourceGroupKey.replace(/\d+$/, '');
+              const isSameBaseType = currentBaseType === sourceBaseType;
+              
+              if (isSameBaseType && existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
+                Object.keys(htsdUpdates).forEach(htsdFieldName => {
+                  existingData[sourceFileName].dataGroups[sourceGroupKey][htsdFieldName] = htsdUpdates[htsdFieldName];
+                });
+              }
             }
-            
             return;
           }
           
@@ -313,6 +312,7 @@
           const sourceFileName = sourceInfo.sourceFileName;
           const sourceGroupKey = sourceInfo.sourceGroupKey;
           const allHtsdInputs = document.querySelectorAll('[data-type="htsd_custom"]');
+          
           allHtsdInputs.forEach(htsdInput => {
             try {
               const htsdFieldNameInDOM = htsdInput.getAttribute('data-ph');
@@ -337,16 +337,24 @@
               if (!htsdContainer) return;
               const loai1Active = htsdContainer.querySelector('.htsd-toggle-loai1')?.classList.contains('active') || false;
               const loai2Active = htsdContainer.querySelector('.htsd-toggle-loai2')?.classList.contains('active') || false;
-              if (!loai1Active && !loai2Active) return;
               let printMode = null;
               if (loai1Active && !loai2Active) printMode = 'loai1';
               else if (loai2Active && !loai1Active) printMode = 'loai2';
               else if (loai1Active && loai2Active) printMode = 'both';
               const htsdValue = htsdInput.value.trim();
-              dataGroups[groupKey][matchedFieldName] = {
+              
+              if (!loai1Active && !loai2Active && !htsdValue) return;
+              const htsdData = {
                 value: htsdValue || '',
                 printMode: printMode
               };
+              dataGroups[groupKey][matchedFieldName] = htsdData;
+              const currentBaseType = groupKey.replace(/\d+$/, '');
+              const sourceBaseType = sourceGroupKey.replace(/\d+$/, '');
+              const isSameBaseType = currentBaseType === sourceBaseType;
+              if (isSameBaseType && sourceFileName && sourceGroupKey && existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
+                existingData[sourceFileName].dataGroups[sourceGroupKey][matchedFieldName] = htsdData;
+              }
             } catch (err) {
               console.error('Error processing HTSD input:', err);
             }
@@ -355,7 +363,6 @@
           const normalizedCurrent = normalizeDataForComparison(dataGroups[groupKey]);
           const normalizedSource = normalizeDataForComparison(sourceData);
           const changeAnalysis = analyzeChanges(normalizedSource, normalizedCurrent);
-
           if (changeAnalysis.type === "NO_CHANGE" || changeAnalysis.type === "ONLY_ADDITIONS") {
             const mergedData = { ...sourceData };
             Object.keys(dataGroups[groupKey]).forEach(key => {
@@ -374,11 +381,9 @@
       const processedReusedKeys = new Set(Array.from(reusedGroups || []).map(k =>
         k.startsWith("localStorage:") ? k.replace("localStorage:", "") : k
       ));
-
       for (const groupKey of Object.keys(dataGroups)) {
         if (processedReusedKeys.has(groupKey)) continue;
         if (isSubgroupInConfig(groupKey, config)) continue;
-        
         const normalizedCurrent = normalizeDataForComparison(dataGroups[groupKey]);
         for (const [otherFileName, otherFileData] of Object.entries(existingData)) {
           if (otherFileName === fileName) continue;
@@ -386,7 +391,6 @@
           if (!otherGroups[groupKey]) continue;
           const normalizedOther = normalizeDataForComparison(otherGroups[groupKey]);
           const changeAnalysis = analyzeChanges(normalizedOther, normalizedCurrent);
-          
           if (changeAnalysis.type === "NO_CHANGE") {
             delete dataGroups[groupKey];
             break;
@@ -395,7 +399,6 @@
               ...otherGroups[groupKey],
               ...dataGroups[groupKey]
             };
-            
             delete dataGroups[groupKey];
             break;
           }
@@ -411,7 +414,6 @@
       }
       const oldDataGroups = existingData[fileName]?.dataGroups || {};
       const mergedDataGroups = { ...oldDataGroups };
-      
       Object.keys(dataGroups).forEach(groupKey => {
         const newData = dataGroups[groupKey];
         const currentBase = groupKey.replace(/_\d{8}_\d{6,9}$/, '');

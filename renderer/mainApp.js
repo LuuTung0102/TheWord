@@ -506,7 +506,19 @@ if (window.sessionStorageManager && this.selectedFile) {
         this.showSuccess('Văn bản đã được tạo thành công! (Demo)');
       }
     } catch (error) {
-      this.showError('Không thể tạo văn bản: ' + error.message);
+      let errorMessage = error.message;
+      
+      if (errorMessage.includes('EBUSY') || errorMessage.includes('resource busy or locked')) {
+        errorMessage = 'File đang được mở bởi chương trình khác. Vui lòng đóng file và thử lại.';
+      } else if (errorMessage.includes('ENOENT')) {
+        errorMessage = 'Không tìm thấy file hoặc thư mục.';
+      } else if (errorMessage.includes('EACCES') || errorMessage.includes('permission denied')) {
+        errorMessage = 'Không có quyền truy cập file. Vui lòng kiểm tra quyền.';
+      } else if (errorMessage.includes('EPERM')) {
+        errorMessage = 'Thao tác không được phép. Vui lòng chạy với quyền Administrator.';
+      }
+      
+      this.showError('Không thể tạo văn bản: ' + errorMessage);
     } finally {
       this.hideLoading();
     }

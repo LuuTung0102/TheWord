@@ -70,10 +70,8 @@ async function renderGenericForm(placeholders, config, folderPath) {
     }
   });
   
-  // Tự động thêm các field phụ thuộc (S_Text, MoneyText) với suffix đúng
   const dependentFields = [];
   expandedPlaceholders.forEach(ph => {
-    // Thêm S_Text cho mỗi S
     const sMatch = ph.match(/^S(\d*)$/);
     if (sMatch) {
       const suffix = sMatch[1];
@@ -83,7 +81,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
       }
     }
     
-    // Thêm MoneyText cho mỗi Money
     const moneyMatch = ph.match(/^Money(\d*)$/);
     if (moneyMatch) {
       const suffix = moneyMatch[1];
@@ -94,7 +91,6 @@ async function renderGenericForm(placeholders, config, folderPath) {
     }
   });
   
-  // Thêm các field phụ thuộc vào expandedPlaceholders
   dependentFields.forEach(field => {
     if (!expandedPlaceholders.includes(field)) {
       expandedPlaceholders.push(field);
@@ -1117,7 +1113,6 @@ function collectGenericFormData() {
     data.HDBD = ndbdToHdbdMap[data.NDBD];
   }
   
-  // Auto-generate Ngay_Full from Dia_Chi + Ngay
   if (data.Dia_Chi && data.Ngay) {
     const diaChi = data.Dia_Chi.trim();
     const ngayStr = data.Ngay.trim();
