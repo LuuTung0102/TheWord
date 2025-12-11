@@ -487,8 +487,8 @@
             } else {
               if (isExactMatch) {
                 const versionedKey = generateVersionedKey(groupKey, mergedDataGroups);
-                mergedDataGroups[versionedKey] = oldData;
-                mergedDataGroups[groupKey] = newData;
+                mergedDataGroups[versionedKey] = newData;
+                mergedDataGroups[groupKey] = oldData;
               } else {
                 mergedDataGroups[groupKey] = newData;
               }
