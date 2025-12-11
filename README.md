@@ -1,132 +1,274 @@
-# 📄 TheWord - Automated Document Generation System
+# 📄 TheWord - Hệ Thống Tự Động Hóa Tạo Văn Bản
 
-## 📋 Quick Navigation
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Installation](#installation)
-- [Usage Guide](#usage-guide)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Contributing](#contributing)
+## 📋 Mục Lục
+- [Tổng Quan](#-tổng-quan)
+- [Tính Năng Chính](#-tính-năng-chính)
+- [Tính Năng Mới](#-tính-năng-mới-v60)
+- [Cài Đặt](#-cài-đặt)
+- [Hướng Dẫn Sử Dụng](#-hướng-dẫn-sử-dụng)
+- [Kiến Trúc Hệ Thống](#-kiến-trúc-hệ-thống)
+- [Công Nghệ](#-công-nghệ)
 
 ---
 
-## 🎯 Overview
+## 🎯 Tổng Quan
 
-**TheWord** is an Electron-based document automation system that generates Word files from templates quickly and accurately. Designed for legal and administrative documents with intelligent data management and reuse capabilities.
+**TheWord** là hệ thống tự động hóa tạo văn bản dựa trên Electron, giúp tạo file Word từ template nhanh chóng và chính xác. Được thiết kế cho văn bản pháp lý và hành chính với khả năng quản lý và tái sử dụng dữ liệu thông minh.
 
-### Core Workflow
+### Quy Trình Làm Việc
 ```
-Select Template Folder → Choose .docx File → Fill Form → Export Document ✅
+Chọn Folder Template → Chọn File .docx → Điền Form → Xuất Văn Bản ✅
 ```
 
 ### 100% Offline
-- No internet required after installation
-- All data stored locally
-- Full privacy control
+- Không cần internet sau khi cài đặt
+- Dữ liệu lưu trữ local
+- Kiểm soát quyền riêng tư hoàn toàn
 
-### ⚠️ Important Note
-- **Only .docx format is supported** (Word 2007+)
-- **.doc files (Word 97-2003) will NOT work**
-- See [File Format Support](#-file-format-support) section for conversion guide
+### ⚠️ Lưu Ý Quan Trọng
+- **Chỉ hỗ trợ định dạng .docx** (Word 2007+)
+- **File .doc (Word 97-2003) KHÔNG hoạt động**
+- Xem [Hỗ Trợ Định Dạng File](#-hỗ-trợ-định-dạng-file) để biết cách chuyển đổi
 
 ---
 
-## ✨ Key Features
+## ✨ Tính Năng Chính
 
-### 📝 Intelligent Form Generation
-- **Auto-generate forms** from template placeholders
-- **15+ field types**: text, number, date, select, address, money, land-type, and more
-- **Smart validation** with visual feedback and auto tab-switching
-- **Auto-format**: CCCD (9/12 digits), Money (1,000,000), Dates, Phone numbers
-- **Flexible address input**: Auto-suggest from database OR manual input for villages
+### 📝 Tạo Form Thông Minh
+- **Tự động tạo form** từ placeholder trong template
+- **15+ loại trường**: text, number, date, select, address, money, land-type, HTSD, và nhiều hơn
+- **Validation thông minh** với phản hồi trực quan và tự động chuyển tab
+- **Tự động format**: CCCD (9/12 số), Tiền (1,000,000), Ngày tháng, Số điện thoại
+- **Nhập địa chỉ linh hoạt**: Tự động gợi ý từ database HOẶC nhập thủ công cho thôn/xóm
 
-### 🏷️ Advanced Land Type System
-- **3 intelligent formats**:
-  - `Loai_Dat`: Basic codes (CLN+NST)
-  - `Loai_Dat_F`: With area (CLN 1236.5m²)
-  - `Loai_Dat_D`: Detailed with location (CLN|Location|1236.5)
-- **Smart auto-sync** between formats
-- **Automatic conversion** when reusing across templates
 
-### 🗺️ Flexible Address System
-- **4-level cascading selection**: Province → Ward → Village → Street
-- **Smart dropdown behavior**:
-  - Province & Ward: Must select from database
-  - Village: **Select from list OR type manually** if not available
-- **Auto-suggest with search**: Type to filter matching entries
-- **Keyboard navigation**: Arrow keys, Enter, Tab support
-- **Data preservation**: Manual entries saved and restored correctly
-- **Reuse support**: All address components including manual villages
+### 🏷️ Hệ Thống Loại Đất Nâng Cao
+- **3 định dạng thông minh**:
+  - `Loai_Dat`: Mã cơ bản (CLN+NST)
+  - `Loai_Dat_F`: Có diện tích (CLN 1236.5m²)
+  - `Loai_Dat_D`: Chi tiết với vị trí (CLN|Vị trí|1236.5)
+- **Tự động đồng bộ** giữa các định dạng
+- **Chuyển đổi tự động** khi tái sử dụng giữa các template
 
-### 👥 Person Data Management
-- **LocalStorage** for frequently used people (PERSON1, PERSON2, ...)
-- **CRUD operations** with validation
-- **Quick selection** with visual preview
-- **Auto-generated IDs** and Vietnamese labels
+### 🔄 Hệ Thống HTSD (Hình Thức Sử Dụng Đất) - MỚI
+- **2 chế độ hiển thị**:
+  - **Loại 1**: Dropdown (Sử dụng chung/Sử dụng riêng)
+  - **Loại 2**: Nhập diện tích (m² Chung + m² Riêng)
+- **Toggle linh hoạt**: Bật/tắt từng loại độc lập hoặc cả 2
+- **Tự động sync**: Thay đổi HTSD tự động cập nhật vào session gốc
+- **Hỗ trợ tái sử dụng**: Giữ nguyên printMode khi reuse data
+- **Logic đặc biệt**: Không ảnh hưởng merge logic (giống Loai_Dat_D)
 
-### 🔄 Smart Data Reuse
-- **SessionStorage** for temporary data with intelligent merge logic
-- **Auto-Restore** - automatically saves and restores session on app restart
-- **Cross-file deduplication** to prevent duplicate data
-- **3-level merge strategy**: NO_CHANGE, ONLY_ADDITIONS, HAS_MODIFICATIONS
-- **Dropdown "Tái Sử Dụng"** with timestamps for data version tracking
+### 🗺️ Hệ Thống Địa Chỉ Linh Hoạt
+- **4 cấp cascading**: Tỉnh → Xã → Thôn/Xóm → Đường
+- **Hành vi dropdown thông minh**:
+  - Tỉnh & Xã: Phải chọn từ database
+  - Thôn/Xóm: **Chọn từ danh sách HOẶC nhập thủ công** nếu không có
+- **Tự động gợi ý với tìm kiếm**: Gõ để lọc kết quả phù hợp
+- **Điều hướng bàn phím**: Hỗ trợ phím mũi tên, Enter, Tab
+- **Bảo toàn dữ liệu**: Lưu và khôi phục đúng cả nhập thủ công
+- **Hỗ trợ tái sử dụng**: Tất cả thành phần địa chỉ kể cả thôn/xóm thủ công
 
-### 🗂️ Dynamic Subgroup Management
-- **Add/Remove** subgroups (people, sections) dynamically
-- **Visibility control** without data loss
-- **Auto-refresh** UI after changes
-- **Proper event listener cleanup** to prevent memory leaks
+### 👥 Quản Lý Dữ Liệu Người
+- **LocalStorage** cho người thường dùng (PERSON1, PERSON2, ...)
+- **CRUD đầy đủ** với validation
+- **Chọn nhanh** với preview trực quan
+- **Tự động tạo ID** và nhãn tiếng Việt
 
-### 📊 Professional UI/UX
-- **2-Color Layout**: Green panel (data entry) + Orange panel (folder selection)
-- **Taskbar navigation** for quick section switching
-- **Responsive design** for all screen sizes
-- **Toast notifications** replacing old alert/confirm dialogs
-- **Loading overlays** during export
-- **Smart input fields**: Auto-suggest with manual fallback for maximum flexibility
 
-### ⚡ Performance Optimized
-- **Form rendering**: < 200ms
+### 🔄 Tái Sử Dụng Dữ Liệu Thông Minh
+- **SessionStorage** cho dữ liệu tạm với logic merge thông minh
+- **Tự động khôi phục** - tự động lưu và khôi phục session khi khởi động lại
+- **Loại bỏ trùng lặp** giữa các file
+- **3 chiến lược merge**: NO_CHANGE, ONLY_ADDITIONS, HAS_MODIFICATIONS
+- **Dropdown "Tái Sử Dụng"** với timestamp để theo dõi phiên bản dữ liệu
+- **Sync thông minh**: 
+  - HTSD tự động sync với session gốc khi cùng base type (INFO, INFO2, INFO3...)
+  - Loai_Dat_D không ảnh hưởng logic merge
+
+### 🗂️ Quản Lý Subgroup Động
+- **Thêm/Xóa** subgroup (người, phần) động
+- **Kiểm soát hiển thị** không mất dữ liệu
+- **Tự động refresh** UI sau thay đổi
+- **Dọn dẹp event listener** đúng cách để tránh memory leak
+
+### 📊 UI/UX Chuyên Nghiệp
+- **Layout 2 màu**: Panel xanh (nhập liệu) + Panel cam (chọn folder)
+- **Taskbar navigation** để chuyển section nhanh
+- **Responsive design** cho mọi kích thước màn hình
+- **Toast notifications** thay thế alert/confirm cũ
+- **Loading overlay** khi xuất file
+- **Smart input fields**: Tự động gợi ý với fallback thủ công để linh hoạt tối đa
+
+### ⚡ Tối Ưu Hiệu Năng
+- **Render form**: < 200ms
 - **Validation**: < 50ms
-- **Export**: < 5 seconds
-- **Memory usage**: ~100-150MB with templates
+- **Xuất file**: < 5 giây
+- **Sử dụng RAM**: ~100-150MB với templates
 
-### 🛡️ Smart Validation System
-- **Visual error highlighting**: Red border + pink background + shake animation
-- **Auto tab switching** to error location
-- **Auto scroll & focus** for better UX
-- **Grouped error notifications** by section
-- **Auto remove** error styling when user starts typing
-- **Regex constants** for consistent validation patterns
-- **Address field special handling** (4-level dropdown validation)
+### 🛡️ Hệ Thống Validation Thông Minh
+- **Highlight lỗi trực quan**: Viền đỏ + nền hồng + animation rung
+- **Tự động chuyển tab** đến vị trí lỗi
+- **Tự động scroll & focus** để UX tốt hơn
+- **Thông báo lỗi theo nhóm** theo section
+- **Tự động xóa** styling lỗi khi user bắt đầu gõ
+- **Regex constants** để validation nhất quán
+- **Xử lý đặc biệt** cho trường địa chỉ (4 cấp dropdown)
+- **Validation HTSD**: Kiểm tra printMode và value
 
 ---
 
-## 🔧 Installation
 
-### System Requirements
+## 🆕 Tính Năng Mới (v6.0)
+
+### 1. Hệ Thống HTSD (Hình Thức Sử Dụng Đất)
+**Vấn đề giải quyết:** Cần nhập hình thức sử dụng đất linh hoạt với 2 cách hiển thị khác nhau
+
+**Tính năng:**
+- **Dual-mode input**: 
+  - Loại 1: Dropdown chọn "Sử dụng chung" hoặc "Sử dụng riêng"
+  - Loại 2: Nhập diện tích m² Chung và m² Riêng
+- **Toggle buttons**: Bật/tắt từng loại độc lập
+- **Smart sync**: Tự động cập nhật vào session gốc khi thay đổi
+- **Base type matching**: INFO, INFO2, INFO3... đều sync với nhau
+- **Không ảnh hưởng merge**: Giống Loai_Dat_D, không tham gia phân tích merge
+
+**Cách sử dụng:**
+```
+1. Thêm placeholder {{HTSD}} vào template Word
+2. Form tự động tạo HTSD field với 2 toggle buttons
+3. Bật Loại 1 để nhập dropdown
+4. Bật Loại 2 để nhập diện tích
+5. Có thể bật cả 2 để xuất cả 2 loại
+6. Khi tái sử dụng, HTSD tự động sync với session gốc
+```
+
+**Ví dụ output:**
+- Loại 1: "Sử dụng chung"
+- Loại 2: "1500m² Chung; 250m² Riêng"
+- Both: "Sử dụng chung|1500|250"
+
+### 2. Tự Động Khôi Phục Session
+**Vấn đề giải quyết:** Mất dữ liệu khi app bị tắt đột ngột hoặc crash
+
+**Tính năng:**
+- **Auto-save**: Tự động lưu session vào localStorage trước khi đóng app
+- **Restore modal**: Hỏi người dùng khi khởi động lại: "Khôi phục" hoặc "Làm mới"
+- **Preserve work**: Giữ nguyên toàn bộ công việc nếu app crash
+- **Disable option**: Có thể tắt bằng `localStorage.setItem('disable_auto_restore', 'true')`
+
+**Cách hoạt động:**
+```
+1. User đang làm việc → App tắt đột ngột
+2. Mở lại app → Modal hiện lên
+3. Chọn "Khôi phục" → Dữ liệu được load lại
+4. Chọn "Làm mới" → Bắt đầu session mới
+```
+
+### 3. Nhập Thôn/Xóm Thủ Công
+**Vấn đề giải quyết:** Nhiều thôn/xóm không có trong database
+
+**Tính năng:**
+- **Flexible input**: Chọn từ dropdown HOẶC nhập thủ công
+- **Smart placeholder**: "Chọn hoặc nhập thôn/xóm..."
+- **Data preservation**: Lưu và khôi phục đúng cả nhập thủ công
+- **Reuse support**: Tái sử dụng hoạt động với cả manual entries
+
+**Cách sử dụng:**
+```
+1. Chọn Tỉnh và Xã
+2. Trường Thôn/Xóm active
+3. Nếu có trong database → Chọn từ dropdown
+4. Nếu không có → Gõ trực tiếp tên thôn/xóm
+5. Enter hoặc Tab để chuyển field tiếp theo
+```
+
+
+### 4. Smart Session Merge Logic
+**Vấn đề giải quyết:** Xung đột dữ liệu khi tái sử dụng và chỉnh sửa
+
+**Tính năng:**
+- **3-level analysis**: NO_CHANGE, ONLY_ADDITIONS, HAS_MODIFICATIONS
+- **Cross-file deduplication**: Tự động loại bỏ dữ liệu trùng lặp
+- **Versioned keys**: Tạo timestamp key khi có modification
+- **Smart merge**: Merge ONLY_ADDITIONS, tạo version mới cho MODIFICATIONS
+- **Special fields**: HTSD và Loai_Dat_D không ảnh hưởng merge logic
+
+**Logic hoạt động:**
+```
+Tái sử dụng INFO:
+├─ Không thay đổi → NO_CHANGE → Không tạo session mới
+├─ Thêm field mới → ONLY_ADDITIONS → Merge vào INFO gốc
+├─ Sửa field cũ → HAS_MODIFICATIONS → Tạo INFO_timestamp mới
+└─ Sửa HTSD → Không coi là modification → Sync với INFO gốc
+```
+
+### 5. Base Type Matching cho HTSD
+**Vấn đề giải quyết:** INFO và INFO2 không sync HTSD với nhau
+
+**Tính năng:**
+- **Base type comparison**: So sánh base type thay vì exact match
+- **Smart grouping**: INFO, INFO2, INFO3... đều là base type "INFO"
+- **Cross-suffix sync**: Thay đổi HTSD trong INFO2 → Sync với INFO gốc
+- **Type isolation**: INFO và MEN không sync với nhau (khác base type)
+
+**Ví dụ:**
+```
+File A: INFO có HTSD = "Sử dụng riêng"
+File A: INFO2 có HTSD = "Sử dụng chung"
+File B: Tái sử dụng INFO2 cho form INFO
+       → Sửa HTSD thành "Sử dụng riêng"
+       → INFO2 trong File A cũng thành "Sử dụng riêng" (sync)
+```
+
+### 6. Improved Validation System
+**Vấn đề giải quyết:** Validation không rõ ràng, khó tìm lỗi
+
+**Tính năng:**
+- **Visual feedback**: Red border + pink background + shake animation
+- **Auto navigation**: Tự động chuyển tab và scroll đến lỗi đầu tiên
+- **Grouped errors**: Lỗi được nhóm theo section/subgroup
+- **Auto-clear**: Xóa styling lỗi khi user bắt đầu gõ
+- **HTSD validation**: Kiểm tra printMode (không được "both") và value
+
+**Error types:**
+```
+- Required field empty
+- CCCD format invalid (phải 9 hoặc 12 số)
+- Phone format invalid (phải 10 số)
+- Email format invalid
+- Address incomplete (thiếu Tỉnh hoặc Xã)
+- HTSD printMode = "both" (không hợp lệ)
+- HTSD không có printMode
+```
+
+---
+
+
+## 🔧 Cài Đặt
+
+### Yêu Cầu Hệ Thống
 - Node.js >= 14.x
 - npm >= 6.x
-- 4GB RAM (8GB recommended)
-- 500MB free disk space
-- **Word templates must be in .docx format** (not .doc)
+- 4GB RAM (khuyến nghị 8GB)
+- 500MB dung lượng trống
+- **Template Word phải định dạng .docx** (không phải .doc)
 
-### Quick Start
+### Cài Đặt Nhanh
 
 ```bash
 # Clone repository
 git clone https://github.com/LuuTung0102/TheWord.git
 cd TheWord
 
-# Install dependencies
+# Cài đặt dependencies
 npm install
 
-# Run application
+# Chạy ứng dụng
 npm start
 ```
 
-### Build for Production
+### Build Production
 
 ```bash
 # Windows
@@ -141,88 +283,103 @@ npm run build:linux
 
 ---
 
-## 📖 Usage Guide
+## 📖 Hướng Dẫn Sử Dụng
 
-### 1. Select Template Folder
-1. Open TheWord
-2. Right panel (orange): Select a template folder
-3. System automatically loads all **.docx** files in that folder
-   - **Note**: Only .docx format is supported, not .doc
+### 1. Chọn Folder Template
+1. Mở TheWord
+2. Panel bên phải (màu cam): Chọn folder template
+3. Hệ thống tự động load tất cả file **.docx** trong folder
+   - **Lưu ý**: Chỉ hỗ trợ .docx, không hỗ trợ .doc
 
-### 2. Choose Word File
-1. Click folder to expand and see available files
-2. Click file to select
-3. Form automatically generates from placeholders in the file
+### 2. Chọn File Word
+1. Click folder để mở rộng và xem các file
+2. Click file để chọn
+3. Form tự động tạo từ placeholder trong file
 
-### 3. Fill Form
-1. Left panel (green): Fill in all required fields
-2. Use smart features:
-   - **Date Picker**: Click field to select date
-   - **Address Select**: 4-level cascading dropdowns with manual input support
-     - Province & Ward: Select from dropdown
-     - Village: Select from dropdown OR type manually if not in list
-   - **Land Type**: Dropdown with autocomplete
-   - **CCCD**: Auto-formats when typing
-   - **Money**: Auto-formats with thousand separator
+### 3. Điền Form
+1. Panel bên trái (màu xanh): Điền tất cả trường bắt buộc
+2. Sử dụng tính năng thông minh:
+   - **Date Picker**: Click field để chọn ngày
+   - **Address Select**: 4 cấp cascading dropdown với nhập thủ công
+     - Tỉnh & Xã: Chọn từ dropdown
+     - Thôn/Xóm: Chọn từ dropdown HOẶC gõ thủ công nếu không có
+   - **Land Type**: Dropdown với autocomplete
+   - **HTSD**: Toggle Loại 1 (dropdown) hoặc Loại 2 (diện tích)
+   - **CCCD**: Tự động format khi gõ
+   - **Money**: Tự động format với dấu phẩy ngăn cách
 
-### 4. Reuse Data (Optional)
-1. Look for "Tái Sử Dụng" dropdown
-2. Select from previous data or saved people
-3. Form auto-fills with selected data
-4. Edit if needed
+### 4. Sử Dụng HTSD (Hình Thức Sử Dụng Đất)
+1. Tìm field "Hình thức sử dụng đất"
+2. **Loại 1** (Dropdown):
+   - Click toggle "Loại 1"
+   - Chọn "Sử dụng chung" hoặc "Sử dụng riêng"
+3. **Loại 2** (Diện tích):
+   - Click toggle "Loại 2"
+   - Nhập m² Chung và m² Riêng
+4. **Cả 2**: Bật cả 2 toggle để xuất cả 2 loại
+5. Khi tái sử dụng, HTSD tự động sync với session gốc
 
-### 5. Manage People (Optional)
-1. Click "⚙️ Quản Lý" at header
-2. Select "👥 Quản Lý Dữ Liệu"
-3. Add/Edit/Delete people
-4. They appear as quick selection in forms
 
-### 6. Export Document
-1. Verify all required fields are filled
+### 5. Tái Sử Dụng Dữ Liệu (Optional)
+1. Tìm dropdown "Tái Sử Dụng"
+2. Chọn từ dữ liệu trước hoặc người đã lưu
+3. Form tự động điền với dữ liệu đã chọn
+4. Chỉnh sửa nếu cần
+5. **HTSD tự động sync**: Thay đổi HTSD sẽ cập nhật vào session gốc
+
+### 6. Quản Lý Người (Optional)
+1. Click "⚙️ Quản Lý" ở header
+2. Chọn "👥 Quản Lý Dữ Liệu"
+3. Thêm/Sửa/Xóa người
+4. Họ xuất hiện để chọn nhanh trong form
+
+### 7. Xuất Văn Bản
+1. Kiểm tra tất cả trường bắt buộc đã điền
 2. Click "📤 XUẤT WORD"
-3. Choose save folder
-4. Wait for processing (< 5 seconds)
-5. Success dialog with option to open folder
+3. Chọn thư mục lưu
+4. Đợi xử lý (< 5 giây)
+5. Dialog thành công với tùy chọn mở thư mục
 
 ---
 
-## 🗺️ Address Input Guide
+## 🗺️ Hướng Dẫn Nhập Địa Chỉ
 
-### How to Use Address Fields
+### Cách Sử Dụng Trường Địa Chỉ
 
-**Province Selection:**
-1. Click or focus on Province field
-2. Type to search (e.g., "Đắk Lắk")
-3. Use Arrow keys to navigate suggestions
-4. Press Enter or click to select
+**Chọn Tỉnh:**
+1. Click hoặc focus vào trường Tỉnh
+2. Gõ để tìm kiếm (ví dụ: "Đắk Lắk")
+3. Dùng phím mũi tên để điều hướng gợi ý
+4. Enter hoặc click để chọn
 
-**Ward Selection:**
-1. After selecting Province, Ward field becomes active
-2. Type to search within selected province
-3. Select from dropdown
+**Chọn Xã:**
+1. Sau khi chọn Tỉnh, trường Xã active
+2. Gõ để tìm trong tỉnh đã chọn
+3. Chọn từ dropdown
 
-**Village Input (Flexible):**
-1. After selecting Ward, Village field becomes active
-2. **Option A - Select from list:**
-   - If ward has villages in database, dropdown shows suggestions
-   - Type to filter, select from list
-3. **Option B - Manual input:**
-   - If no suggestions OR village not in list
-   - Simply type the village name directly
-   - Press Enter or Tab to move to next field
-4. **Your manual entry will be saved** and can be reused later
+**Nhập Thôn/Xóm (Linh Hoạt):**
+1. Sau khi chọn Xã, trường Thôn/Xóm active
+2. **Tùy chọn A - Chọn từ danh sách:**
+   - Nếu xã có thôn/xóm trong database, dropdown hiện gợi ý
+   - Gõ để lọc, chọn từ danh sách
+3. **Tùy chọn B - Nhập thủ công:**
+   - Nếu không có gợi ý HOẶC thôn/xóm không có trong danh sách
+   - Đơn giản gõ tên thôn/xóm trực tiếp
+   - Enter hoặc Tab để chuyển field tiếp theo
+4. **Nhập thủ công sẽ được lưu** và có thể tái sử dụng sau
 
-**Tips:**
-- Use Tab key to quickly move between fields
-- Press Escape to close dropdown
-- Manual village entries are fully supported in data reuse
-- Address format saved as: "Village, Ward, Province"
+**Mẹo:**
+- Dùng Tab để chuyển nhanh giữa các trường
+- Esc để đóng dropdown
+- Nhập thôn/xóm thủ công được hỗ trợ đầy đủ trong tái sử dụng
+- Định dạng địa chỉ lưu: "Thôn/Xóm, Xã, Tỉnh"
 
 ---
 
-## 🏗️ Architecture
 
-### Project Structure
+## 🏗️ Kiến Trúc Hệ Thống
+
+### Cấu Trúc Project
 ```
 TheWord/
 ├── renderer/
@@ -238,112 +395,150 @@ TheWord/
 │   │   ├── formValidator.js
 │   │   ├── notificationManager.js
 │   │   ├── personDataService.js
-│   │   ├── sessionStorageManager.js
-│   │   └── ... (other utilities)
+│   │   ├── sessionStorageManager.js  ← Smart merge & HTSD sync
+│   │   └── ... (utilities khác)
 │   ├── handlers/            # UI handlers
 │   │   ├── genericFormHandler.js
 │   │   ├── exportHandler.js
 │   │   ├── fileManager.js
 │   │   ├── personManager.js
-│   │   └── ... (other handlers)
+│   │   └── ... (handlers khác)
 │   └── mainApp.js           # Main application
 ├── logic/
 │   ├── generate.js          # Word document generation
 │   └── placeholder.js       # Placeholder extraction
-├── templates/               # Template folders with configs
+├── templates/               # Template folders với configs
 ├── index.html               # Main HTML
 ├── main.js                  # Electron main process
 └── style.css                # Styles
 ```
 
-### Data Flow Architecture
+### Luồng Dữ Liệu
 
-**Form Rendering:**
-1. User selects template file
-2. `templateManager.js` loads config
-3. `genericFormHandler.js` renders form fields
-4. Event listeners setup for all inputs
-5. Previous session data auto-loads if available
+**Render Form:**
+1. User chọn template file
+2. `templateManager.js` load config
+3. `genericFormHandler.js` render form fields
+4. Setup event listeners cho tất cả inputs
+5. Auto-load session data trước nếu có
 
 **Validation Flow:**
-1. User clicks "Xuất Word"
-2. `formValidator.js` collects and validates form data
-3. If errors found:
-   - Highlight error fields (red border + pink background)
-   - Show grouped error notification
-   - Auto switch to first error tab
-   - Smooth scroll to first error field
-4. If valid, proceed to export
+1. User click "Xuất Word"
+2. `formValidator.js` thu thập và validate form data
+3. Nếu có lỗi:
+   - Highlight error fields (viền đỏ + nền hồng)
+   - Hiện grouped error notification
+   - Tự động chuyển đến tab lỗi đầu tiên
+   - Smooth scroll đến field lỗi đầu tiên
+4. Nếu hợp lệ, tiến hành export
 
 **Export Flow:**
-1. Collect form data from all inputs
-2. Process data (auto-convert, format, cleanup)
-3. Save to session storage with smart merge
-4. Call `logic/generate.js` to create Word file
-5. Show success notification with open folder option
+1. Thu thập form data từ tất cả inputs
+2. Xử lý data (auto-convert, format, cleanup)
+3. Lưu vào session storage với smart merge
+4. Gọi `logic/generate.js` để tạo Word file
+5. Hiện success notification với tùy chọn mở folder
 
 **Data Reuse Flow:**
-1. On export, session storage saves data with merge logic
-2. Next form shows "Tái Sử Dụng" dropdown with saved data
-3. Select dropdown option to auto-fill form
-4. Auto-convert land types to match template format
+1. Khi export, session storage lưu data với merge logic
+2. Form tiếp theo hiện dropdown "Tái Sử Dụng" với saved data
+3. Chọn dropdown option để auto-fill form
+4. Auto-convert land types để match template format
+5. HTSD tự động sync với session gốc khi thay đổi
+
+
+### Session Storage Manager - Chi Tiết
+
+**Smart Merge Logic:**
+```javascript
+analyzeChanges(sourceData, currentData) {
+  // Bỏ qua HTSD và Loai_Dat_D (không ảnh hưởng merge)
+  // So sánh các field khác
+  // Return: NO_CHANGE | ONLY_ADDITIONS | HAS_MODIFICATIONS
+}
+```
+
+**HTSD Sync Logic:**
+```javascript
+// Khi tái sử dụng và chỉnh sửa HTSD:
+1. Thu thập HTSD value và printMode từ DOM
+2. So sánh base type (INFO, INFO2 → cùng base "INFO")
+3. Nếu cùng base type → Sync với session gốc
+4. Nếu khác base type → Không sync
+```
+
+**Merge Strategy:**
+```
+NO_CHANGE:
+  → Không tạo session mới
+  → Reference đến data gốc
+
+ONLY_ADDITIONS:
+  → Merge vào session gốc
+  → Không tạo versioned key
+
+HAS_MODIFICATIONS:
+  → Tạo versioned key mới (GROUP_timestamp)
+  → Giữ nguyên data gốc
+```
 
 ---
 
-## � File Ftormat Support
+## 📁 Hỗ Trợ Định Dạng File
 
-### ✅ Supported Format
-- **.docx** (Office Open XML) - Word 2007 and later
-- This is the **ONLY** supported format
+### ✅ Định Dạng Hỗ Trợ
+- **.docx** (Office Open XML) - Word 2007 trở lên
+- Đây là **DUY NHẤT** định dạng được hỗ trợ
 
-### ❌ NOT Supported
+### ❌ KHÔNG Hỗ Trợ
 - **.doc** (Office 97-2003 Binary Format)
 - **.rtf** (Rich Text Format)
 - **.odt** (OpenDocument Text)
 - **.pdf** (Portable Document Format)
 
-### Why Only .docx?
-1. **Modern Standard**: .docx is the current Microsoft Word standard since 2007
-2. **XML-Based**: .docx files are ZIP archives containing XML, making them easy to parse and modify
-3. **Library Support**: Docxtemplater library only supports .docx format
-4. **Better Features**: .docx supports more features and is more reliable than old .doc format
+### Tại Sao Chỉ .docx?
+1. **Chuẩn hiện đại**: .docx là chuẩn Microsoft Word từ 2007
+2. **Dựa trên XML**: .docx là ZIP archive chứa XML, dễ parse và modify
+3. **Hỗ trợ thư viện**: Docxtemplater chỉ hỗ trợ .docx
+4. **Tính năng tốt hơn**: .docx hỗ trợ nhiều tính năng và đáng tin cậy hơn .doc cũ
 
-### How to Convert .doc to .docx
+### Cách Chuyển Đổi .doc sang .docx
 
-**Using Microsoft Word:**
-1. Open your .doc file in Microsoft Word
+**Dùng Microsoft Word:**
+1. Mở file .doc trong Microsoft Word
 2. Click **File** → **Save As**
-3. Choose **Word Document (*.docx)** from format dropdown
+3. Chọn **Word Document (*.docx)** từ dropdown format
 4. Click **Save**
 
-**Using LibreOffice (Free):**
-1. Download and install [LibreOffice](https://www.libreoffice.org/)
-2. Open your .doc file in LibreOffice Writer
+**Dùng LibreOffice (Miễn phí):**
+1. Tải và cài đặt [LibreOffice](https://www.libreoffice.org/)
+2. Mở file .doc trong LibreOffice Writer
 3. Click **File** → **Save As**
-4. Choose **Office Open XML Text (.docx)** from format dropdown
+4. Chọn **Office Open XML Text (.docx)** từ dropdown format
 5. Click **Save**
 
-**Batch Conversion:**
-- For multiple files, use Microsoft Word's batch conversion feature
-- Or use online converters (be careful with sensitive documents)
+**Chuyển đổi hàng loạt:**
+- Dùng tính năng batch conversion của Microsoft Word
+- Hoặc dùng online converters (cẩn thận với văn bản nhạy cảm)
 
 ---
 
-## 💻 Tech Stack
+
+## 💻 Công Nghệ
 
 ### Core
 - **Electron** 38.2.2 - Desktop application framework
 - **Node.js** - Runtime environment
-- **Vanilla JavaScript** - No framework dependencies
+- **Vanilla JavaScript** - Không dependencies framework
 
 ### Document Processing
 - **Docxtemplater** 3.66.7 - Word template engine (**.docx only**)
-- **PizZip** 3.2.0 - ZIP file handling for .docx archives
+- **PizZip** 3.2.0 - ZIP file handling cho .docx archives
 - **SAX** 1.4.3 - XML streaming parser
 - **xmldom** 0.6.0 - XML DOM parser
 
 ### UI Components
-- **Flatpickr** 4.6.13 - Date picker with Vietnamese locale
+- **Flatpickr** 4.6.13 - Date picker với Vietnamese locale
 - **Custom CSS** - Responsive design system
 
 ### Utilities
@@ -352,219 +547,106 @@ TheWord/
 
 ---
 
-## 📁 Key Files Overview
-
-### Core Services
-
-**stateManager.js**
-- Centralized state management
-- DOM element caching (70% reduction in queries)
-- Global state for render parameters
-
-**formValidator.js**
-- Smart validation with visual feedback
-- CCCD format validation
-- Address field special handling
-- Auto tab switching and error notification
-
-**regexConstants.js**
-- Centralized regex patterns
-- Helper functions for formatting
-- Consistent validation across app
-
-**sessionStorageManager.js**
-- Smart data merge logic
-- Cross-file deduplication
-- Version control with timestamps
-- Auto-restore on app restart
-
-**personDataService.js**
-- CRUD operations for people
-- CCCD validation
-- Auto-generate IDs and names
-- Label management in Vietnamese
-
-### Handlers
-
-**genericFormHandler.js**
-- Dynamic form rendering
-- Support for 15+ field types
-- Event setup and cleanup
-- Subgroup management
-
-**exportHandler.js**
-- Export validation and processing
-- Auto-convert placeholders
-- Data collection and formatting
-- File generation
-
-**fileManager.js**
-- Add/delete Word files
-- Auto placeholder analysis
-- Config generation
-- UI refresh
-
-**personManager.js**
-- Person CRUD UI
-- Modal dialogs
-- Form validation
-- Cache management
-
----
-
-## 🔄 Validation System
-
-### Smart Validation Features
-
-**Visual Feedback**
-- Red border (2px) + pink background (#fff5f5)
-- Shake animation (0.3s) to attract attention
-- Auto-remove when user starts typing
-
-**Error Grouping**
-- Errors grouped by section/subgroup
-- Clear notification with bullet points
-- Auto-dismiss after 5 seconds
-
-**Auto Navigation**
-- Automatically switch to tab with first error
-- Smooth scroll to error field
-- Auto focus for immediate editing
-
-**Format Validation**
-- CCCD: 9 or 12 digits only
-- Phone: 10 digits format
-- Email: Basic email format
-- Address: Province and Ward required, Village can be selected or manually entered
-
-**Smart Placeholder Checking**
-- Only validate fields in template
-- Skip hidden/invisible fields
-- Skip fields without placeholder
-
-### Validation API
-
-```javascript
-// Main validation entry point
-window.validateForm()           // Returns true/false
-
-// Validate form data object
-window.validateFormData()       // Returns errors array
-
-// Validate single field
-window.validateField()          // Returns validation result
-```
-
----
-
-## 🔐 Data Management
-
-### LocalStorage (PERSON)
-- Frequently used people stored permanently
-- Auto-generate: PERSON1, PERSON2, PERSON3...
-- Full CRUD with validation
-- Backup on app restart
-
-### SessionStorage (Data Reuse)
-- Temporary data between exports
-- Smart merge: NO_CHANGE, ONLY_ADDITIONS, HAS_MODIFICATIONS
-- Cross-file deduplication
-- Auto-restore on app restart
-- Clear with "Làm Mới" button
-
-### Auto-Restore on Restart
-- Automatically saves session before closing
-- Modal asks on app restart: Restore or New Session
-- Preserves all work if app crashes
-- Can be disabled with: `localStorage.setItem('disable_auto_restore', 'true')`
-
----
-
 ## 🐛 Troubleshooting
 
-### System only accepts .docx files, not .doc
-- **TheWord only supports .docx format** (Office Open XML)
-- **.doc files (Office 97-2003) are NOT supported**
-- **Solution**: Convert .doc to .docx:
-  - Open .doc file in Microsoft Word
-  - File → Save As → Choose "Word Document (*.docx)"
-  - Or use LibreOffice Writer (free) to convert
+### Hệ thống chỉ chấp nhận file .docx, không phải .doc
+- **TheWord chỉ hỗ trợ định dạng .docx** (Office Open XML)
+- **File .doc (Office 97-2003) KHÔNG được hỗ trợ**
+- **Giải pháp**: Chuyển đổi .doc sang .docx:
+  - Mở file .doc trong Microsoft Word
+  - File → Save As → Chọn "Word Document (*.docx)"
+  - Hoặc dùng LibreOffice Writer (miễn phí) để chuyển đổi
 
-### Form not filling correctly
-- Placeholders might be split across text runs in Word
-- Solution: Delete and retype placeholder without formatting
-- Don't use bold/italic on placeholders
+### Form không điền đúng
+- Placeholder có thể bị tách ra nhiều text runs trong Word
+- Giải pháp: Xóa và gõ lại placeholder không format
+- Không dùng bold/italic trên placeholder
 
-### CCCD validation errors
-- Must be exactly 9 or 12 digits
-- Solution: Remove all non-digit characters
-- Auto-formatting happens during input
+### Lỗi validation CCCD
+- Phải chính xác 9 hoặc 12 số
+- Giải pháp: Xóa tất cả ký tự không phải số
+- Auto-formatting xảy ra khi nhập
 
-### Session data not saving
-- Check browser localStorage is enabled
-- Clear cache and restart app
-- Check disk space available
+### Session data không lưu
+- Kiểm tra browser localStorage đã bật
+- Xóa cache và khởi động lại app
+- Kiểm tra dung lượng đĩa còn trống
 
-### Village not filling when reusing data
-- Ensure ward is selected first
-- Manual village entries are now fully supported
-- Check that address string format is correct (Village, Ward, Province)
+### Thôn/xóm không điền khi tái sử dụng
+- Đảm bảo xã đã được chọn trước
+- Nhập thôn/xóm thủ công giờ đã được hỗ trợ đầy đủ
+- Kiểm tra định dạng address string đúng (Thôn/Xóm, Xã, Tỉnh)
 
-### Export very slow
-- Large templates (> 50MB) take longer
-- Close unused applications
-- Use SSD for faster file I/O
+### HTSD không sync
+- Kiểm tra base type có giống nhau không (INFO vs INFO2 → OK, INFO vs MEN → Không)
+- Đảm bảo đã bật ít nhất 1 toggle (Loại 1 hoặc Loại 2)
+- Kiểm tra printMode không phải "both" (không hợp lệ)
+
+### Export rất chậm
+- Template lớn (> 50MB) mất nhiều thời gian hơn
+- Đóng các ứng dụng không dùng
+- Dùng SSD để I/O file nhanh hơn
 
 ---
 
-## 📝 Version History
+
+## 📝 Lịch Sử Phiên Bản
+
+### v6.0 - HTSD System & Smart Session Sync (Current)
+- **Hệ thống HTSD** với dual-mode input (Loại 1 + Loại 2)
+- **Smart HTSD sync** với base type matching
+- **Tự động khôi phục session** khi khởi động lại
+- **Nhập thôn/xóm thủ công** khi không có trong database
+- **Improved validation** với HTSD printMode check
+- **Base type comparison** cho cross-suffix sync (INFO, INFO2, INFO3...)
+- **Special field handling**: HTSD và Loai_Dat_D không ảnh hưởng merge logic
 
 ### v5.6 - Flexible Village Input System
-- **Manual village input** when not in database
-- **Smart dropdown behavior**: Show suggestions when available, allow typing when not
-- **Improved data reuse**: Village values preserved correctly during reuse
-- **Better UX**: Updated placeholder "Chọn hoặc nhập thôn/xóm..."
-- **No data loss**: Manual entries saved and restored properly
+- **Manual village input** khi không có trong database
+- **Smart dropdown behavior**: Hiện gợi ý khi có, cho phép gõ khi không
+- **Improved data reuse**: Village values được bảo toàn đúng khi reuse
+- **Better UX**: Cập nhật placeholder "Chọn hoặc nhập thôn/xóm..."
+- **No data loss**: Manual entries được lưu và khôi phục đúng
 
 ### v5.5 - Smart Land Type Storage & Auto-Conversion
-- Simplified land type logic with auto 3-format generation
-- Smart conversion based on template type
-- No data loss during reuse
-- Improved session merge strategy
+- Đơn giản hóa logic loại đất với auto 3-format generation
+- Smart conversion dựa trên template type
+- Không mất dữ liệu khi reuse
+- Cải thiện session merge strategy
 
 ### v5.4 - Enhanced Reuse Dropdown & Land Type Conversion
 - Fixed dropdown event listener management
-- Smart land type conversion between formats
-- Improved UI with better styling and animations
-- Better responsiveness on tab switching
+- Smart land type conversion giữa các formats
+- Improved UI với styling và animations tốt hơn
+- Better responsiveness khi chuyển tab
 
 ### v5.3 - Smart Validation System
-- Visual error highlighting with animations
-- Auto tab switching to error location
+- Visual error highlighting với animations
+- Auto tab switching đến vị trí lỗi
 - Regex constants centralization
-- DOM element caching (70% performance improvement)
+- DOM element caching (70% cải thiện hiệu năng)
 - Address field special handling
 
 ### v5.2 - Notification System Overhaul
 - Professional toast notifications
-- Confirm dialogs with overlay
+- Confirm dialogs với overlay
 - HTML-safe notification system
-- Auto-dismiss with manual close option
+- Auto-dismiss với manual close option
 
 ### v5.1 - File Manager & Config Wizard
-- Auto placeholder detection and classification
+- Auto placeholder detection và classification
 - Smart config generation
-- File manager with add/delete/view
-- Session storage with smart merge logic
+- File manager với add/delete/view
+- Session storage với smart merge logic
 
 ### v5.0 - Person Management System
-- LocalStorage for people management
-- CRUD operations with validation
-- Auto-generate IDs and names
-- Label management in Vietnamese
+- LocalStorage cho quản lý người
+- CRUD operations với validation
+- Auto-generate IDs và names
+- Label management bằng tiếng Việt
 
 ### v4.0+ - Previous versions
-- Session storage and data reuse
+- Session storage và data reuse
 - Land type detail system (D/F/Basic formats)
 - Dynamic subgroup management
 
@@ -572,21 +654,21 @@ window.validateField()          // Returns validation result
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/YourFeature`)
+1. Fork repository
+2. Tạo feature branch (`git checkout -b feature/YourFeature`)
 3. Commit changes (`git commit -m 'Add YourFeature'`)
 4. Push to branch (`git push origin feature/YourFeature`)
-5. Open a Pull Request
+5. Mở Pull Request
 
 ---
 
 ## 📄 License
 
-ISC License - See LICENSE file for details
+ISC License - Xem file LICENSE để biết chi tiết
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Tác Giả
 
 **LuuTung0102**
 - GitHub: [@LuuTung0102](https://github.com/LuuTung0102)
