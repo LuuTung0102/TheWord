@@ -26,26 +26,20 @@ function getConfigDir() {
 function ensureTemplatesDir() {
   const templatesDir = getTemplatesDir();
   
-  const needsCopy = !fs.existsSync(templatesDir) || 
-                    fs.readdirSync(templatesDir).length === 0;
+  if (!fs.existsSync(templatesDir)) {
+    fs.mkdirSync(templatesDir, { recursive: true });
+  }
   
-  if (needsCopy && app.isPackaged) {
+  if (app.isPackaged && fs.readdirSync(templatesDir).length === 0) {
     const resourceTemplatesDir = path.join(process.resourcesPath, 'templates');
     
     if (fs.existsSync(resourceTemplatesDir)) {
-      console.log('Copying templates from resources to:', templatesDir);
-      
-      if (!fs.existsSync(templatesDir)) {
-        fs.mkdirSync(templatesDir, { recursive: true });
-      }
-      
       copyFolderRecursive(resourceTemplatesDir, templatesDir);
-      console.log('Templates copied successfully');
-    } else {
-      console.warn('Resource templates directory not found:', resourceTemplatesDir);
+      try {
+        deleteFolderRecursive(resourceTemplatesDir);
+      } catch (err) {
+      }
     }
-  } else if (!fs.existsSync(templatesDir)) {
-    fs.mkdirSync(templatesDir, { recursive: true });
   }
   
   return templatesDir;
@@ -54,17 +48,20 @@ function ensureTemplatesDir() {
 function ensureConfigDir() {
   const configDir = getConfigDir();
   
-  if (!fs.existsSync(configDir) && app.isPackaged) {
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+  }
+  
+  if (app.isPackaged && fs.readdirSync(configDir).length === 0) {
     const resourceConfigDir = path.join(process.resourcesPath, 'renderer', 'config');
     
     if (fs.existsSync(resourceConfigDir)) {
-      console.log('Copying config from resources to:', configDir);
-      fs.mkdirSync(configDir, { recursive: true });
       copyFolderRecursive(resourceConfigDir, configDir);
-      console.log('Config copied successfully');
+      try {
+        deleteFolderRecursive(resourceConfigDir);
+      } catch (err) {
+      }
     }
-  } else if (!fs.existsSync(configDir)) {
-    fs.mkdirSync(configDir, { recursive: true });
   }
   
   return configDir;
@@ -86,6 +83,25 @@ function copyFolderRecursive(source, target) {
       fs.copyFileSync(sourcePath, targetPath);
     }
   });
+}
+
+function deleteFolderRecursive(folderPath) {
+  if (!fs.existsSync(folderPath)) {
+    return;
+  }
+  
+  const files = fs.readdirSync(folderPath);
+  files.forEach(file => {
+    const filePath = path.join(folderPath, file);
+    
+    if (fs.statSync(filePath).isDirectory()) {
+      deleteFolderRecursive(filePath);
+    } else {
+      fs.unlinkSync(filePath);
+    }
+  });
+  
+  fs.rmdirSync(folderPath);
 }
 
 function createWindow() {
