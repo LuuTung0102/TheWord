@@ -830,6 +830,11 @@ function setupReuseDataListeners() {
         );
       });
       if (!confirmed) return;
+      
+      const currentFormData = collectGenericFormData();
+      const savedReusedGroups = new Set(window.stateManager.getReusedGroups());
+      const savedReusedGroupSources = new Map(window.stateManager.getReusedGroupSources());
+      
       if (window.sessionStorageManager) {
         const allData = window.sessionStorageManager.getAllSessionData();
         if (allData[fileName] && allData[fileName].dataGroups) {
@@ -846,6 +851,68 @@ function setupReuseDataListeners() {
       if (renderParams) {
         const { placeholders, config, folderPath } = renderParams;
         await renderGenericForm(placeholders, config, folderPath);
+        
+        savedReusedGroups.forEach(groupKey => {
+          window.stateManager.addReusedGroup(groupKey);
+        });
+        savedReusedGroupSources.forEach((sourceInfo, groupKey) => {
+          window.stateManager.setReusedGroupSource(groupKey, sourceInfo);
+        });
+        
+        setTimeout(() => {
+          Object.keys(currentFormData).forEach(ph => {
+            const value = currentFormData[ph];
+            
+            if (ph.includes('Address') && typeof value === 'string' && value.trim()) {
+              if (window.DataFiller && window.DataFiller.fillAddressField) {
+                window.DataFiller.fillAddressField(ph, value);
+              }
+              return;
+            }
+            
+            const input = document.querySelector(`[data-ph="${ph}"]`);
+            if (input) {
+              const fieldType = input.getAttribute('data-type');
+              
+              if (fieldType === 'land_type_size' || fieldType === 'land_type_detail') {
+                if (window.LandTypeHandlers && window.LandTypeHandlers.fillLandTypeFields) {
+                  const tempData = {};
+                  const baseFieldName = ph.replace(/\d+$/, '');
+                  const suffix = ph.replace(baseFieldName, '');
+                  tempData[baseFieldName] = value;
+                  window.LandTypeHandlers.fillLandTypeFields(tempData, suffix);
+                }
+                return;
+              }
+              
+              if (typeof value === 'object' && value.value !== undefined) {
+                input.value = value.value;
+                if (value.printMode) {
+                  const htsdContainer = input.closest('[data-field-type="htsd_custom"]');
+                  if (htsdContainer) {
+                    const loai1Btn = htsdContainer.querySelector('.htsd-toggle-loai1');
+                    const loai2Btn = htsdContainer.querySelector('.htsd-toggle-loai2');
+                    if (loai1Btn) loai1Btn.classList.remove('active');
+                    if (loai2Btn) loai2Btn.classList.remove('active');
+                    if (value.printMode === 'loai1' && loai1Btn) {
+                      loai1Btn.classList.add('active');
+                    } else if (value.printMode === 'loai2' && loai2Btn) {
+                      loai2Btn.classList.add('active');
+                    } else if (value.printMode === 'both') {
+                      if (loai1Btn) loai1Btn.classList.add('active');
+                      if (loai2Btn) loai2Btn.classList.add('active');
+                    }
+                  }
+                }
+              } else {
+                input.value = value;
+              }
+              
+              input.dispatchEvent(new Event('input', { bubbles: true }));
+              input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          });
+        }, 200);
       }
       
       showSuccess('Đã xóa dữ liệu');

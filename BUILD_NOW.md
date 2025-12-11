@@ -124,17 +124,17 @@ Hoặc bỏ qua nếu không ảnh hưởng build.
 
 Sau khi build, test:
 
-- [ ] Portable version chạy được
-- [ ] Installer cài đặt được
-- [ ] Templates folder tự động tạo
-- [ ] Có thể chọn folder template
-- [ ] Có thể chọn file Word
-- [ ] Có thể điền form
-- [ ] Có thể xuất Word
-- [ ] Có thể thêm file Word mới
-- [ ] Có thể xóa file Word
-- [ ] Có thể mở file Word
-- [ ] PERSON data được lưu
+- [✔] Portable version chạy được
+- [✔] Installer cài đặt được
+- [✔] Templates folder tự động tạo
+- [✔] Có thể chọn folder template
+- [✔] Có thể chọn file Word
+- [✔] Có thể điền form
+- [✔] Có thể xuất Word
+- [✔] Có thể thêm file Word mới
+- [✔] Có thể xóa file Word
+- [✔] Có thể mở file Word
+- [✔] PERSON data được lưu
 
 ## 🚀 Ready!
 
