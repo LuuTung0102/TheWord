@@ -40,6 +40,49 @@ const xmlUtils = {
     },
     replaceM2: function(text) {
         return text.replace(/(m2)/g, 'm²');
+    },
+    toTitleCase: function(str) {
+        if (!str || typeof str !== 'string') return str;
+        return str
+          .toLowerCase()
+          .split(' ')
+          .map(word => {
+            if (word.length === 0) return word;
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join(' ');
+    },
+    checkRemovalPolicy: function(subgroupsInParagraph, placeholders, options, data) {
+         if (!options || !options.phMapping || !options.visibleSubgroups || subgroupsInParagraph.size === 0) {
+             return false;
+         }
+         
+         const shouldRemove = Array.from(subgroupsInParagraph).every(subgroupId => {
+             const isVisible = options.visibleSubgroups.has(subgroupId);
+             const subgroupPhs = placeholders.filter(ph => {
+                 const phDef = options.phMapping[ph];
+                 return phDef && phDef.subgroup === subgroupId;
+             });
+             
+             if (subgroupPhs.length === 0) {
+                 // If a subgroup is claimed to be in the paragraph but we identify no placeholders for it,
+                 // it's an edge case. Original logic returned false (don't remove line).
+                 return false;
+             }
+             
+             const allEmpty = subgroupPhs.every(ph => !data[ph] || data[ph].toString().trim() === '');
+             // If NOT visible AND all empty -> remove.
+             // If visible -> never remove (even if empty).
+             // If not visible but has content -> never remove.
+             return !isVisible && allEmpty;
+         });
+         
+         return shouldRemove;
+    },
+    replaceM2InXml: function(xml) {
+        return xml.replace(/(<w:t[^>]*>)([^<]*?)(m2)([^<]*?)(<\/w:t>)/g, (match, openTag, before, m2, after, closeTag) => {
+            return `${openTag}${before}m²${after}${closeTag}`;
+        });
     }
 };
 

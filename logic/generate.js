@@ -5,7 +5,7 @@
   const { getPlaceholders } = require("./placeholder");
   const path = require("path");
   const sax = require("sax");
-  const { normalizePlaceholders, escapeXml, replaceM2 } = require("./xmlUtils");
+  const { normalizePlaceholders, escapeXml, replaceM2, toTitleCase, checkRemovalPolicy, replaceM2InXml } = require("./xmlUtils");
 
   function processXmlWithStreaming(xmlString, data, options = {}) {
     return new Promise((resolve, reject) => {
@@ -28,7 +28,7 @@
         const attrs = Object.keys(node.attributes)
           .map(key => {
             const value = String(node.attributes[key]);
-            const escapedValue = value.replace(/"/g, '&quot;');
+            const escapedValue = escapeXml(value);
             return `${key}="${escapedValue}"`;
           })
           .join(' ');
@@ -73,10 +73,7 @@
           let processedText = currentTextContent;
           processedText = replaceM2(processedText);
           
-          const escapedText = processedText
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
+          const escapedText = escapeXml(processedText);
           
           const textOutput = textAttrs 
             ? `<w:t ${textAttrs}>${escapedText}</w:t>`
@@ -120,17 +117,8 @@
                 }
               });
 
-              if (subgroupsInParagraph.size > 0) {
-                shouldRemove = Array.from(subgroupsInParagraph).every(subgroupId => {
-                  const isVisible = options.visibleSubgroups.has(subgroupId);
-                  const subgroupPhs = placeholders.filter(ph => {
-                    const phDef = options.phMapping[ph];
-                    return phDef && phDef.subgroup === subgroupId;
-                  });
-                  if (subgroupPhs.length === 0) return false;
-                  const allEmpty = subgroupPhs.every(ph => !data[ph] || data[ph].toString().trim() === '');
-                  return !isVisible && allEmpty;
-                });
+            if (subgroupsInParagraph.size > 0) {
+                 shouldRemove = checkRemovalPolicy(subgroupsInParagraph, placeholders, options, data);
               }
             }
           }
@@ -184,7 +172,7 @@
       parser.on('opentag', (node) => {
         const tagName = node.name;
         const attrs = Object.keys(node.attributes)
-          .map(key => `${key}="${String(node.attributes[key]).replace(/"/g, '&quot;')}"`)
+          .map(key => `${key}="${escapeXml(String(node.attributes[key]))}"`)
           .join(' ');
         const openTag = attrs ? `<${tagName} ${attrs}>` : `<${tagName}>`;
 
@@ -218,10 +206,7 @@
 
       parser.on('closetag', (tagName) => {
         if (tagName === 'w:t' && inText) {
-          const escapedText = textContent
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
+          const escapedText = escapeXml(textContent);
           
           const textOutput = textAttrs 
             ? `<w:t ${textAttrs}>${escapedText}</w:t>`
@@ -352,20 +337,8 @@
               });
 
               if (subgroupsInParagraph.size === 0) return matchP;
-              const shouldRemoveLine = Array.from(subgroupsInParagraph).every(subgroupId => {
-                const isVisible = options.visibleSubgroups.has(subgroupId);
-                const subgroupPhs = placeholders.filter(ph => {
-                  const phDef = options.phMapping[ph];
-                  return phDef && phDef.subgroup === subgroupId;
-                });
-                if (subgroupPhs.length === 0) return false; 
-                const allEmpty = subgroupPhs.every(ph => !data[ph] || data[ph].toString().trim() === '');  
-                if (!isVisible) {        
-                  return allEmpty;
-                } else {
-                  return false;
-                }
-              });
+              
+              const shouldRemoveLine = checkRemovalPolicy(subgroupsInParagraph, placeholders, options, data);
 
               if (shouldRemoveLine) {
                 const extractedText = contentP.match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g);
@@ -376,9 +349,7 @@
             });
           }
       
-          xml = xml.replace(/(<w:t[^>]*>)([^<]*?)(m2)([^<]*?)(<\/w:t>)/g, (match, openTag, before, m2, after, closeTag) => {
-          return `${openTag}${before}m²${after}${closeTag}`;
-          });
+          xml = replaceM2InXml(xml);
           }
           zip.file('word/document.xml', xml);
         }
@@ -583,19 +554,6 @@
         fullData[ph] = data[ph] !== undefined ? data[ph] : '';
       });
       
-      function toTitleCase(str) {
-        if (!str || typeof str !== 'string') return str;
-        return str
-          .toLowerCase()
-          .split(' ')
-          .map(word => {
-            if (word.length === 0) return word;
-            return word.charAt(0).toUpperCase() + word.slice(1);
-          })
-          .join(' ');
-      }
-      
-     
       templatePhs.forEach(ph => {
         const nameTMatch = ph.match(/^NameT(\d+)$/);
         if (nameTMatch) {
