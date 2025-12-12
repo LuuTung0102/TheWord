@@ -49,6 +49,10 @@ QDLHS1:  + Quyết định ly hôn số
 Noi_CapHN1:  + Nơi cấp giấy HN
 Ngay_CapHN1:  + Ngày cấp giấy HN
 
+Tất cả các trường filed trên thuộc 1 supgroup là MEN:
+MEN chia ra 2 loại mặc định
+Bên A: MEN1 -> MEN6
+BÊN B: MEN7 -> MEN12
 2.2 THÔNG TIN THỬA ĐẤT (LandInfo Schema)
 
 QSH:  + Quyền sử dụng đất
