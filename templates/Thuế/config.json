@@ -8,7 +8,7 @@
       "groups": ["NT","CG","LAND"],
       "placeholders": {
         "NT": ["MEN1"],
-        "CG": ["MEN2"],
+        "CG": ["MEN7"],
         "LAND": ["INFO"]
       }
     },
@@ -96,10 +96,15 @@
       "group": "CG",
       "schema": "PersonalInfo",
       "subgroups": [
-        {"id":"MEN2","label":"Người cùng giao dịch","visible":true}
+        {"id":"MEN7","label":"Người cùng giao dịch","visible":true},
+         {"id":"MEN8","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN9","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN10","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN11","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN12","label":"Thông tin cá nhân","visible":false}
       ],
-      "suffixes": ["2"],
-      "defaultGenders": ["Ông"]
+      "suffixes": ["7","8"],
+      "defaultGenders": ["Ông","Bà"]
     },
     {
       "group": "LAND",
