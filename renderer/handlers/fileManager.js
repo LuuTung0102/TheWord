@@ -368,10 +368,8 @@
 
         if (result) {
           const { templateEntry: updatedTemplateEntry, updatedFieldMappings, newGroups } = result;
-          
           let fileCopied = false;
           let targetFilePath = null;
-          
           try {
             const targetFolder = `${templatesRoot}\\${this.selectedFolder.path.replace(/\//g, '\\')}`;
             
@@ -387,21 +385,17 @@
             } catch (copyError) {
               throw new Error(`Không thể copy file vào folder: ${copyError.message}`);
             }
-
             if (!finalFileName) {
               throw new Error('Copy file thất bại: Không nhận được tên file từ hệ thống');
             }
-
             const existingTemplateIndex = existingConfig.templates.findIndex(
               t => t.filename === fileName
             );
-
             if (existingTemplateIndex !== -1) {
               existingConfig.templates[existingTemplateIndex] = updatedTemplateEntry;
             } else {
               existingConfig.templates.push(updatedTemplateEntry);
             }
-
             if (updatedFieldMappings && updatedFieldMappings.length > 0) {
               for (const updatedMapping of updatedFieldMappings) {
                 const existingMappingIndex = existingConfig.fieldMappings.findIndex(
@@ -414,7 +408,6 @@
                   const newSubgroups = updatedMapping.subgroups.filter(
                     sg => !existingSubgroupIds.includes(sg.id)
                   );
-
                   if (newSubgroups.length > 0) {
                     existingMapping.subgroups.push(...newSubgroups);
                     if (updatedMapping.suffixes) {
@@ -429,21 +422,18 @@
 
             if (newGroups && Object.keys(newGroups).length > 0) {
               for (const [groupId, groupInfo] of Object.entries(newGroups)) {
-                const groupExists = existingConfig.groups.find(g => g.id === groupId);
-                
+                const groupExists = existingConfig.groups.find(g => g.id === groupId);                
                 if (!groupExists) {
                   existingConfig.groups.push(groupInfo);
                 }
               }
             }
-
             await configManager.writeConfig(folderPath, existingConfig);
             this.files = await this.loadFilesInFolder(this.selectedFolder.path);
             this.renderFileList();
             window.dispatchEvent(new CustomEvent('templates-updated', { 
               detail: { folderName: this.selectedFolder.name } 
             }));
-            
             showSuccess(`File "${fileName}" đã được thêm và cấu hình thành công!`);
           } catch (error) {
             if (fileCopied && targetFilePath) {
@@ -455,9 +445,7 @@
               } catch (deleteError) {
               }
             }
-            
             let errorMessage = '❌ Lỗi: Không thể lưu file\n\n';
-            
             if (error.message.includes('copy file')) {
               errorMessage += `Không thể copy file "${fileName}" vào folder.\n\n`;
               errorMessage += 'Nguyên nhân có thể:\n';
@@ -470,7 +458,6 @@
             } else {
               errorMessage += `${error.message}\n\n`;
             }
-            
             errorMessage += 'Cấu hình không được lưu. Vui lòng thử lại.';
             
             showError(errorMessage);
@@ -478,7 +465,6 @@
         } else {
           this.files = await this.loadFilesInFolder(this.selectedFolder.path);
           this.renderFileList();
-          
           showInfo(`Đã hủy thêm file "${fileName}"`);
         }
       } catch (error) { 

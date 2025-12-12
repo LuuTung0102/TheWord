@@ -5,6 +5,7 @@
   const { getPlaceholders } = require("./placeholder");
   const path = require("path");
   const sax = require("sax");
+  const { normalizePlaceholders, escapeXml, replaceM2 } = require("./xmlUtils");
 
   function processXmlWithStreaming(xmlString, data, options = {}) {
     return new Promise((resolve, reject) => {
@@ -21,43 +22,6 @@
       let paragraphHasPlaceholder = false;
       let paragraphTextContent = '';
   
-      function escapeXml(str) {
-        return str
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&apos;');
-      }
-
-      function mergePlaceholders(text) {
-        let result = text;
-        for (let i = 0; i < 5; i++) {
-          result = result.replace(/\{\{([^}]*)<\/w:t><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
-          result = result.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
-        }
-        result = result.replace(/\{\{[^}]*<[^>]*>[^}]*\}\}/g, (match) => {
-          const textContent = match.replace(/<[^>]*>/g, '').replace(/[{}]/g, '');
-          if (textContent.trim() && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(textContent.trim())) {
-            return `{{${textContent.trim()}}}`;
-          }
-          return '';
-        });
-        result = result.replace(/\}\}+}/g, '}}');
-        result = result.replace(/\{\{[^a-zA-Z_][^}]*\}\}/g, '');
-        result = result.replace(/\{\{[^}]*\s+[^}]*\}\}/g, (match) => {
-          const content = match.replace(/[{}]/g, '').trim();
-          if (content && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content)) {
-            return `{{${content}}}`;
-          }
-          return '';
-        });
-        return result;
-      }
-
-      function replaceM2(text) {
-        return text.replace(/(m2)/g, 'm²');
-      }
 
       parser.on('opentag', (node) => {
         const tagName = node.name;
@@ -133,7 +97,7 @@
           currentTextContent = '';
         } else if (tagName === 'w:p' && inParagraph) {
           const paraContent = paragraphBuffer.join('');
-          let processedContent = mergePlaceholders(paraContent);
+          let processedContent = normalizePlaceholders(paraContent);
           
           if (paragraphHasPlaceholder || /\{\{[^}]+\}\}/.test(processedContent)) {
             if (!paragraphAttrs.includes('data-has-placeholder')) {
@@ -360,35 +324,8 @@
           } else {
             xml = zip.files['word/document.xml'].asText();
             
-            for (let i = 0; i < 10; i++) {
-              xml = xml.replace(/\{\{([^}]*)<\/w:t><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
-              xml = xml.replace(/\{\{([^}]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^}]*)\}\}/g, '{{$1$2}}');
-              
-              xml = xml.replace(/\{<\/w:t><w:t[^>]*>\{/g, '{{');
-              xml = xml.replace(/\}<\/w:t><w:t[^>]*>\}/g, '}}');
-              xml = xml.replace(/\{<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>\{/g, '{{');
-              xml = xml.replace(/\}<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>\}/g, '}}');
-              
-              xml = xml.replace(/\{([^{}<]*)<\/w:t><w:t[^>]*>([^{}<]*)\}/g, '{$1$2}');
-              xml = xml.replace(/\{([^{}<]*)<\/w:t><\/w:r><w:r[^>]*><w:t[^>]*>([^{}<]*)\}/g, '{$1$2}');
-            }
-            xml = xml.replace(/\{\{[^}]*<[^>]*>[^}]*\}\}/g, (match) => {
-            const textContent = match.replace(/<[^>]*>/g, '').replace(/[{}]/g, '');
-            if (textContent.trim() && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(textContent.trim())) {
-              return `{{${textContent.trim()}}}`;
-            }
-            return ''; 
-          });
-          
-          xml = xml.replace(/\}\}+}/g, '}}');
-          xml = xml.replace(/\{\{[^a-zA-Z_][^}]*\}\}/g, '');
-          xml = xml.replace(/\{\{[^}]*\s+[^}]*\}\}/g, (match) => {
-            const content = match.replace(/[{}]/g, '').trim();
-            if (content && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content)) {
-              return `{{${content}}}`;
-            }
-            return '';
-          });
+            xml = normalizePlaceholders(xml);
+            
           
           xml = xml.replace(/<w:p\b([^>]*)>([\s\S]*?)<\/w:p>/g, (matchP, attrs, contentP) => {
             const placeholderMatches = contentP.match(/\{\{([^}]+)\}\}/g);

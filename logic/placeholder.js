@@ -6,14 +6,9 @@ function getPlaceholders(filePath) {
     const content = fs.readFileSync(filePath, "binary");
     const zip = new PizZip(content);
     const xml = zip.files["word/document.xml"].asText();
-    let cleanedXml = xml;
-    cleanedXml = cleanedXml.replace(/\{\{[^}]*<[^>]*>[^}]*\}\}/g, (match) => {
-      const textContent = match.replace(/<[^>]*>/g, '').replace(/[{}]/g, '');
-      if (textContent.trim() && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(textContent.trim())) {
-        return `{{${textContent.trim()}}}`;
-      }
-      return ''; 
-    });
+    const { normalizePlaceholders } = require("./xmlUtils");
+    let cleanedXml = normalizePlaceholders(xml);
+
     let cleanText = cleanedXml.replace(/<[^>]*>/g, "");
     cleanText = cleanText.replace(/\s+/g, " ").trim();
     const regex = /{{(.*?)}}/g;
@@ -23,7 +18,6 @@ function getPlaceholders(filePath) {
       const ph = match[1].trim();
       if (ph && (ph.length === 1 || /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(ph))) {
         placeholders.push(ph);
-      } else if (ph) {
       }
     }
   
