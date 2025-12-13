@@ -579,8 +579,6 @@
             printMode = data[key].printMode;
           } else if (typeof data[key] === 'string') {
             value = data[key];
-            // Infer printMode or usage from value content if needed, 
-            // but primarily just parse the value string.
           }
           
           if (!value) {
@@ -592,10 +590,6 @@
           const selectOptions = ['Sử dụng chung', 'Sử dụng riêng'];
           const selectValue = parts.find(p => selectOptions.includes(p));
           const numbers = parts.filter(p => !selectOptions.includes(p) && !isNaN(parseFloat(p)));
-          
-          // Determine existing logic's "printMode" equivalent behavior
-          // If we have explicit printMode, follow it.
-          // If we have string input, we follow the content.
           
           if (printMode === 'loai2') {
              if (numbers.length > 0) {
@@ -609,9 +603,8 @@
           } else if (printMode === 'loai1') {
              data[key] = selectValue || '';
           } else if (printMode === 'both') {
-             data[key] = value; // Or some combined format? Keeping original behavior for 'both'
+             data[key] = value;
           } else {
-            // No strict printMode (e.g. from string), generic formatting
             const outputs = [];
             if (selectValue) {
                outputs.push(selectValue);
@@ -670,7 +663,6 @@
           } else if (printMode === 'both') {
             fullData[key] = value;
           } else {
-             // Generic for string input
             const outputs = [];
             if (selectValue) {
                outputs.push(selectValue);
