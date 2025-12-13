@@ -251,12 +251,15 @@
               if (!htsdFieldNameInDOM) return;
               const baseFieldName = htsdFieldNameInDOM.replace(/\d+$/, '');
               const suffix = htsdFieldNameInDOM.replace(baseFieldName, '');
-              const groupSuffix = groupKey.replace(/^[A-Z]+/, '');
+              
+              const cleanGroupKey = groupKey.replace(/_\d{8}_\d{6,9}$/, '');
+              const groupSuffix = cleanGroupKey.replace(/^[A-Z]+/, '');
+              
               if (suffix !== groupSuffix) return;
               
               const fieldBelongsToGroup = sourceInfo.sourceData.hasOwnProperty(htsdFieldNameInDOM) || 
                                           sourceInfo.sourceData.hasOwnProperty(baseFieldName) ||
-                                          (groupKey.startsWith('INFO') && htsdFieldNameInDOM.match(/^HTSD\d*$/));
+                                          (cleanGroupKey.startsWith('INFO') && htsdFieldNameInDOM.match(/^HTSD\d*$/));
               
               if (!fieldBelongsToGroup) return;
               
@@ -324,7 +327,9 @@
                 const baseFieldName = htsdFieldNameInDOM.replace(/\d+$/, '');
                 if (dataGroups[groupKey].hasOwnProperty(baseFieldName)) {
                   const suffix = htsdFieldNameInDOM.replace(baseFieldName, '');
-                  const groupSuffix = groupKey.replace(/^[A-Z]+/, '');
+                  const cleanGroupKey = groupKey.replace(/_\d{8}_\d{6,9}$/, '');
+                  const groupSuffix = cleanGroupKey.replace(/^[A-Z]+/, '');
+                  
                   if (suffix === groupSuffix) {
                     matchedFieldName = baseFieldName;
                   }
@@ -349,8 +354,8 @@
                 printMode: printMode
               };
               dataGroups[groupKey][matchedFieldName] = htsdData;
-              const currentBaseType = groupKey.replace(/\d+$/, '');
-              const sourceBaseType = sourceGroupKey.replace(/\d+$/, '');
+              const currentBaseType = groupKey.replace(/_\d{8}_\d{6,9}$/, '').replace(/\d+$/, '');
+              const sourceBaseType = sourceGroupKey.replace(/_\d{8}_\d{6,9}$/, '').replace(/\d+$/, '');
               const isSameBaseType = currentBaseType === sourceBaseType;
               if (isSameBaseType && sourceFileName && sourceGroupKey && existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
                 existingData[sourceFileName].dataGroups[sourceGroupKey][matchedFieldName] = htsdData;

@@ -170,12 +170,14 @@ function highlightElement(element) {
   element.style.borderColor = '#dc3545';
   element.style.borderWidth = '2px';
   element.style.backgroundColor = '#fff5f5';
+  element.style.color = '#dc3545';
   element.classList.add('validation-error');
   
   const removeErrorStyle = () => {
     element.style.borderColor = '';
     element.style.borderWidth = '';
     element.style.backgroundColor = '';
+    element.style.color = '';
     element.classList.remove('validation-error');
     element.removeEventListener('input', removeErrorStyle);
     element.removeEventListener('change', removeErrorStyle);
@@ -189,15 +191,49 @@ function highlightElement(element) {
 function highlightHTSDField(htsdContainer) {
   const toggleButtons = htsdContainer.querySelectorAll('.htsd-toggle-btn');
   
+  const removeGroupErrorStyle = () => {
+    toggleButtons.forEach(btn => {
+      btn.style.borderColor = '';
+      btn.style.borderWidth = '';
+      btn.style.backgroundColor = '';
+      btn.style.color = '';
+      btn.classList.remove('validation-error');
+    });
+    
+    toggleButtons.forEach(btn => {
+      btn.removeEventListener('click', removeGroupErrorStyle);
+    });
+  };
+
   toggleButtons.forEach(btn => {
     highlightElement(btn);
+    btn.addEventListener('click', removeGroupErrorStyle);
   });
 }
 
 function highlightAddressGroup(addressGroup) {
   const inputs = addressGroup.querySelectorAll('input.editable-select-input');
+  
+  const removeGroupErrorStyle = () => {
+    inputs.forEach(input => {
+      input.style.borderColor = '';
+      input.style.borderWidth = '';
+      input.style.backgroundColor = '';
+      input.classList.remove('validation-error');
+    });
+    
+    inputs.forEach(input => {
+      input.removeEventListener('input', removeGroupErrorStyle);
+      input.removeEventListener('change', removeGroupErrorStyle);
+      input.removeEventListener('click', removeGroupErrorStyle);
+    });
+  };
+
   inputs.forEach(input => {
     highlightElement(input);
+    input.addEventListener('input', removeGroupErrorStyle);
+    input.addEventListener('change', removeGroupErrorStyle);
+    input.addEventListener('click', removeGroupErrorStyle);
   });
 }
 

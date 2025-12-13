@@ -65,15 +65,10 @@ const xmlUtils = {
              });
              
              if (subgroupPhs.length === 0) {
-                 // If a subgroup is claimed to be in the paragraph but we identify no placeholders for it,
-                 // it's an edge case. Original logic returned false (don't remove line).
                  return false;
              }
              
              const allEmpty = subgroupPhs.every(ph => !data[ph] || data[ph].toString().trim() === '');
-             // If NOT visible AND all empty -> remove.
-             // If visible -> never remove (even if empty).
-             // If not visible but has content -> never remove.
              return !isVisible && allEmpty;
          });
          

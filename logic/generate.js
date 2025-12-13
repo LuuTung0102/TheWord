@@ -571,10 +571,17 @@
       Object.keys(data).forEach(key => {
         const isHTSDField = (key === 'HTSD' || key.match(/^HTSD\d*$/)) && !key.includes('_');
         
-        if (isHTSDField && typeof data[key] === 'object' && data[key] !== null) {
-          const htsdData = data[key];
-          const value = htsdData.value;
-          const printMode = htsdData.printMode;
+        if (isHTSDField) {
+          let value, printMode;
+          
+          if (typeof data[key] === 'object' && data[key] !== null) {
+            value = data[key].value;
+            printMode = data[key].printMode;
+          } else if (typeof data[key] === 'string') {
+            value = data[key];
+            // Infer printMode or usage from value content if needed, 
+            // but primarily just parse the value string.
+          }
           
           if (!value) {
             data[key] = '';
@@ -586,8 +593,12 @@
           const selectValue = parts.find(p => selectOptions.includes(p));
           const numbers = parts.filter(p => !selectOptions.includes(p) && !isNaN(parseFloat(p)));
           
+          // Determine existing logic's "printMode" equivalent behavior
+          // If we have explicit printMode, follow it.
+          // If we have string input, we follow the content.
+          
           if (printMode === 'loai2') {
-            if (numbers.length > 0) {
+             if (numbers.length > 0) {
               const areaText = [];
               if (numbers[0]) areaText.push(`${numbers[0]}m² Chung`);
               if (numbers[1]) areaText.push(`${numbers[1]}m² Riêng`);
@@ -596,11 +607,20 @@
               data[key] = '';
             }
           } else if (printMode === 'loai1') {
-            data[key] = selectValue || '';
+             data[key] = selectValue || '';
           } else if (printMode === 'both') {
-            data[key] = value;
+             data[key] = value; // Or some combined format? Keeping original behavior for 'both'
           } else {
-            data[key] = '';
+            // No strict printMode (e.g. from string), generic formatting
+            const outputs = [];
+            if (selectValue) {
+               outputs.push(selectValue);
+            }
+            if (numbers.length > 0) {
+              if (numbers[0]) outputs.push(`${numbers[0]}m² Chung`);
+              if (numbers[1]) outputs.push(`${numbers[1]}m² Riêng`);
+            }
+             data[key] = outputs.join('; ');
           }
         }
         
@@ -616,10 +636,15 @@
       Object.keys(fullData).forEach(key => {
         const isHTSDField = (key === 'HTSD' || key.match(/^HTSD\d*$/)) && !key.includes('_');
         
-        if (isHTSDField && typeof fullData[key] === 'object' && fullData[key] !== null) {
-          const htsdData = fullData[key];
-          const value = htsdData.value;
-          const printMode = htsdData.printMode;
+        if (isHTSDField) {
+          let value, printMode;
+          
+          if (typeof fullData[key] === 'object' && fullData[key] !== null) {
+            value = fullData[key].value;
+            printMode = fullData[key].printMode;
+          } else if (typeof fullData[key] === 'string') {
+            value = fullData[key];
+          }
           
           if (!value) {
             fullData[key] = '';
@@ -645,7 +670,16 @@
           } else if (printMode === 'both') {
             fullData[key] = value;
           } else {
-            fullData[key] = '';
+             // Generic for string input
+            const outputs = [];
+            if (selectValue) {
+               outputs.push(selectValue);
+            }
+            if (numbers.length > 0) {
+              if (numbers[0]) outputs.push(`${numbers[0]}m² Chung`);
+              if (numbers[1]) outputs.push(`${numbers[1]}m² Riêng`);
+            }
+             fullData[key] = outputs.join('; ');
           }
         }
         

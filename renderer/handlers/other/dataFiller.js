@@ -102,6 +102,8 @@ function fillAddressField(placeholder, addressString) {
   }
   
   provinceInput.value = province.name;
+  provinceInput.dispatchEvent(new Event('input', { bubbles: true }));
+  provinceInput.dispatchEvent(new Event('change', { bubbles: true }));
   
   if (provinceInput._addressSetup) {
     provinceInput._addressSetup.selectedProvince = province;
@@ -130,6 +132,8 @@ function fillAddressField(placeholder, addressString) {
     if (!wardInput) return;
     
     wardInput.value = ward.name;
+    wardInput.dispatchEvent(new Event('input', { bubbles: true }));
+    wardInput.dispatchEvent(new Event('change', { bubbles: true }));
     
     if (wardInput._addressSetup) {
       wardInput._addressSetup.selectedWard = ward;
@@ -159,6 +163,8 @@ function fillAddressField(placeholder, addressString) {
         } else {
           villageInput.value = villageName;
         }
+        villageInput.dispatchEvent(new Event('input', { bubbles: true }));
+        villageInput.dispatchEvent(new Event('change', { bubbles: true }));
       }, 100);
     }
   }, 100);

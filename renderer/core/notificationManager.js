@@ -14,7 +14,7 @@
       }
     }
 
-    show(message, type = 'info', duration = 5000) {
+    show(message, type = 'info', duration = 1500) {
       const notification = document.createElement('div');
       notification.className = `notification notification-${type}`;
       
@@ -42,19 +42,19 @@
       return notification;
     }
 
-    success(message, duration = 1500) {
+    success(message, duration = 1000) {
       return this.show(message, 'success', duration);
     }
 
-    error(message, duration = 2500) {
+    error(message, duration = 1500) {
       return this.show(message, 'error', duration);
     }
 
-    warning(message, duration = 2500) {
+    warning(message, duration = 1500) {
       return this.show(message, 'warning', duration);
     }
 
-    info(message, duration = 1500) {
+    info(message, duration = 1000) {
       return this.show(message, 'info', duration);
     }
 

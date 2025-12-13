@@ -758,6 +758,7 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
   }
   
   provinceInput.addEventListener('input', (e) => {
+    if (document.activeElement !== e.target) return;
     const query = e.target.value.trim();
     const filtered = filterProvinces(query);
     
@@ -824,6 +825,7 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
   });
   
   wardInput.addEventListener('input', (e) => {
+    if (document.activeElement !== e.target) return;
     const query = e.target.value.trim();
     const filtered = filterWards(query);
     
@@ -896,6 +898,7 @@ function setupAddressSearchInput(provinceInput, wardInput, villageInput, groupId
   });
   
   villageInput.addEventListener('input', (e) => {
+    if (document.activeElement !== e.target) return;
     const query = e.target.value.trim();
     const filtered = filterVillages(query);
     
