@@ -360,51 +360,77 @@
             
             dataGroups[groupKey] = mergedData;
           } else {
+            // HAS_MODIFICATIONS: Check if only land_type or htsd fields changed
             if (sourceFileName && sourceGroupKey && existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
+              const modifiedFields = [];
               const modifiedLandTypes = new Map();
+              let hasNonLandTypeNonHtsdChanges = false;
               
+              // Analyze what changed
               Object.keys(dataGroups[groupKey]).forEach(key => {
                 const oldValue = existingData[sourceFileName].dataGroups[sourceGroupKey][key];
                 const newValue = dataGroups[groupKey][key];
-                const landTypeMatch = key.match(/^(Loai_Dat)(_[FD])?(\d*)$/);
-                if (landTypeMatch && oldValue !== newValue) {
-                  const suffix = landTypeMatch[3] || '';
-                  const fieldType = landTypeMatch[2];
+                
+                if (oldValue !== newValue) {
+                  modifiedFields.push(key);
                   
-                  if (!modifiedLandTypes.has(suffix)) {
-                    modifiedLandTypes.set(suffix, {
-                      loaiDatKey: suffix ? `Loai_Dat${suffix}` : 'Loai_Dat',
-                      loaiDatFKey: suffix ? `Loai_Dat_F${suffix}` : 'Loai_Dat_F',
-                      loaiDatDKey: suffix ? `Loai_Dat_D${suffix}` : 'Loai_Dat_D',
-                      modifiedField: fieldType || 'basic'
-                    });
+                  // Check if it's a land type field
+                  const landTypeMatch = key.match(/^(Loai_Dat)(_[FD])?(\d*)$/);
+                  if (landTypeMatch) {
+                    const suffix = landTypeMatch[3] || '';
+                    const fieldType = landTypeMatch[2];
+                    
+                    if (!modifiedLandTypes.has(suffix)) {
+                      modifiedLandTypes.set(suffix, {
+                        loaiDatKey: suffix ? `Loai_Dat${suffix}` : 'Loai_Dat',
+                        loaiDatFKey: suffix ? `Loai_Dat_F${suffix}` : 'Loai_Dat_F',
+                        loaiDatDKey: suffix ? `Loai_Dat_D${suffix}` : 'Loai_Dat_D',
+                        modifiedField: fieldType || 'basic'
+                      });
+                    }
+                  }
+                  // Check if it's an HTSD field
+                  else if (key.match(/^HTSD\d*$/)) {
+                    // HTSD field changed, this is OK to update in place
+                  }
+                  // Other field changed
+                  else {
+                    hasNonLandTypeNonHtsdChanges = true;
                   }
                 }
-                
-                existingData[sourceFileName].dataGroups[sourceGroupKey][key] = newValue;
               });
               
-              if (window.LandTypeHandlers && modifiedLandTypes.size > 0) {
-                modifiedLandTypes.forEach((info, suffix) => {
-                  const { loaiDatKey, loaiDatFKey, loaiDatDKey, modifiedField } = info;
-                  const targetGroup = existingData[sourceFileName].dataGroups[sourceGroupKey];
-                  const loaiDat = targetGroup[loaiDatKey];
-                  const loaiDatF = targetGroup[loaiDatFKey];
-                  const loaiDatD = targetGroup[loaiDatDKey];
-                  if (modifiedField === 'basic' && loaiDat) {
-                    targetGroup[loaiDatFKey] = window.LandTypeHandlers.convertLoaiDatBasicToF(loaiDat);
-                    targetGroup[loaiDatDKey] = window.LandTypeHandlers.convertLoaiDatBasicToD(loaiDat);
-                  } else if (modifiedField === '_F' && loaiDatF) {
-                    targetGroup[loaiDatKey] = window.LandTypeHandlers.convertLoaiDatFtoBasic(loaiDatF);
-                    targetGroup[loaiDatDKey] = window.LandTypeHandlers.convertLoaiDatFtoD(loaiDatF);
-                  } else if (modifiedField === '_D' && loaiDatD) {
-                    targetGroup[loaiDatKey] = window.LandTypeHandlers.convertLoaiDatDtoBasic(loaiDatD);
-                    targetGroup[loaiDatFKey] = window.LandTypeHandlers.convertLoaiDatDtoF(loaiDatD);
-                  }
+              // Only update session in place if ONLY land_type or htsd fields changed
+              if (!hasNonLandTypeNonHtsdChanges && (modifiedLandTypes.size > 0 || modifiedFields.length > 0)) {
+                // Update all changed fields
+                Object.keys(dataGroups[groupKey]).forEach(key => {
+                  existingData[sourceFileName].dataGroups[sourceGroupKey][key] = dataGroups[groupKey][key];
                 });
+                
+                // Regenerate related land type fields
+                if (window.LandTypeHandlers && modifiedLandTypes.size > 0) {
+                  modifiedLandTypes.forEach((info, suffix) => {
+                    const { loaiDatKey, loaiDatFKey, loaiDatDKey, modifiedField } = info;
+                    const targetGroup = existingData[sourceFileName].dataGroups[sourceGroupKey];
+                    const loaiDat = targetGroup[loaiDatKey];
+                    const loaiDatF = targetGroup[loaiDatFKey];
+                    const loaiDatD = targetGroup[loaiDatDKey];
+                    if (modifiedField === 'basic' && loaiDat) {
+                      targetGroup[loaiDatFKey] = window.LandTypeHandlers.convertLoaiDatBasicToF(loaiDat);
+                      targetGroup[loaiDatDKey] = window.LandTypeHandlers.convertLoaiDatBasicToD(loaiDat);
+                    } else if (modifiedField === '_F' && loaiDatF) {
+                      targetGroup[loaiDatKey] = window.LandTypeHandlers.convertLoaiDatFtoBasic(loaiDatF);
+                      targetGroup[loaiDatDKey] = window.LandTypeHandlers.convertLoaiDatFtoD(loaiDatF);
+                    } else if (modifiedField === '_D' && loaiDatD) {
+                      targetGroup[loaiDatKey] = window.LandTypeHandlers.convertLoaiDatDtoBasic(loaiDatD);
+                      targetGroup[loaiDatFKey] = window.LandTypeHandlers.convertLoaiDatDtoF(loaiDatD);
+                    }
+                  });
+                }
+                
+                delete dataGroups[groupKey];
               }
-              
-              delete dataGroups[groupKey];
+              // Otherwise, create new session (don't delete dataGroups[groupKey])
             }
           }
           } catch (err) {
