@@ -204,6 +204,11 @@ const BASE_PLACEHOLDERS = {
     order: 8
   },
 
+  S_PNN: {
+    type: "number",
+    order: 8
+  },
+
   Plant: {
     type: "text",
     order: 8
@@ -244,8 +249,7 @@ const BASE_PLACEHOLDERS = {
     type: "address-select",
     order: 10
   },
-  
- 
+   
   HTSD: {
     type: "select",
     options: ["Sử dụng chung", "Sử dụng riêng"],
@@ -260,10 +264,11 @@ const BASE_PLACEHOLDERS = {
   
     Money: {
     type: "currency",
-    validation: {
-      min: 1000,
-      max: 1000000000000000000000000000000000000000
-    },
+    order: 13
+  },
+
+   Gia1m: {
+    type: "currency",
     order: 13
   },
 
@@ -305,6 +310,11 @@ const BASE_PLACEHOLDERS = {
   Exp: {
     type: "textarea",
     order: 19
+  },
+
+  KV: {
+    type: "textarea",
+    order: 20
   },
   
   Note: {

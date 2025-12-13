@@ -21,6 +21,17 @@
       "placeholders": {
         "LAND": ["INFO"]
       }
+    },
+    {
+      "id": "thu-cn-pnn",
+      "filename": "Thuế_CN_PNN.docx",
+      "name": "Thuế_CN_PNN",
+      "description": "",
+      "groups": ["NT","LAND"],
+      "placeholders": {
+        "NT": ["MEN1"],
+        "LAND": ["INFO"]
+      }
     }
   ],
   "groups": [
@@ -58,6 +69,7 @@
         {"name":"TBD","label":"Tờ bản đồ số","type":"text","required":true},
         {"name":"S","label":"Diện tích (m²)","type":"number","required":true},
         {"name":"S_Text","label":"Diện tích (chữ)","type":"text","hidden":true,"required":false},
+        {"name":"S_PNN","label":"Diện tích sử dụng","type":"number","required":true},
         {"name":"Noi_CapD","label":"Nơi cấp","type":"textarea","required":true},
         {"name":"SV","label":"Diện tích đất trồng","type":"editable-select","options":[],"required":true},
         {"name":"NG","label":"Nguồn gốc","type":"textarea","placeholder":"VD: Công nhận QSDĐ như giao đất không thu tiền sử dụng đất","required":true},
@@ -73,11 +85,13 @@
         {"name":"TTGLVD","label":"TT tài sản gắn liền","type":"textarea","placeholder":"Thông tin tài sản gắn liền"},
         {"name":"Money","label":"Giá chuyển nhượng","type":"currency","placeholder":"Giá chuyển nhượng","required":true},
         {"name":"MoneyText","label":"Giá chuyển nhượng (chữ)","type":"text","hidden":true},
+        {"name":"Gia1m","label":"Giá 1m2 đất","type":"currency","placeholder":"Giá chuyển nhượng","required":true},
         {"name":"Resp","label":"Trách nhiệm thuế phí","type":"select","options":["A","B"],"required":true},
         {"name":"Sum_A","label":"Tổng số loại cây A","type":"text-or-dots","required":false,"placeholder":"VD: 150 cây","dotPlaceholder":"........................"},
         {"name":"Sum_B","label":"Tổng số loại cây B","type":"text-or-dots","required":false,"placeholder":"VD: 150 cây","dotPlaceholder":"........................"},
         {"name":"Sum_C","label":"Tổng số loại cây C","type":"text-or-dots","required":false,"placeholder":"VD: 150 cây","dotPlaceholder":"........................"},
         {"name":"Exp","label":"Năm chăm sóc/năm kinh doanh","type":"textarea","required":true},
+        {"name":"KV","label":"Đoạn đường/khu vực","type":"textarea","required":false},
         {"name":"Note","label":"Ghi chú","type":"textarea","required":false}
       ]
     }
