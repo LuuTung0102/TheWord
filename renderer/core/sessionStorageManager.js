@@ -9,7 +9,6 @@
     };
     
     Object.keys(data).forEach((key) => {
-      if (key === '_landOriginalFields') return;
       let value = data[key];
       if (isEmpty(value)) return;
       if (key.includes("CCCD") && typeof value === "string") {
@@ -51,15 +50,8 @@
         continue;
       }
       
-      if (key === '_landOriginalFields') {
-        continue;
-      }
-      
       const fieldInput = document.querySelector(`[data-ph="${key}"]`);
       const fieldType = fieldInput?.getAttribute('data-type');
-      if (fieldType === 'land_type' || fieldType === 'land_type_size' || fieldType === 'land_type_detail') {
-        continue;
-      }
       
       if (fieldType === 'htsd_custom') {
         continue;
@@ -251,31 +243,23 @@
               if (!htsdFieldNameInDOM) return;
               const baseFieldName = htsdFieldNameInDOM.replace(/\d+$/, '');
               const suffix = htsdFieldNameInDOM.replace(baseFieldName, '');
-              
               const cleanGroupKey = groupKey.replace(/_\d{8}_\d{6,9}$/, '');
               const groupSuffix = cleanGroupKey.replace(/^[A-Z]+/, '');
-              
               if (suffix !== groupSuffix) return;
-              
               const fieldBelongsToGroup = sourceInfo.sourceData.hasOwnProperty(htsdFieldNameInDOM) || 
                                           sourceInfo.sourceData.hasOwnProperty(baseFieldName) ||
                                           (cleanGroupKey.startsWith('INFO') && htsdFieldNameInDOM.match(/^HTSD\d*$/));
               
               if (!fieldBelongsToGroup) return;
-              
               const htsdContainer = htsdInput.closest('[data-field-type="htsd_custom"]');
               if (!htsdContainer) return;
-              
               const loai1Active = htsdContainer.querySelector('.htsd-toggle-loai1')?.classList.contains('active') || false;
               const loai2Active = htsdContainer.querySelector('.htsd-toggle-loai2')?.classList.contains('active') || false;
-              
               let printMode = null;
               if (loai1Active && !loai2Active) printMode = 'loai1';
               else if (loai2Active && !loai1Active) printMode = 'loai2';
               else if (loai1Active && loai2Active) printMode = 'both';
-              
               const htsdValue = htsdInput.value.trim();
-              
               if (!loai1Active && !loai2Active && !htsdValue) return;
               let targetFieldName = htsdFieldNameInDOM;
               if (!sourceInfo.sourceData.hasOwnProperty(htsdFieldNameInDOM) && 
@@ -376,6 +360,52 @@
             
             dataGroups[groupKey] = mergedData;
           } else {
+            if (sourceFileName && sourceGroupKey && existingData[sourceFileName]?.dataGroups?.[sourceGroupKey]) {
+              const modifiedLandTypes = new Map();
+              
+              Object.keys(dataGroups[groupKey]).forEach(key => {
+                const oldValue = existingData[sourceFileName].dataGroups[sourceGroupKey][key];
+                const newValue = dataGroups[groupKey][key];
+                const landTypeMatch = key.match(/^(Loai_Dat)(_[FD])?(\d*)$/);
+                if (landTypeMatch && oldValue !== newValue) {
+                  const suffix = landTypeMatch[3] || '';
+                  const fieldType = landTypeMatch[2];
+                  
+                  if (!modifiedLandTypes.has(suffix)) {
+                    modifiedLandTypes.set(suffix, {
+                      loaiDatKey: suffix ? `Loai_Dat${suffix}` : 'Loai_Dat',
+                      loaiDatFKey: suffix ? `Loai_Dat_F${suffix}` : 'Loai_Dat_F',
+                      loaiDatDKey: suffix ? `Loai_Dat_D${suffix}` : 'Loai_Dat_D',
+                      modifiedField: fieldType || 'basic'
+                    });
+                  }
+                }
+                
+                existingData[sourceFileName].dataGroups[sourceGroupKey][key] = newValue;
+              });
+              
+              if (window.LandTypeHandlers && modifiedLandTypes.size > 0) {
+                modifiedLandTypes.forEach((info, suffix) => {
+                  const { loaiDatKey, loaiDatFKey, loaiDatDKey, modifiedField } = info;
+                  const targetGroup = existingData[sourceFileName].dataGroups[sourceGroupKey];
+                  const loaiDat = targetGroup[loaiDatKey];
+                  const loaiDatF = targetGroup[loaiDatFKey];
+                  const loaiDatD = targetGroup[loaiDatDKey];
+                  if (modifiedField === 'basic' && loaiDat) {
+                    targetGroup[loaiDatFKey] = window.LandTypeHandlers.convertLoaiDatBasicToF(loaiDat);
+                    targetGroup[loaiDatDKey] = window.LandTypeHandlers.convertLoaiDatBasicToD(loaiDat);
+                  } else if (modifiedField === '_F' && loaiDatF) {
+                    targetGroup[loaiDatKey] = window.LandTypeHandlers.convertLoaiDatFtoBasic(loaiDatF);
+                    targetGroup[loaiDatDKey] = window.LandTypeHandlers.convertLoaiDatFtoD(loaiDatF);
+                  } else if (modifiedField === '_D' && loaiDatD) {
+                    targetGroup[loaiDatKey] = window.LandTypeHandlers.convertLoaiDatDtoBasic(loaiDatD);
+                    targetGroup[loaiDatFKey] = window.LandTypeHandlers.convertLoaiDatDtoF(loaiDatD);
+                  }
+                });
+              }
+              
+              delete dataGroups[groupKey];
+            }
           }
           } catch (err) {
             console.error(`Error processing reused group ${reusedKey}:`, err);
