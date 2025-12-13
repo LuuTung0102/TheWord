@@ -8,7 +8,7 @@
       "groups": ["BCN","BNCN","LAND","PAGE"],
       "placeholders": {
         "BCN": ["MEN2","MEN1"],
-        "BNCN": ["MEN7","MEN8"],
+        "BNCN": ["MEN11","MEN12"],
         "LAND": ["INFO"],
         "PAGE": ["HOME"]
       }
@@ -21,7 +21,7 @@
       "groups": ["BCN","BNCN","LAND","PAGE"],
       "placeholders": {
         "BCN": ["MEN1","MEN2","MEN3","MEN4","MEN5","MEN6"],
-        "BNCN": ["MEN7","MEN8"],
+        "BNCN": ["MEN11","MEN12"],
         "LAND": ["INFO"],
         "PAGE": ["HOME"]
       }
@@ -34,7 +34,7 @@
       "groups": ["BCN","BNCN","LAND","PAGE"],
       "placeholders": {
         "BCN": ["MEN1","MEN2"],
-        "BNCN": ["MEN7","MEN8"],
+        "BNCN": ["MEN11","MEN12"],
         "LAND": ["INFO"],
         "PAGE": ["HOME"]
       }
@@ -118,23 +118,31 @@
         {"id":"MEN3","label":"Thông tin cá nhân","visible":false},
         {"id":"MEN4","label":"Thông tin cá nhân","visible":false},
         {"id":"MEN5","label":"Thông tin cá nhân","visible":false},
-        {"id":"MEN6","label":"Thông tin cá nhân","visible":false}
+        {"id":"MEN6","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN7","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN8","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN9","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN10","label":"Thông tin cá nhân","visible":false}
       ],
-      "suffixes": ["1","2","3","4","5","6"],
+      "suffixes": ["1","2","3","4","5","6","7","8","9","10"],
       "defaultGenders": ["Ông","Bà"]
     },
     {
       "group": "BNCN",
       "schema": "PersonalInfo",
       "subgroups": [
-        {"id":"MEN7","label":"Thông tin cá nhân","visible":true},
-        {"id":"MEN8","label":"Thông tin cá nhân","visible":false},
-        {"id":"MEN9","label":"Thông tin cá nhân","visible":false},
-        {"id":"MEN10","label":"Thông tin cá nhân","visible":false},
-        {"id":"MEN11","label":"Thông tin cá nhân","visible":false},
-        {"id":"MEN12","label":"Thông tin cá nhân","visible":false}
+        {"id":"MEN11","label":"Thông tin cá nhân","visible":true},
+        {"id":"MEN12","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN13","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN14","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN15","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN16","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN17","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN18","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN19","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN20","label":"Thông tin cá nhân","visible":false}
       ],
-      "suffixes": ["7","8"],
+      "suffixes": ["11","12","13","14","15","16","17","18","19","20"],
       "defaultGenders": ["Ông","Bà"]
     },
     {

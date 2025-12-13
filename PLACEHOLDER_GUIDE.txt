@@ -51,8 +51,8 @@ Ngay_CapHN1:  + Ngày cấp giấy HN
 
 Tất cả các trường filed trên thuộc 1 supgroup là MEN:
 MEN chia ra 2 loại mặc định
-Bên A: MEN1 -> MEN6
-BÊN B: MEN7 -> MEN12
+Bên A: MEN1 -> MEN10
+BÊN B: MEN11 -> MEN20
 
 2.2 THÔNG TIN THỬA ĐẤT (LandInfo Schema)
 

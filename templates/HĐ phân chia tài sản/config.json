@@ -8,8 +8,8 @@
       "groups": ["NTK","NM","MP","LAND","PAGE"],
       "placeholders": {
         "NTK": ["MEN1","MEN2","MEN3","MEN4","MEN5","MEN6"],
-        "NM": ["MEN7"],
-        "MP": ["MEN8","MEN9"],
+        "NM": ["MEN11"],
+        "MP": ["MEN12","MEN13"],
         "LAND": ["INFO"],
         "PAGE": ["HOME"]
       }
@@ -88,33 +88,37 @@
       "group": "NTK",
       "schema": "PersonalInfo",
       "subgroups": [
-        {"id":"MEN1","label":"Người thừa kế","visible":true},
-        {"id":"MEN2","label":"Người thừa kế","visible":false},
-        {"id":"MEN3","label":"Người thừa kế","visible":false},
-        {"id":"MEN4","label":"Người thừa kế","visible":false},
-        {"id":"MEN5","label":"Người thừa kế","visible":false},
-        {"id":"MEN6","label":"Người thừa kế","visible":false}
+        {"id":"MEN1","label":"Thông tin cá nhân","visible":true},
+        {"id":"MEN2","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN3","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN4","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN5","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN6","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN7","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN8","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN9","label":"Thông tin cá nhân","visible":false},
+        {"id":"MEN10","label":"Thông tin cá nhân","visible":false}
       ],
-      "suffixes": ["1","2","3","4","5","6"],
-      "defaultGenders": ["Ông"]
+      "suffixes": ["1","2","3","4","5","6","7","8","9","10"],
+      "defaultGenders": ["Ông","Bà"]
     },
     {
       "group": "NM",
       "schema": "PersonalInfo",
       "subgroups": [
-        {"id":"MEN7","label":"Người mất","visible":true}
+        {"id":"MEN11","label":"Người mất","visible":true}
       ],
-      "suffixes": ["7"],
+      "suffixes": ["11"],
       "defaultGenders": ["Ông"]
     },
     {
       "group": "MP",
       "schema": "PersonalInfo",
       "subgroups": [
-        {"id":"MEN8","label":"Phụ huynh người mất","visible":true},
-        {"id":"MEN9","label":"Phụ huynh người mất","visible":true}
+        {"id":"MEN12","label":"Phụ huynh người mất","visible":true},
+        {"id":"MEN13","label":"Phụ huynh người mất","visible":true}
       ],
-      "suffixes": ["8","9"],
+      "suffixes": ["12","13"],
       "defaultGenders": ["Ông","Bà"]
     },
     {
